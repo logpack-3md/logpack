@@ -5,6 +5,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-background2: var(--background2);
   --color-background-button: var(--background-button); /* my color */
   --color-foreground: var(--foreground);
   --font-sans: Inter, sans-serif;
@@ -74,12 +75,13 @@
 :root {
   --radius: 0.5rem;
   --background: oklch(0.9891 0.0034 67.7840);
+  --background2: #dfdfdf;
   --background-button: oklch(#e6c4ad); /* my color */
   --foreground: oklch(0.2161 0.0061 56.0434);
   --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.2161 0.0061 56.0434);
   --popover: oklch(1.0000 0 0);
-  --popover-header: #e6c4ad; /* my color */
+  --popover-header: #dbdbdb; /* my color */
   --popover-foreground: oklch(0.2161 0.0061 56.0434);
   --primary: oklch(0.6278 0.1129 53.5290);
   --primary-foreground: oklch(1.0000 0 0);
@@ -90,7 +92,7 @@
   --accent: oklch(0.9568 0.0310 79.9327);
   --accent-foreground: oklch(0.4762 0.1034 61.9071);
   --destructive: oklch(0.5771 0.2152 27.3250);
-  --border: #bd8c6c; /* my color */
+  --border: #999999; /* my color */
   --border2: oklch(0.9232 0.0026 48.7171); /* Color antiga */
   --border-header: #b49580;
   --input: oklch(0.9699 0.0013 106.4238);
