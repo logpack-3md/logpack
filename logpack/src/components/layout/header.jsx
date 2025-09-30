@@ -33,10 +33,9 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { SwitchTheme } from "../SwitchThemes";
 
-
 export default function Header() {
     return (
-        <header className="w-full border-b  backdrop-blur-2xl  bg-gray-500/30  sticky top-0 z-50">
+        <header className="w-full border-b  backdrop-blur-2xl  bg-gradient-to-r from-header-color1 to-header-color2 sticky top-0 z-50">
 
             <div className="flex items-center justify-between w-full max-w-8xl mx-auto p-4">
 
@@ -49,7 +48,7 @@ export default function Header() {
                             <AvatarFallback>L</AvatarFallback>
                         </Avatar>
                         {/* px-2 apos isso é o Gradient */}
-                        <h2 className="font-bold text-xl px-2 bg-gradient-to-r from-[#68482f] to-[#cf966a] bg-clip-text text-transparent 
+                        <h2 className="font-bold text-xl px-2 bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
                         hover:from-[#8f5f3b] hover:to-[#e0a273]" >
                             LogPack
                         </h2>
