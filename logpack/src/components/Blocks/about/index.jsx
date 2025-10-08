@@ -28,37 +28,38 @@ const defaultCompanies = [
 ];
 
 const defaultAchievements = [
-  { label: "Companies Supported", value: "300+" },
-  { label: "Projects Finalized", value: "800+" },
-  { label: "Happy Customers", value: "99%" },
-  { label: "Recognized Awards", value: "10+" },
+  { label: "Produtos Monitorados", value: "50.000+" },
+  { label: "Clientes Atendidos", value: "1.200+" },
+  { label: "Precisão de Inventário", value: "99,5%" },
+  { label: "Premiações Recebidas", value: "5+" },
 ];
 
 const About = ({
   title = "Sobre nós",
-  description = "Shadcnblocks is a passionate team dedicated to creating innovative solutions that empower businesses to thrive in the digital age.",
+  description = "Somos uma empresa especializada em soluções de monitoramento de estoque e controle de peso, ajudando negócios a manterem seus produtos organizados e a minimizar perdas.",
   mainImage = {
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/placeholder-1.svg",
-    alt: "placeholder",
+    alt: "Monitoramento de estoque",
   },
   secondaryImage = {
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/placeholder-2.svg",
-    alt: "placeholder",
+    alt: "Controle de peso",
   },
   breakout = {
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/block-1.svg",
     alt: "logo",
-    title: "Hundreds of blocks at Shadcnblocks.com",
+    title: "Tecnologia de ponta em monitoramento",
     description:
-      "Providing businesses with effective tools to improve workflows, boost efficiency, and encourage growth.",
-    buttonText: "Discover more",
-    buttonUrl: "https://shadcnblocks.com",
+      "Oferecemos soluções precisas para rastrear estoque e peso em tempo real, garantindo eficiência operacional e redução de perdas.",
+    buttonText: "Saiba mais",
+    buttonUrl: "https://suaempresa.com",
   },
   companiesTitle = "Valued by clients worldwide",
   companies = defaultCompanies,
-  achievementsTitle = "Our Achievements in Numbers",
-  achievementsDescription = "Providing businesses with effective tools to improve workflows, boost efficiency, and encourage growth.",
+  achievementsTitle = "Nossos Resultados em Números",
+  achievementsDescription = "Com tecnologia avançada, ajudamos empresas a otimizar o controle de estoque e garantir precisão no monitoramento de peso.",
   achievements = defaultAchievements,
+
 
 } = {}) => {
 
