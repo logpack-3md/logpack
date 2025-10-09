@@ -32,8 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { SwitchTheme } from "../SwitchThemes";
-
-
+import Logo from "@/components/my/logo"
 export default function Header() {
     return (
         <header className="w-full border-b  backdrop-blur-2xl  bg-gray-500/30  sticky top-0 z-50">
@@ -43,14 +42,13 @@ export default function Header() {
                 <div className="flex items-center gap-4 lg:gap-8">
 
                     {/* Logo */}
-                    <div className="flex items-center lg:pl-10 lg:pr-30">
-                        <Avatar className={"w-12 h-11 lg:w-23 lg:h-17 rounded-none"}>
-                            <AvatarImage src="./logo/log1.png" />
-                            <AvatarFallback>L</AvatarFallback>
-                        </Avatar>
+                    <div className="flex items-center lg:pl-8 lg:pr-30">
+                        {/* Logo importada */}
+                        <Logo />
+
                         {/* px-2 apos isso é o Gradient */}
-                        <h2 className="font-bold text-xl px-2 bg-gradient-to-r from-[#68482f] to-[#cf966a] bg-clip-text text-transparent 
-                        hover:from-[#8f5f3b] hover:to-[#e0a273]" >
+                        <h2 className="font-bold text-xl px-2 bg-gradient-to-r from-[#a37121] to-[#eea533] bg-clip-text text-transparent 
+                        hover:from-[#a37121] hover:to-[#ffbf58] dark:from-[#eea533] dark:to-[#eea533] dark:hover:to-[#eea533] dark:hover:from-[#eea533] " >
                             LogPack
                         </h2>
                     </div>
@@ -101,7 +99,7 @@ export default function Header() {
 
 
                 {/* Avatar do usuario e Menu Mobile*/}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 ">
                     <div className="lg:hidden">
 
                         <Drawer direction="right">
@@ -112,7 +110,7 @@ export default function Header() {
                                 </Button>
                             </DrawerTrigger>
 
-                            <DrawerContent className="h-full right-0 mt-0 w-64 fixed bottom-0 rounded-none">
+                            <DrawerContent className="h-full right-0 mt-0 w-64 fixed bottom-0 rounded-none backdrop-blur-2xl  bg-gray-500/20">
 
                                 <DrawerHeader className="text-left">
                                     <DrawerTitle>LogPack Navegação</DrawerTitle>
@@ -120,15 +118,11 @@ export default function Header() {
                                 </DrawerHeader>
 
                                 <div className="p-4 overflow-y-auto">
+                                    <a href="/" className="py-2 block text-sm rounded-sm">
+                                        Home
+                                    </a>
                                     <Accordion type="single" collapsible className="w-full">
-                                        {/* item 1 */}
-                                        <AccordionItem value="item-1">
-                                            <AccordionContent>
-                                                <a href="/" className="py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
-                                                    Home
-                                                </a>
-                                            </AccordionContent>
-                                        </AccordionItem>
+
 
                                         {/* item 2 */}
                                         <AccordionItem value="item-2">

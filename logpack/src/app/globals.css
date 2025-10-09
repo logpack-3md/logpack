@@ -135,10 +135,12 @@
 
 .dark {
   --background: oklch(0.2161 0.0061 56.0434);
+  --background-button: oklch(#e6c4ad); /* my color */
   --foreground: oklch(0.9848 0.0013 106.4233);
   --card: oklch(0.2685 0.0063 34.2976);
   --card-foreground: oklch(0.9848 0.0013 106.4233);
   --popover: oklch(0.2685 0.0063 34.2976);
+  --popover-header: #1d1d1d; /* my color */
   --popover-foreground: oklch(0.9848 0.0013 106.4233);
   --primary: oklch(0.6594 0.1133 54.7928);
   --primary-foreground: oklch(0.2161 0.0061 56.0434);
@@ -146,7 +148,7 @@
   --secondary-foreground: oklch(0.9848 0.0013 106.4233);
   --muted: oklch(0.3741 0.0087 67.5582);
   --muted-foreground: oklch(0.7161 0.0091 56.2590);
-  --accent: oklch(0.4444 0.0096 73.6390);
+  --accent: #6b5240; /* modifiquei: oklch(0.4444 0.0096 73.6390)*/
   --accent-foreground: oklch(0.9848 0.0013 106.4233);
   --destructive: oklch(0.4437 0.1613 26.8994);
   --border: oklch(0.3741 0.0087 67.5582);

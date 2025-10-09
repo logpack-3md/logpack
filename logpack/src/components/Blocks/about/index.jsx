@@ -52,7 +52,7 @@ const About = ({
     description:
       "Providing businesses with effective tools to improve workflows, boost efficiency, and encourage growth.",
     buttonText: "Discover more",
-    buttonUrl: "https://shadcnblocks.com",
+    buttonUrl: "/login",
   },
   companiesTitle = "Valued by clients worldwide",
   companies = defaultCompanies,
