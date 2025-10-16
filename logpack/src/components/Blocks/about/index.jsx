@@ -1,3 +1,4 @@
+import IconSite from "@/components/my/icons";
 import { Button } from "@/components/ui/button";
 import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
@@ -38,14 +39,6 @@ const defaultAchievements = [
 const About = ({
   title = "Sobre a LogPack",
   description = "Somos especialistas em inteligência logística. Nossas soluções de monitoramento de estoque e controle de peso em tempo real ajudam negócios a eliminar perdas e maximizar a eficiência operacional.",
-  mainImage = {
-    src: "https://placehold.co/800x600/e2e8f0/1e293b?text=LogPack",
-    alt: "Centro de distribuição LogPack",
-  },
-  secondaryImage = {
-    src: "https://placehold.co/600x600/e2e8f0/1e293b?text=LogPack",
-    alt: "Tecnologia de controle de peso",
-  },
   breakout = {
     icon: Scale,
     title: "Tecnologia de Ponta",
@@ -77,17 +70,14 @@ const About = ({
             </p>
           </div>
         </div>
-        <div className="relative aspect-video overflow-hidden rounded-xl shadow-xl border bg-muted">
-          <img
-            src={mainImage.src}
-            alt={mainImage.alt}
-            className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
-          />
+        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted justify-center flex">
+          <IconSite className="object-cover w-full h-full items-center justify-center" />
         </div>
+
       </section>
 
       {/* Resultados */}
-      <section className="relative overflow-hidden rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16">        
+      <section className="relative overflow-hidden rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16">
         <div className="relative flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-4 lg:w-1/3 text-center lg:text-left">
             <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
@@ -104,13 +94,15 @@ const About = ({
               const IconComponent = item.icon;
               return (
                 <div className="flex flex-col items-center lg:items-start gap-2" key={item.label + idx} >
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary mb-2" >
-                    <IconComponent className="h-6 w-6" />
+                  <div className="flex items-center lg:items-start gap-2">
+                    <div className="p-2 bg-primary/10 rounded-lg text-primary mb-2" >
+                      <IconComponent className="h-7 w-7" />
+                    </div>
+                    <span className="text-3xl font-bold lg:text-4xl text-foreground">
+                      {item.value}
+                    </span>
                   </div>
-                  <span className="text-3xl font-bold lg:text-4xl text-foreground">
-                    {item.value}
-                  </span>
-                  <p className="text-sm text-muted-foreground text-center lg:text-left">{item.label}</p>
+                  <p className="text-sm text-muted-foreground text-center lg:text-md lg:text-left">{item.label}</p>
                 </div>
               )
             })}
@@ -125,10 +117,10 @@ const About = ({
 
       {/* Destaque */}
       <section className="grid gap-10 lg:grid-cols-2 items-center">
-        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted">
-          <img src={secondaryImage.src} alt={secondaryImage.alt} className="object-cover w-full h-full"/>
+        <div className="relative aspect-video overflow-hidden rounded-xl shadow-xl border bg-muted flex justify-center">
+          <IconSite className="object-cover w-full h-full" />
         </div>
-
+        
         {/* Card de Destaque */}
         <div className="order-1 lg:order-2 flex flex-col justify-center gap-6 rounded-xl bg-muted/50 p-8 lg:p-10 border shadow-sm">
           <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
@@ -154,7 +146,7 @@ const About = ({
         </p>
         <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8">
           {companies.map((company, idx) => (
-            <img key={company.src + idx} src={company.src} alt={company.alt} className="h-8 w-auto object-contain filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer"/>
+            <img key={company.src + idx} src={company.src} alt={company.alt} className="h-8 w-auto object-contain filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer" />
           ))}
         </div>
       </section>
