@@ -1,139 +1,165 @@
 import { Button } from "@/components/ui/button";
+import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
 const defaultCompanies = [
   {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/company/fictional-company-logo-1.svg",
-    alt: "Arc",
+    src: "#",
+    alt: "Empresa 1 ",
   },
   {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/company/fictional-company-logo-2.svg",
-    alt: "Descript",
+    src: "#",
+    alt: "Empresa 2",
   },
   {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/company/fictional-company-logo-3.svg",
-    alt: "Mercury",
+    src: "#",
+    alt: "Empresa 3",
   },
   {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/company/fictional-company-logo-4.svg",
-    alt: "Ramp",
+    src: "#",
+    alt: "Empresa 4",
   },
   {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/company/fictional-company-logo-5.svg",
-    alt: "Retool",
+    src: "#",
+    alt: "Empresa 5",
   },
   {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/company/fictional-company-logo-6.svg",
-    alt: "Watershed",
+    src: "#",
+    alt: "Empresa 6",
   },
 ];
 
 const defaultAchievements = [
-  { label: "Companies Supported", value: "300+" },
-  { label: "Projects Finalized", value: "800+" },
-  { label: "Happy Customers", value: "99%" },
-  { label: "Recognized Awards", value: "10+" },
+  { icon: Package, label: "Produtos Monitorados", value: "50k+" },
+  { icon: Users, label: "Clientes Atendidos", value: "1.2k+" },
+  { icon: Scale, label: "Precisão de Inventário", value: "99,5%" },
+  { icon: Award, label: "Premiações Recebidas", value: "5+" },
 ];
 
 const About = ({
-  title = "Sobre nós",
-  description = "Shadcnblocks is a passionate team dedicated to creating innovative solutions that empower businesses to thrive in the digital age.",
+  title = "Sobre a LogPack",
+  description = "Somos especialistas em inteligência logística. Nossas soluções de monitoramento de estoque e controle de peso em tempo real ajudam negócios a eliminar perdas e maximizar a eficiência operacional.",
   mainImage = {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/placeholder-1.svg",
-    alt: "placeholder",
+    src: "https://placehold.co/800x600/e2e8f0/1e293b?text=LogPack",
+    alt: "Centro de distribuição LogPack",
   },
   secondaryImage = {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/placeholder-2.svg",
-    alt: "placeholder",
+    src: "https://placehold.co/600x600/e2e8f0/1e293b?text=LogPack",
+    alt: "Tecnologia de controle de peso",
   },
   breakout = {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/block-1.svg",
-    alt: "logo",
-    title: "Hundreds of blocks at Shadcnblocks.com",
+    icon: Scale,
+    title: "Tecnologia de Ponta",
     description:
-      "Providing businesses with effective tools to improve workflows, boost efficiency, and encourage growth.",
-    buttonText: "Discover more",
-    buttonUrl: "/login",
+      "Sensores IoT de alta precisão e algoritmos de IA para rastrear variações de estoque e peso no momento em que acontecem.",
+    buttonText: "Conheça nossa tecnologia",
+    buttonUrl: "/tecnologia",
   },
-  companiesTitle = "Valued by clients worldwide",
+  companiesTitle = "Empresas que confiam na LogPack",
   companies = defaultCompanies,
-  achievementsTitle = "Our Achievements in Numbers",
-  achievementsDescription = "Providing businesses with effective tools to improve workflows, boost efficiency, and encourage growth.",
+  achievementsTitle = "Impacto Real em Números",
+  achievementsDescription = "Não entregamos apenas software, entregamos resultados mensuráveis que transformam a operação dos nossos parceiros.",
   achievements = defaultAchievements,
+
 
 } = {}) => {
 
   return (
-    <section className="py-3 container mx-auto flex flex-col items-center">
-      <div className="container">
-        <div className="mb-14 grid gap-5 text-center md:grid-cols-2 md:text-left">
-          <h1 className="text-5xl font-semibold">{title}</h1>
-          <p className="text-muted-foreground">{description}</p>
+    <main className="container mx-auto px-4 py-16 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-32">
+      {/* Introdução */}
+      <section className="grid gap-10 lg:grid-cols-2 items-center">
+        <div className="flex flex-col gap-6">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl lg:text-6xl">
+              {title}
+            </h1>
+            <p className="text-lg text-muted-foreground lg:text-xl max-w-[600px]">
+              {description}
+            </p>
+          </div>
         </div>
-        <div className="grid gap-7 lg:grid-cols-3">
+        <div className="relative aspect-video overflow-hidden rounded-xl shadow-xl border bg-muted">
           <img
             src={mainImage.src}
             alt={mainImage.alt}
-            className="size-full max-h-[620px] rounded-xl object-cover lg:col-span-2"
+            className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
           />
-          <div className="flex flex-col gap-7 md:flex-row lg:flex-col">
-            <div className="flex flex-col justify-between gap-6 rounded-xl bg-muted p-7 md:w-1/2 lg:w-auto">
-              <img
-                src={breakout.src}
-                alt={breakout.alt}
-                className="mr-auto h-12"
-              />
-              <div>
-                <p className="mb-2 text-lg font-semibold">{breakout.title}</p>
-                <p className="text-muted-foreground">{breakout.description}</p>
-              </div>
-              <Button variant="outline" className="mr-auto" asChild>
-                <a href={breakout.buttonUrl} target="_blank">
-                  {breakout.buttonText}
-                </a>
-              </Button>
-            </div>
-            <img
-              src={secondaryImage.src}
-              alt={secondaryImage.alt}
-              className="grow basis-0 rounded-xl object-cover md:w-1/2 lg:min-h-0 lg:w-auto"
-            />
-          </div>
         </div>
-        <div className="py-32">
-          <p className="text-center">{companiesTitle} </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-8">
-            {companies.map((company, idx) => (
-              <div className="flex items-center gap-3" key={company.src + idx}>
-                <img
-                  src={company.src}
-                  alt={company.alt}
-                  className="h-6 w-auto md:h-8"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="relative overflow-hidden rounded-xl bg-muted p-10 md:p-16">
-          <div className="flex flex-col gap-4 text-center md:text-left">
-            <h2 className="text-4xl font-semibold">{achievementsTitle}</h2>
-            <p className="max-w-xl text-muted-foreground">
+      </section>
+
+      {/* Resultados */}
+      <section className="relative overflow-hidden rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16">        
+        <div className="relative flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 lg:w-1/3 text-center lg:text-left">
+            <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
+              {achievementsTitle}
+            </h2>
+            <p className="text-muted-foreground">
               {achievementsDescription}
             </p>
           </div>
-          <div className="mt-10 flex flex-wrap justify-between gap-10 text-center">
-            {achievements.map((item, idx) => (
-              <div className="flex flex-col gap-4" key={item.label + idx}>
-                <p>{item.label}</p>
-                <span className="text-4xl font-semibold md:text-5xl">
-                  {item.value}
-                </span>
-              </div>
-            ))}
+
+          {/* Grid de estatísticas com Ícones */}
+          <div className="grid grid-cols-2 gap-8 lg:w-2/3 lg:grid-cols-4">
+            {achievements.map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <div className="flex flex-col items-center lg:items-start gap-2" key={item.label + idx} >
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary mb-2" >
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <span className="text-3xl font-bold lg:text-4xl text-foreground">
+                    {item.value}
+                  </span>
+                  <p className="text-sm text-muted-foreground text-center lg:text-left">{item.label}</p>
+                </div>
+              )
+            })}
           </div>
-          <div className="pointer-events-none absolute -top-1 right-1 z-10 hidden h-full w-full bg-[linear-gradient(to_right,hsl(var(--muted-foreground))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted-foreground))_1px,transparent_1px)] [mask-image:linear-gradient(to_bottom_right,#000,transparent,transparent)] bg-[size:80px_80px] opacity-15 md:block"></div>
         </div>
-      </div>
-    </section>
+
+        {/* fundo com as bolitas */}
+        <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.20]"
+          style={{ backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`, backgroundSize: '20px 20px' }}>
+        </div>
+      </section>
+
+      {/* Destaque */}
+      <section className="grid gap-10 lg:grid-cols-2 items-center">
+        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted">
+          <img src={secondaryImage.src} alt={secondaryImage.alt} className="object-cover w-full h-full"/>
+        </div>
+
+        {/* Card de Destaque */}
+        <div className="order-1 lg:order-2 flex flex-col justify-center gap-6 rounded-xl bg-muted/50 p-8 lg:p-10 border shadow-sm">
+          <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+            <breakout.icon className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="mb-2 text-2xl font-semibold tracking-tight">{breakout.title}</h3>
+            <p className="text-muted-foreground leading-relaxed">{breakout.description}</p>
+          </div>
+          <Button className="w-fit gap-2" asChild>
+            <a href={breakout.buttonUrl}>
+              {breakout.buttonText}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
+      </section>
+
+      {/* Logos */}
+      <section className="flex flex-col items-center text-center border-t pt-16">
+        <p className="text-sm font-medium text-muted-foreground mb-8 uppercase tracking-widest">
+          {companiesTitle}
+        </p>
+        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8">
+          {companies.map((company, idx) => (
+            <img key={company.src + idx} src={company.src} alt={company.alt} className="h-8 w-auto object-contain filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer"/>
+          ))}
+        </div>
+      </section>
+
+    </main>
   );
 };
 

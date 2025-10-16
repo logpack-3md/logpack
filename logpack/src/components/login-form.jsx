@@ -1,64 +1,75 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-export function LoginForm({
-  className,
-  ...props
-}) {
+export function LoginForm({ className, ...props }) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Bem vindo</CardTitle>
-          <CardDescription>
-            Faça login com a sua conta empresarial.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input id="email" type="email" placeholder="usuario@gmail.com" required />
-              </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input id="password" type="password" placeholder="••••••••" required />
-              </Field>
-              <Field>
-                <Button type="submit">Login</Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </FieldDescription>
-    </div>
+    <Card className={cn("w-full max-w-sm", className)} {...props}>
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-bold tracking-tight">
+          Bem-vindo de volta!
+        </CardTitle>
+        <CardDescription>
+          Faça login com a sua conta empresarial para continuar.
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="grid gap-6">
+          {/* Formulário de Email e Senha */}
+          <form className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="nome@empresa.com"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Senha</Label>
+              
+              </div>
+              <Input id="password" type="password" placeholder="••••••••" required />
+            </div>
+            <Button type="submit" className="w-full font-semibold">
+              Entrar
+            </Button>
+          </form>    
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex flex-col text-center text-sm text-muted-foreground gap-4">
+
+        
+        <p> 
+          Não tem uma conta?
+          {" "}
+          <a href="#" className="font-medium underline-offset-4 hover:text-primary hover:underline"> Cadastre-se </a>
+        </p>
+
+
+        <p className="px-6 text-xs">Ao continuar, você concorda com nossos
+          {" "}
+          <a href="#" className="underline hover:text-primary"> Termos de Serviço </a>
+          {" "}
+          e
+          {" "}
+          <a href="#" className="underline hover:text-primary"> Política de Privacidade </a>
+          .
+        </p>
+      </CardFooter>
+    </Card>
   );
 }

@@ -6,7 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-background2: var(--background2);
-  --color-background-button: var(--background-button); /* my color */
+  --color-background-button: var(--background-button);
+  /* my color */
   --color-foreground: var(--foreground);
   --font-sans: Inter, sans-serif;
   --font-mono: Fira Code, monospace;
@@ -37,8 +38,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover); 
-  --color-popover-header: var(--popover-header); /* my color */
+  --color-popover: var(--popover);
+  --color-popover-header: var(--popover-header);  /* my color */
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
@@ -70,13 +71,15 @@
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-header-color1: var(--header-color1);
+  --color-header-color2: var(--header-color2);
 }
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.9891 0.0034 67.7840);
+  --background: oklch(91.887% 0.0001 271.152);
   --background2: #dfdfdf;
-  --background-button: oklch(#e6c4ad); /* my color */
+  --background-button: oklch(#e6c4ad);  /* my color */
   --foreground: oklch(0.2161 0.0061 56.0434);
   --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.2161 0.0061 56.0434);
@@ -92,7 +95,7 @@
   --accent: oklch(0.9568 0.0310 79.9327);
   --accent-foreground: oklch(0.4762 0.1034 61.9071);
   --destructive: oklch(0.5771 0.2152 27.3250);
-  --border: #999999; /* my color */
+  --border: oklch(0 0 0 / 0.1);
   --border2: oklch(0.9232 0.0026 48.7171); /* Color antiga */
   --border-header: #b49580;
   --input: oklch(0.9699 0.0013 106.4238);
@@ -131,16 +134,16 @@
   --shadow-xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
   --shadow-2xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.13);
   --tracking-normal: 0rem;
+  --header-color1: oklch(1 1 1 / 0.6);
+  --header-color2: oklch(1 1 1 / 0.3);
 }
 
 .dark {
-  --background: oklch(0.2161 0.0061 56.0434);
-  --background-button: oklch(#e6c4ad); /* my color */
+  --background: oklch(26.285% 0.0058 55.964);
   --foreground: oklch(0.9848 0.0013 106.4233);
   --card: oklch(0.2685 0.0063 34.2976);
   --card-foreground: oklch(0.9848 0.0013 106.4233);
   --popover: oklch(0.2685 0.0063 34.2976);
-  --popover-header: #1d1d1d; /* my color */
   --popover-foreground: oklch(0.9848 0.0013 106.4233);
   --primary: oklch(0.6594 0.1133 54.7928);
   --primary-foreground: oklch(0.2161 0.0061 56.0434);
@@ -148,7 +151,7 @@
   --secondary-foreground: oklch(0.9848 0.0013 106.4233);
   --muted: oklch(0.3741 0.0087 67.5582);
   --muted-foreground: oklch(0.7161 0.0091 56.2590);
-  --accent: #6b5240; /* modifiquei: oklch(0.4444 0.0096 73.6390)*/
+  --accent: oklch(0.4444 0.0096 73.6390);
   --accent-foreground: oklch(0.9848 0.0013 106.4233);
   --destructive: oklch(0.4437 0.1613 26.8994);
   --border: oklch(0.3741 0.0087 67.5582);
@@ -188,12 +191,15 @@
   --shadow-lg: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.25);
+  --header-color1: oklch(from var(--background) l c h / 0.7);
+  --header-color2: oklch(from var(--background) l c h / 0.4);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
