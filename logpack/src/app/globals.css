@@ -84,7 +84,8 @@
   --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.2161 0.0061 56.0434);
   --popover: oklch(1.0000 0 0);
-  --popover-header: #dbdbdb; /* my color */
+  --popover-header: #dbdbdb;
+  /* my color */
   --popover-foreground: oklch(0.2161 0.0061 56.0434);
   --primary: oklch(0.6278 0.1129 53.5290);
   --primary-foreground: oklch(1.0000 0 0);
