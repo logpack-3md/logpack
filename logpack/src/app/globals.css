@@ -39,8 +39,7 @@
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
-  --color-popover-header: var(--popover-header);
-  /* my color */
+  --color-popover-header: var(--popover-header);  /* my color */
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
@@ -80,8 +79,7 @@
   --radius: 0.5rem;
   --background: oklch(91.887% 0.0001 271.152);
   --background2: #dfdfdf;
-  --background-button: oklch(#e6c4ad);
-  /* my color */
+  --background-button: oklch(#e6c4ad);  /* my color */
   --foreground: oklch(0.2161 0.0061 56.0434);
   --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.2161 0.0061 56.0434);
@@ -98,10 +96,8 @@
   --accent: oklch(0.9568 0.0310 79.9327);
   --accent-foreground: oklch(0.4762 0.1034 61.9071);
   --destructive: oklch(0.5771 0.2152 27.3250);
-  --border: #999999;
-  /* my color */
-  --border2: oklch(0.9232 0.0026 48.7171);
-  /* Color antiga */
+  --border: oklch(0 0 0 / 0.1);
+  --border2: oklch(0.9232 0.0026 48.7171); /* Color antiga */
   --border-header: #b49580;
   --input: oklch(0.9699 0.0013 106.4238);
   --ring: oklch(0.6278 0.1129 53.5290);
@@ -139,8 +135,8 @@
   --shadow-xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
   --shadow-2xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.13);
   --tracking-normal: 0rem;
-  --header-color1: #a7a7a7d5;
-  --header-color2: #6d6d6dd5;
+  --header-color1: oklch(1 1 1 / 0.6);
+  --header-color2: oklch(1 1 1 / 0.3);
 }
 
 .dark {
@@ -196,8 +192,8 @@
   --shadow-lg: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.25);
-  --header-color1: #9c9c9cd5;
-  --header-color2: #494949d5;
+  --header-color1: oklch(from var(--background) l c h / 0.7);
+  --header-color2: oklch(from var(--background) l c h / 0.4);
 }
 
 @layer base {
