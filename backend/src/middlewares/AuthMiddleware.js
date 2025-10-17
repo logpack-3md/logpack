@@ -17,11 +17,19 @@ class AuthMiddleware {
             next()
         } catch (error) {
             if (error.name === 'TokenExpiredError') {
-                return res.status(403).json({ message: "Não autorizado: Token expirado"})
+                return res.status(403).json({ message: "Não autorizado: Token expirado" })
             }
-            res.status(403).json({message: 'Não autorizado: Token inválido.'})
+            res.status(403).json({ message: 'Não autorizado: Token inválido.' })
         }
     }
+
+    async isAdmin(req, res, next) {
+        if (!req.user || req.user.role !== 'admin') {
+            res.status(403).json({ message: "Acesso proibido: Esta ação requer permissão do administrador."})
+        }
+        next()
+    }
+
 }
 
 export default new AuthMiddleware
