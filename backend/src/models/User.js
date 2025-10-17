@@ -1,6 +1,8 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../database/sequelize.js';
 import bcrypt from 'bcryptjs';
+import validateCpf from 'validar-cpf'
+import z from 'zod'
 
 class User extends Model {
     validPassword(password) {
@@ -17,6 +19,20 @@ User.init({
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
+    },
+
+    cpf: {
+        type: DataTypes.STRING(),
+        unique: true,
+        allowNull: false,
+        validate: {
+            isValidCpf(value) {
+                if (!validateCpf(value)) {
+                    throw new Error("Formato ou dígitos verificadores de CPF inválidos")
+                }
+            },
+            len: [11, 14]
+        }
     },
 
     name: {
@@ -39,8 +55,14 @@ User.init({
         allowNull: false,
     },
 
-    func: {
-        type: DataTypes.ENUM('user', 'admin', 'buyer'),
+    role: {
+        type: DataTypes.ENUM('employee', 'admin', 'buyer'),
+        allowNull: false
+    },
+
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo', 'pendente'),
+        defaultValue: 'pendente',
         allowNull: false
     }
 }, {

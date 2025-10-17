@@ -29,12 +29,12 @@ class AuthController {
                 return res.status(401).json({ message: "Senha incorreta." })
             }
 
-            const token = AuthController.gerarToken({ id: user.id, func: user.func });
-            res.status(200).json({message: "Login realizado com sucesso!", token, func: user.func})
+            const token = AuthController.gerarToken({ id: user.id, role: user.role });
+            res.status(200).json({ message: "Login realizado com sucesso!", token, role: user.role })
             return;
         } catch (error) {
             console.error("Erro ao fazer login: ", error)
-            res.status(500).json({error: "Ocorreu um erro interno no servidor."})
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
         }
     }
 }
