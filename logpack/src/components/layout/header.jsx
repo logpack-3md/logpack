@@ -34,7 +34,6 @@ import { Menu } from "lucide-react";
 import { SwitchTheme } from "../SwitchThemes";
 import LogoSite from "@/components/my/logo";
 
-
 export default function Header() {
   return (
     <header className="w-full border-b bg-card sticky top-0 z-50 shadow-2xl">
@@ -42,22 +41,16 @@ export default function Header() {
       <div className="flex items-center justify-between w-full max-w-8xl mx-auto p-2">
 
         <div className="flex items-center gap-4 lg:gap-8">
-
           {/* Logo */}
           <div className="flex items-center gap-1">
-
             <LogoSite />
-            
             {/* px-2 apos isso é o Gradient */}
             <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
+
                         hover:from-[#8f5f3b] hover:to-[#e0a273]" >
               LogPack
             </h2>
           </div>
-
-
-
-
 
           {/* NavBar */}
           <NavigationMenu viewport={false} className="hidden lg:block">
@@ -170,12 +163,8 @@ export default function Header() {
               </DrawerContent>
             </Drawer>
           </div>
-
-
         </div>
-
       </div>
     </header>
   )
 }
-
