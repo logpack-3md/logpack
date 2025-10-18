@@ -1,4 +1,3 @@
-import { where } from "sequelize";
 import User from "../models/User.js";
 import validarCpf from "validar-cpf";
 import z from "zod";
@@ -16,10 +15,10 @@ class UserController {
 
     static updateSchema = z.object({
         name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-        // cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
-        email: z.email({ message: "Digite um email válido." }),
         password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-        role: z.string().min(1, { message: "A função é obrigatória." })
+        email: z.email({ message: "Digite um email válido." }),
+        // cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
+        // role: z.string().min(1, { message: "A função é obrigatória." })
     }).partial();
 
     static async getUsers(req, res) {
@@ -34,7 +33,6 @@ class UserController {
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar usuários." })
             console.error("Erro ao listar usuários: ", error)
-            return;
         }
     }
 
@@ -112,42 +110,23 @@ class UserController {
         }
     }
 
-    // FUNÇÕES DE ADMIN ⇓⇓
-
-    static async activeUser(req, res) {
+    static async deleteUser(req, res) {
         const { id } = req.params
 
-        const statusSchema = z.object({
-            status: z.enum(['ativo', 'inativo'], {
-                message: "Status deve ser 'ativo' ou 'inativo'."
-            })
-        })
-
         try {
-            const { status } = statusSchema.parse(req.body)
-
-            const [rowsAffected] = await User.update({ status: status }, {
+            const rowsAffected = await User.destroy({
                 where: { id: id }
             })
 
             if (rowsAffected === 0) {
-                const userExists = await User.findByPk(id);
-                if (!userExists) {
                     return res.status(404).json({ message: "Usuário não encontrado." })
-                }
             }
 
-            res.status(200).json({ message: `Status alterado para ${status}` })
+            return res.status(200).json({ message: "Usuário excluído com sucesso." })
+
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "O status deve ser 'ativo' ou 'inativo'.",
-                    issues: error.issues
-                })
-            }
-
-            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
-            console.error("Erro ao atualizar status", error);
+            console.error("Erro ao excluir usuário: ", error)
+            return res.status(500).json({ error: "Erro ao excluir usuário." })
         }
     }
 }

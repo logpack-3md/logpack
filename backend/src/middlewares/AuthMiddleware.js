@@ -30,6 +30,13 @@ class AuthMiddleware {
         next()
     }
 
+    async isActive(req, res, next) {
+        if (req.user.status === 'inativo' || req.user.status === 'pendente') {
+            return res.status(403).json({ message: "Acesso proibido: Sua conta precisa ser ativada pelo administrador."})
+        }
+        next()
+    }
+
 }
 
 export default new AuthMiddleware

@@ -8,12 +8,18 @@ const router = express.Router()
 router.get('/', UserController.getUsers)
 router.get('/:id', UserController.getUser)
 router.post('/', UserController.createUser)
-router.put('/:id', UserController.updateUser)
 
-router.patch('/status/:id', 
+router.put('/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActive,
+    UserController.updateUser
+)
+
+router.delete('/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isAdmin,
-    UserController.activeUser
+    AuthMiddleware.isActive,
+    UserController.deleteUser
 )
 
 router.post('/login', AuthController.login, (req, res) => {

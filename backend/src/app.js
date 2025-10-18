@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express';
 import cors from 'cors'
 import userRoute from './routes/userRoute.js';
+import admRoute from './routes/admRoute.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/users', userRoute)
+app.use('/admin', admRoute)
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`)
