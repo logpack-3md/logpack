@@ -5,8 +5,6 @@ import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 
 const router = express.Router()
 
-router.get('/', UserController.getUsers)
-router.get('/:id', UserController.getUser)
 router.post('/', UserController.createUser)
 
 router.put('/:id', 
