@@ -38,6 +38,79 @@ class AdminController {
             console.error("Erro ao atualizar status", error);
         }
     }
+
+    static async getUsers(req, res) {
+
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+
+        const offset = (page - 1) * limit
+
+        try {
+            const result = await User.findAndCountAll({
+                limit: limit,
+                offset: offset,
+                order: [['name', 'ASC']],
+
+                attributes: [
+                    'id',
+                    'name',
+                    'email',
+                    'role',
+                    'status'
+                ]
+            })
+
+            const users = result.rows;
+            const totalItems = result.count
+            const totalPages = Math.ceil(totalItems / limit)
+
+            if (users.length === 0 && page > 1) {
+                return res.status(404).json({ message: "Página não encontrada ou vazia" })
+            }
+
+            if (totalItems === 0) {
+                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+            }
+
+            res.status(200).json({
+                data: users,
+                meta: {
+                    totalItems: totalItems,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    itemsPerPage: limit
+                }
+            });
+
+        } catch (error) {
+            res.status(500).json({ error: "Erro ao listar usuários." })
+            console.error("Erro ao listar usuários: ", error)
+        }
+    }
+
+    static async getUser(req, res) {
+        try {
+            const { id } = req.params;
+
+            const user = await User.findByPk(id, {
+                attributes: [
+                    'id',
+                    'name',
+                    'email',
+                    'role',
+                    'status'
+                ]
+            })
+            if (!user) {
+                return res.status(404).json({ message: "Usuário não encontrado." })
+            };
+            res.status(200).json(user)
+        } catch (error) {
+            res.status(500).json({ error: "Erro ao encontrar usuário." })
+            console.error("Erro ao encontrar usuário: ", error)
+        }
+    }
 }
 
 export default AdminController;

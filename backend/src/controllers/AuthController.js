@@ -29,7 +29,7 @@ class AuthController {
                 return res.status(401).json({ message: "Senha incorreta." })
             }
 
-            const token = AuthController.gerarToken({ id: user.id, role: user.role });
+            const token = AuthController.gerarToken({ id: user.id, role: user.role, status: user.status });
             res.status(200).json({ message: "Login realizado com sucesso!", token, role: user.role })
             return;
         } catch (error) {
