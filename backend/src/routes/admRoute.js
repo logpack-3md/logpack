@@ -5,16 +5,38 @@ import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 
 const router = express.Router()
 
+// função temporaria apenas para criar o primeiro admin 'ativo' (seed)
 router.post('/', FirstAdminController.createInitialAdmin)
 
-router.get('/', AdminController.getUsers)
-router.get('/:id', AdminController.getUser)
+// paginação de usuarios
+router.get('/', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActive,
+    AuthMiddleware.isAdmin,
+    AdminController.getUsers
+)
 
+// buscar usuario
+router.get('/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActive,
+    AuthMiddleware.isAdmin,
+    AdminController.getUser
+)
 
+// editar nome ou cargo de usuario
+router.put('/manage/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActive,
+    AuthMiddleware.isAdmin,
+    AdminController.updateUser
+)
+
+// editar status de usuario
 router.patch('/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isAdmin,
-    AdminController.activeUser
+    AdminController.setStatusUser
 )
 
 export default router;

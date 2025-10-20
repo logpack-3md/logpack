@@ -23,20 +23,19 @@ class AuthMiddleware {
         }
     }
 
-    async isAdmin(req, res, next) {
-        if (!req.user || req.user.role !== 'admin') {
-            res.status(403).json({ message: "Acesso proibido: Esta ação requer permissão do administrador."})
-        }
-        next()
-    }
-
     async isActive(req, res, next) {
         if (req.user.status === 'inativo' || req.user.status === 'pendente') {
-            return res.status(403).json({ message: "Acesso proibido: Sua conta precisa ser ativada pelo administrador."})
+            return res.status(403).json({ message: "Acesso proibido: Sua conta precisa ser ativada por algum administrador." })
         }
         next()
     }
 
+    async isAdmin(req, res, next) {
+        if (!req.user || req.user.role !== 'admin') {
+            res.status(403).json({ message: "Acesso proibido: Esta ação requer permissão do administrador." })
+        }
+        next()
+    }
 }
 
 export default new AuthMiddleware
