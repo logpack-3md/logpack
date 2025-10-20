@@ -16,6 +16,10 @@ Insumos.init({
         allowNull: false,
     },
 
+    setor: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     description: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -32,18 +36,35 @@ Insumos.init({
 
     current_storage: {
         type: DataTypes.INTEGER,
-        defaultValue: null,
+        defaultValue: 0,
     },
 
     average_storage: {
         type: DataTypes.DECIMAL(10, 2),
-        defaultValue: null,
+        defaultValue: 0,
     },
 
     // max_storage: {
     //     type: DataTypes.INTEGER,
     //     defaultValue: ?
     // }
+
+    current_level_carga: { // esse vem do MQTT
+        type: DataTypes.DECIMAL(10,2),
+        allowNull: true,
+        defaultValue: 0
+    },
+
+    max_level_carga: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+
+    last_check: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW
+    },
 
     status: {
         type: DataTypes.ENUM,
@@ -59,6 +80,12 @@ Insumos.init({
     timestamps: true,
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
+
+    hooks: {
+        beforeUpdate: async (insumo) => {
+            insumo.last_check = new Date()
+        }
+    }
 })
 
 export default Insumos;
