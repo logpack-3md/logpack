@@ -2,7 +2,12 @@ import User from "../models/User.js"
 import z from "zod"
 
 class AdminController {
-    static async activeUser(req, res) {
+    static updateSchema = z.object({
+        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "Escolha entre 'employee', 'admin', 'buyer' ou 'manager'." })
+    }).partial();
+
+    static async setStatusUser(req, res) {
         const { id } = req.params
 
         const statusSchema = z.object({
@@ -109,6 +114,37 @@ class AdminController {
         } catch (error) {
             res.status(500).json({ error: "Erro ao encontrar usuário." })
             console.error("Erro ao encontrar usuário: ", error)
+        }
+    }
+
+    static async updateUser(req, res) {
+        const { id } = req.params;
+
+        try {
+            const validatedUpdate = AdminController.updateSchema.parse(req.body)
+
+            if (Object.keys(validatedUpdate).length === 0) {
+                return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização" })
+            }
+
+            const [rowsAffected] = await User.update(validatedUpdate, {
+                where: { id: id }
+            })
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Usuário não encontrado." })
+            }
+
+            return res.status(200).json({ message: "Usuário atualizado com sucesso." })
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de atualização inválidos",
+                    issues: error.issues
+                })
+            }
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
+            console.error("Erro ao atualizar usuário", error);
         }
     }
 }

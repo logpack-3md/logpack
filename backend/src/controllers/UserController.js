@@ -10,7 +10,7 @@ class UserController {
         cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
         email: z.email({ message: "Digite um email válido." }),
         password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-        role: z.string().min(1, { message: "A função é obrigatória." })
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
     });
 
     static updateSchema = z.object({
