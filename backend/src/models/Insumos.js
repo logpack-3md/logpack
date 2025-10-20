@@ -1,66 +1,65 @@
-import { Model } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
+import sequelize from '../database/sequelize.js';
 
-export default (sequelize, DataTypes) => {
-    class Insumos extends Model { }
+class Insumos extends Model { }
 
-    Insumos.init({
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true
-        },
+Insumos.init({
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
 
-        SKU: {
-            type: DataTypes.STRING,
-            unique: true,
-            allowNull: false,
-        },
+    SKU: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+    },
 
-        description: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
 
-        image: {
-            type: DataTypes.STRING,
-        },
+    image: {
+        type: DataTypes.STRING,
+    },
 
-        measure: {
-            type: DataTypes.ENUM,
-            values: ['KG', 'G', 'ML', 'L']
-        },
+    measure: {
+        type: DataTypes.ENUM,
+        values: ['KG', 'G', 'ML', 'L']
+    },
 
-        current_storage: {
-            type: DataTypes.INTEGER,
-            defaultValue: null,
-        },
+    current_storage: {
+        type: DataTypes.INTEGER,
+        defaultValue: null,
+    },
 
-        average_storage: {
-            type: DataTypes.DECIMAL(10, 2),
-            defaultValue: null,
-        },
+    average_storage: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: null,
+    },
 
-        // max_storage: {
-        //     type: DataTypes.INTEGER,
-        //     defaultValue: ?
-        // }
+    // max_storage: {
+    //     type: DataTypes.INTEGER,
+    //     defaultValue: ?
+    // }
 
-        status: {
-            type: DataTypes.ENUM,
-            values: ['ativo', 'inativo'],
-            defaultValue: 'ativo',
-            allowNull: false,
-        },
+    status: {
+        type: DataTypes.ENUM,
+        values: ['ativo', 'inativo'],
+        defaultValue: 'ativo',
+        allowNull: false,
+    },
 
-    }, {
-        sequelize,
-        modelName: 'Insumos',
-        tableName: 'insumos',
-        timestamps: true,
-        createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
-    })
+}, {
+    sequelize,
+    modelName: 'Insumos',
+    tableName: 'insumos',
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+})
 
-    return Insumos;
-}
+export default Insumos;
 

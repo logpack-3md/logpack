@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors'
 import userRoute from './routes/userRoute.js';
 import admRoute from './routes/admRoute.js';
-import db, { initializeDatabase } from './database/sequelize.js'
+import { initializeDatabase } from './database/sequelize.js'
 
 const app = express();
 
