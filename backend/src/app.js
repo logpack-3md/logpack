@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors'
 import userRoute from './routes/userRoute.js';
 import admRoute from './routes/admRoute.js';
+import managerRoute from './routes/managerRoute.js';
 import { initializeDatabase } from './database/sequelize.js'
 
 const app = express();
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 
 app.use('/users', userRoute)
 app.use('/admin', admRoute)
+app.use('/manager', managerRoute)
 
 async function startServer() {
     try {

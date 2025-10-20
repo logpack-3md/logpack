@@ -1,0 +1,36 @@
+import Insumos from '../models/Insumos.js'
+import z from 'zod'
+
+class ManagerController {
+    static createSchema = z.object({
+        SKU: z.string().trim().min(3, { message: "O SKU deve conter no mínimo três caracteres." }),
+        setor: z.string().trim().min(3, { message: "O setor deve conter no mínimo três caracteres." }),
+        description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
+        current_storage: z.number().int("O estoque atual deve ser um número inteiro.").min(0).optional(),
+        max_level_carga: z.number().int("O nível máximo deve ser um número inteiro.").min(0).optional(),
+        status: z.enum(['ativo', 'inativo'], { message: "O status deve ser 'ativo' ou 'inativo'." }).optional(),
+    });
+
+    static async createItem(req, res) {
+        try {
+            const validatedSchema = ManagerController.createSchema.parse(req.body)
+            const insumo = await Insumos.create(validatedSchema)
+
+            return res.status(201).json(insumo)
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de entrada inválidos.",
+                    issues: error.issues
+                })
+            }
+
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
+            console.error("Erro ao criar usuário", error);
+        }
+    }
+}
+
+export default ManagerController;
