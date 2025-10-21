@@ -1,6 +1,7 @@
 import express from 'express'
 import ManagerController from "../controllers/ManagerController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
+import { uploadSingleImage } from '../middlewares/upload.js';
 
 const router = express.Router()
 
@@ -8,6 +9,7 @@ router.post('/',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActive,
     AuthMiddleware.isManager,
+    uploadSingleImage,
     ManagerController.createItem
 )
 
