@@ -13,5 +13,13 @@ router.post('/',
     ManagerController.createItem
 )
 
+router.put('/:id',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActive,
+    AuthMiddleware.isManager,
+    uploadSingleImage,
+    ManagerController.updateItem
+)
+
 export default router
 
