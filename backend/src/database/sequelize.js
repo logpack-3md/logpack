@@ -1,21 +1,12 @@
 import dotenv from 'dotenv'
 dotenv.config()
-import UserDefiner from '../models/User.js';
-import InsumosDefiner from '../models/Insumos.js';
-import Sequelize, { DataTypes } from 'sequelize';
+import { Sequelize } from 'sequelize';
+
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
     host: 'localhost',
     dialect: 'mysql'
 })
-
-const db = {};
-
-db.User = UserDefiner(sequelize, DataTypes)
-db.Insumos = InsumosDefiner(sequelize, DataTypes)
-
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
 
 export async function initializeDatabase() {
     try {
@@ -29,4 +20,4 @@ export async function initializeDatabase() {
     }
 }
 
-export default db;
+export default sequelize;

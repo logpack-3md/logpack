@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import User from "../models/User.js";
 
 class FirstAdminController {
     static async createInitialAdmin(req, res) {
