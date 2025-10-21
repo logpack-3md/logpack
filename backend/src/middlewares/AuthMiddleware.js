@@ -38,7 +38,7 @@ class AuthMiddleware {
     }
     
     async isManager(req, res, next) {
-        if (!req.user || req.user.role !== 'Manager') {
+        if (!req.user || req.user.role !== 'manager') {
             res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente." })
         }
         next()

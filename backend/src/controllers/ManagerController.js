@@ -1,5 +1,6 @@
 import Insumos from '../models/Insumos.js'
 import z from 'zod'
+import { put } from '@vercel/blob'
 
 class ManagerController {
     static createSchema = z.object({
@@ -13,9 +14,31 @@ class ManagerController {
     });
 
     static async createItem(req, res) {
+        const file = req.file;
+        let imageUrl = null;
+
         try {
             const validatedSchema = ManagerController.createSchema.parse(req.body)
-            const insumo = await Insumos.create(validatedSchema)
+
+            if (file) {
+                const filename = `${validatedSchema.SKU}_${Date.now()}`
+
+                const blob = await put(
+                    filename,
+                    file.buffer,
+                    {
+                        access: 'public',
+                        contentType: file.mimetype,
+                    }
+                )
+
+                imageUrl = blob.url
+            }
+
+            const insumo = await Insumos.create({
+                ...validatedSchema,
+                image: imageUrl,
+            })
 
             return res.status(201).json(insumo)
 
