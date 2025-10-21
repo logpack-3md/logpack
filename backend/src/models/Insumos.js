@@ -10,6 +10,11 @@ Insumos.init({
         primaryKey: true
     },
 
+    name: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+
     SKU: {
         type: DataTypes.STRING,
         unique: true,
@@ -20,7 +25,7 @@ Insumos.init({
         type: DataTypes.STRING,
         allowNull: false
     },
-    
+
     description: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -51,7 +56,7 @@ Insumos.init({
     // }
 
     current_level_carga: { // esse vem do MQTT
-        type: DataTypes.DECIMAL(10,2),
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
         defaultValue: 0
     },
