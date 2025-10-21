@@ -4,7 +4,7 @@ import cors from 'cors'
 import userRoute from './routes/userRoute.js';
 import admRoute from './routes/admRoute.js';
 import managerRoute from './routes/managerRoute.js';
-import { initializeDatabase } from './database/sequelize.js'
+import insumoRoute from './routes/insumoRoute.js';
 
 const app = express();
 
@@ -24,19 +24,9 @@ app.get('/', (req, res) => {
 app.use('/users', userRoute)
 app.use('/admin', admRoute)
 app.use('/manager', managerRoute)
+app.use('/insumos', insumoRoute)
 
-async function startServer() {
-    try {
-        await initializeDatabase();
 
-        app.listen(port, () => {
-            console.log(`Servidor rodando na porta ${port}`);
-        });
-
-    } catch (error) {
-        console.error("Não foi possível iniciar o servidor devido ao erro no DB:", error);
-        process.exit(1);
-    }
-}
-
-startServer();
+app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
+});

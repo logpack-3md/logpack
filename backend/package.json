@@ -4,8 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --watch ./src/app.js"
+    "start": "node --watch ./src/app.js",
+    "db:sync": "node ./src/database/sync.js"
   },
   "keywords": [],
   "author": "",
