@@ -1,4 +1,6 @@
 import sequelize from "./sequelize.js";
+import User from '../models/User.js';
+import Insumos from '../models/Insumos.js';
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');

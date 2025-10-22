@@ -30,7 +30,7 @@ class ManagerController {
             const validatedSchema = ManagerController.createSchema.parse(req.body)
 
             if (file) {
-                const filename = `${Date.now()}_${filename.originalname}`
+                const filename = `${Date.now()}_${file.originalname}`
 
                 const blob = await put(
                     filename,
@@ -60,7 +60,7 @@ class ManagerController {
             }
 
             res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
-            console.error("Erro ao criar usuário", error);
+            console.error("Erro ao criar insumo", error);
         }
     }
 
