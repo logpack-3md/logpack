@@ -9,15 +9,8 @@ router.post('/', UserController.createUser)
 
 router.put('/:id', 
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     UserController.updateUser
-)
-
-router.delete('/:id', 
-    AuthMiddleware.verifyToken,
-    AuthMiddleware.isAdmin,
-    AuthMiddleware.isActive,
-    UserController.deleteUser
 )
 
 router.post('/login', AuthController.login, (req, res) => {
