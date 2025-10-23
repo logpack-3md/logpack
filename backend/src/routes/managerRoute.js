@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.post('/', 
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
     uploadSingleImage,
     ManagerController.createItem
@@ -15,10 +15,17 @@ router.post('/',
 
 router.put('/:id',
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
     uploadSingleImage,
     ManagerController.updateItem
+)
+
+router.put('/status/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.setStatusInsumo
 )
 
 export default router

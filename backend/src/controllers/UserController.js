@@ -88,26 +88,6 @@ class UserController {
             console.error("Erro ao atualizar usuário", error);
         }
     }
-
-    static async deleteUser(req, res) { // em breve será relacionado aos insumos.
-        const { id } = req.params
-
-        try {
-            const rowsAffected = await User.destroy({
-                where: { id: id }
-            })
-
-            if (rowsAffected === 0) {
-                return res.status(404).json({ message: "Usuário não encontrado." })
-            }
-
-            return res.status(200).json({ message: "Usuário excluído com sucesso." })
-
-        } catch (error) {
-            console.error("Erro ao excluir usuário: ", error)
-            return res.status(500).json({ error: "Erro ao excluir usuário." })
-        }
-    }
 }
 
 export default UserController;

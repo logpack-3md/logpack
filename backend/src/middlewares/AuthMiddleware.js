@@ -23,7 +23,7 @@ class AuthMiddleware {
         }
     }
 
-    async isActive(req, res, next) {
+    async isActiveUser(req, res, next) {
         if (req.user.status === 'inativo' || req.user.status === 'pendente') {
             return res.status(403).json({ message: "Acesso proibido: Sua conta precisa ser ativada por algum administrador." })
         }

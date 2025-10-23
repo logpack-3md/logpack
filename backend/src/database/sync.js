@@ -1,4 +1,17 @@
 import sequelize from "./sequelize.js";
+import User from '../models/User.js';
+import Insumos from '../models/Insumos.js';
+import Setor from "../models/Setor.js";
+
+Setor.hasMany(Insumos, {
+    foreignKey: 'setorName',
+    as: 'insumos',
+})
+
+Insumos.belongsTo(Setor, {
+    foreignKey: 'setorName',
+    as: 'setor'
+})  
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');
