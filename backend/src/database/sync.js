@@ -4,12 +4,12 @@ import Insumos from '../models/Insumos.js';
 import Setor from "../models/Setor.js";
 
 Setor.hasMany(Insumos, {
-    foreignKey: 'setorId',
+    foreignKey: 'setorName',
     as: 'insumos',
 })
 
 Insumos.belongsTo(Setor, {
-    foreignKey: 'setorId',
+    foreignKey: 'setorName',
     as: 'setor'
 })  
 

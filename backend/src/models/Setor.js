@@ -1,4 +1,4 @@
-import { Model, DataTypes, UUID, UUIDV4 } from 'sequelize'
+import { Model, DataTypes } from 'sequelize'
 import sequelize from '../database/sequelize.js'
 
 class Setor extends Model {}
