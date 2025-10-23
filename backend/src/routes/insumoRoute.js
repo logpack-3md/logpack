@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.get('/', 
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     InsumosController.getItems
 )
 
