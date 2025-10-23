@@ -28,7 +28,6 @@ export default function LoginPage() {
           LogPack
         </a>
 
-
         <LoginForm />
       </div>
     </div>

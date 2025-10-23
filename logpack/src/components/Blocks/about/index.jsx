@@ -1,4 +1,5 @@
-import IconSite from "@/components/my/icons";
+import IconSiteSobre from "@/components/my/icon-Sobre";
+import IconSiteTecnologia from "@/components/my/icon-tecnologia";
 import { Button } from "@/components/ui/button";
 import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
@@ -58,8 +59,10 @@ const About = ({
 
   return (
     <main className="container mx-auto px-4 py-16 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-32">
+
       {/* Introdução */}
       <section className="grid gap-10 lg:grid-cols-2 items-center">
+
         <div className="flex flex-col gap-6">
           <div className="space-y-4">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl lg:text-6xl">
@@ -70,8 +73,10 @@ const About = ({
             </p>
           </div>
         </div>
+
+
         <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted justify-center flex">
-          <IconSite className="object-cover w-full h-full items-center justify-center" />
+          <IconSiteSobre className="object-cover w-full h-full items-center justify-center" />
         </div>
 
       </section>
@@ -118,7 +123,7 @@ const About = ({
       {/* Destaque */}
       <section className="grid gap-10 lg:grid-cols-2 items-center">
         <div className="relative aspect-video overflow-hidden rounded-xl shadow-xl border bg-muted flex justify-center">
-          <IconSite className="object-cover w-full h-full" />
+          <IconSiteTecnologia className="object-cover w-full h-full" />
         </div>
         
         {/* Card de Destaque */}

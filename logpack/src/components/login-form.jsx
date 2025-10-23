@@ -25,14 +25,14 @@ export function LoginForm({ className, ...props }) {
       
       <CardContent>
         <div className="grid gap-6">
-          {/* Formulário de Email e Senha */}
+          {/* Formulário de CPF e Senha */}
           <form className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="cpf">CPF</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="nome@empresa.com"
+                id="cpf"
+                type="cpf"
+                placeholder="000.000.000-00"
                 required
               />
             </div>
