@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react"
-import Logo from "@/components/my/logo";
-import { LoginForm } from "@/components/login-form"
+import Logo from "@/components/icons/logo";
+import { LoginForm } from "@/components/ui/login-form"
 import { imageOptimizer } from "next/dist/server/image-optimizer";
 import {
   Avatar,

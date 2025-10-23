@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { SwitchTheme } from "../SwitchThemes";
-import LogoSite from "@/components/my/logo";
+import LogoSite from "@/components/icons/logo";
 
 export default function Header() {
   return (

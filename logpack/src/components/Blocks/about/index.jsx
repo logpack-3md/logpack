@@ -1,5 +1,5 @@
-import IconSiteSobre from "@/components/my/icon-Sobre";
-import IconSiteTecnologia from "@/components/my/icon-tecnologia";
+import IconSiteSobre from "@/components/icons/icons-Sobre";
+import IconSiteTecnologia from "@/components/icons/icons-tecnologia";
 import { Button } from "@/components/ui/button";
 import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
