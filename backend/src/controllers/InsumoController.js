@@ -1,7 +1,29 @@
-import Insumos from "../models/Insumos.js";
+import Insumos from '../models/Insumos.js'
+import z from 'zod'
+import { put, del } from '@vercel/blob'
+import Setor from '../models/Setor.js';
 
 class InsumosController {
-      static async getItems(req, res) {
+    static createSchema = z.object({
+        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
+        SKU: z.string().trim().min(3, { message: "O SKU deve conter no mínimo três caracteres." }),
+        setorName: z.string().min(2, { message: "O nome do setor deve ser válido." }),
+        description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
+        current_storage: z.number().int("O estoque atual deve ser um número inteiro.").min(0).optional(),
+        max_level_carga: z.number().int("O nível máximo deve ser um número inteiro.").min(0).optional(),
+        status: z.enum(['ativo', 'inativo'], { message: "O status deve ser 'ativo' ou 'inativo'." }).optional(),
+    });
+
+    static updateSchema = z.object({
+        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }).optional(),
+        SKU: z.string().trim().min(3, { message: "O SKU deve conter no mínimo três caracteres." }).optional(),
+        // setor: z.string().trim().min(3, { message: "O setor deve conter no mínimo três caracteres." }).optional(),
+        description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
+    });
+
+    static async getItems(req, res) {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
@@ -17,12 +39,12 @@ class InsumosController {
                     'id',
                     'name',
                     'sku',
-                    'setorId',
+                    'setorName',
                     'measure',
                     'image',
                     'description',
                     'current_storage',
-                    'max_level_carga',
+                    'max_level_carga',  
                     'status'
                 ]
             })
@@ -52,6 +74,152 @@ class InsumosController {
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar insumos." })
             console.error("Erro ao listar insumos: ", error)
+        }
+    }
+
+    static async createItem(req, res) {
+        const file = req.file;
+        let imageUrl = null;
+
+        try {
+            const validatedSchema = InsumosController.createSchema.parse(req.body)
+            const { setorName, ...insumoData } = validatedSchema;
+
+            const setor = await Setor.findOne({
+                where: { name: setorName },
+                attributes: ['id']
+            })
+
+            if (!setor) {
+                return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
+            }
+
+            const setorId = setor.id
+
+            if (file) {
+                const filename = `${Date.now()}_${file.originalname}`
+
+                const blob = await put(
+                    filename,
+                    file.buffer,
+                    {
+                        access: 'public',
+                        contentType: file.mimetype,
+                    }
+                )
+
+                imageUrl = blob.url
+            }
+
+            const insumo = await Insumos.create({
+                ...insumoData,
+                image: imageUrl,
+                setorName: setorName
+            })
+
+            return res.status(201).json(insumo)
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de entrada inválidos.",
+                    issues: error.issues
+                })
+            }
+
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
+            console.error("Erro ao criar insumo", error);
+        }
+    }
+
+    static async updateItem(req, res) {
+        const file = req.file;
+        let imageUrl = null;
+        const { id } = req.params
+
+        try {
+            const existingInsumo = await Insumos.findByPk(id);
+
+            if (!existingInsumo) {
+                return res.status(404).json({ message: "Insumo não encontrado." });
+            }
+
+            const insumoStatus = await Insumos.findOne({
+                where: {
+                    id: id,
+                    status: 'ativo'
+                },
+                attributes: ['id']
+            })
+
+            const isActive = !!insumoStatus
+
+            if (!isActive) {
+                return res.status(403).json({ message: "Acesso negado: O insumo deve estar 'ativo' para poder atualizá-lo." })
+            }
+
+            const oldImageUrl = existingInsumo.image;
+
+            const validatedUpdate = ManagerController.updateSchema.parse(req.body)
+
+            let updateData = { ...validatedUpdate }
+
+
+            if (file) {
+                const filename = `${Date.now()}_${file.originalname}`
+
+                const blob = await put(
+                    filename,
+                    file.buffer,
+                    {
+                        access: 'public',
+                        contentType: file.mimetype,
+                    }
+                )
+
+                imageUrl = blob.url
+                updateData.image = imageUrl
+
+                if (oldImageUrl) {
+                    try {
+                        await del(oldImageUrl);
+                        console.log(`Imagem antiga excluída do Blob: ${oldImageUrl}`);
+                    } catch (deleteError) {
+                        console.error(`Falha ao excluir imagem antiga do Blob (${oldImageUrl}):`, deleteError);
+                    }
+                }
+
+            }
+
+
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização." })
+            }
+
+            const [rowsAffected] = await Insumos.update(updateData, {
+                where: { id: id }
+            })
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            }
+
+            const updatedInsumo = await Insumos.findByPk(id);
+            res.status(200).json({
+                message: "Insumo atualizado com sucesso.",
+                insumo: updatedInsumo
+            });
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de atualização inválidos",
+                    issues: error.issues
+                })
+            }
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor" })
+            console.error("Erro ao atualizar insumo:", error)
         }
     }
 }

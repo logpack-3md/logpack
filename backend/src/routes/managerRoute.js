@@ -1,32 +1,49 @@
 import express from 'express'
 import ManagerController from "../controllers/ManagerController.js";
+import InsumosController from '../controllers/InsumoController.js';
+import SetorController from "../controllers/SetorController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 import { uploadSingleImage } from '../middlewares/upload.js';
 
 const router = express.Router()
 
-router.post('/', 
+router.post('/insumos', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
     uploadSingleImage,
-    ManagerController.createItem
+    AuthMiddleware.isActiveSector,
+    InsumosController.createItem
 )
 
-router.put('/:id',
+router.put('/insumos/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
     uploadSingleImage,
-    ManagerController.updateItem
+    InsumosController.updateItem
 )
 
-router.put('/status/:id', 
+router.put('/insumos/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
     ManagerController.setStatusInsumo
 )
+
+router.post('/setor',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    SetorController.createSetor
+)
+
+router.put('/setor/status/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.setStatusSetor
+) 
 
 export default router
 

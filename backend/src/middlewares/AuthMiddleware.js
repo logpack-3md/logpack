@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import Setor from '../models/Setor.js';
 
 class AuthMiddleware {
     async verifyToken(req, res, next) {
@@ -36,12 +37,35 @@ class AuthMiddleware {
         }
         next()
     }
-    
+
     async isManager(req, res, next) {
         if (!req.user || req.user.role !== 'manager') {
             res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente." })
         }
         next()
+    }
+
+    async isActiveSector(req, res, next) {
+        const setorName = req.body.setorName
+        try {
+            const setor = await Setor.findOne({
+                where: { name: setorName },
+                attributes: ['status']
+            })
+
+            if (!setor) {
+                return res.status(404).json({ message: `Setor ${setorName} não encontrado` })
+            }
+
+            if (setor.status !== 'ativo') {
+                return res.status(403).json({ message: `Acesso proibido: O setor '${setorName}' está ${setor.status}.` });
+            }
+
+            next()
+        } catch (error) {
+            console.error("Erro no middleware isActiveSector:", error);
+            return res.status(500).json({ message: "Erro interno do servidor ao verificar o setor." });
+        }
     }
 }
 

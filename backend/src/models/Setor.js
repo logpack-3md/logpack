@@ -9,15 +9,17 @@ Setor.init({
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-
+    
     name: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.STRING(6),
         allowNull: false,
     },
 
     status: {
         type: DataTypes.ENUM,
-        values: ['ativo', 'inativo']
+        values: ['ativo', 'inativo', 'pendente'],
+        defaultValue: 'pendente',
+        allowNull: false
     }
 }, {
     sequelize,

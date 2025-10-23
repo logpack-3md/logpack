@@ -21,13 +21,9 @@ Insumos.init({
         allowNull: false,
     },
 
-    setorId: {
+    setorName: {
         type: DataTypes.STRING,
         allowNull: false,
-        references: {
-            model: 'setor',
-            key: 'id'
-        }
     },
 
     description: {

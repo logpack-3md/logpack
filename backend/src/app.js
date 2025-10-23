@@ -5,6 +5,7 @@ import userRoute from './routes/userRoute.js';
 import admRoute from './routes/admRoute.js';
 import managerRoute from './routes/managerRoute.js';
 import insumoRoute from './routes/insumoRoute.js';
+import setorRoute from './routes/setorRoute.js';
 
 const app = express();
 
@@ -21,10 +22,11 @@ app.get('/', (req, res) => {
     res.status(200).json({ message: 'Servidor ligado' })
 })
 
-app.use('/users', userRoute)
-app.use('/admin', admRoute)
-app.use('/manager', managerRoute)
-app.use('/insumos', insumoRoute)
+app.use('/users', userRoute) // funções gerais que todos usuários podem usar
+app.use('/admin', admRoute) // liberação de usuários
+app.use('/manager', managerRoute) // todas funções que envolvem insumos e setores
+app.use('/insumos', insumoRoute) // apenas get
+app.use('/setor', setorRoute) // apenas get
 
 
 app.listen(port, () => {
