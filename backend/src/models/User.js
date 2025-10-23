@@ -61,7 +61,7 @@ User.init({
     },
 
     status: {
-        type: DataTypes.ENUM('ativo', 'inativo', 'pendente'),
+        type: DataTypes.ENUM('ativo', 'inativo'),
         defaultValue: 'pendente',
         allowNull: false
     }
