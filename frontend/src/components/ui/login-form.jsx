@@ -33,6 +33,7 @@ export function LoginForm({ className, ...props }) {
                 id="cpf"
                 type="cpf"
                 placeholder="000.000.000-00"
+                className={"bg-background"}
                 required
               />
             </div>
@@ -41,7 +42,7 @@ export function LoginForm({ className, ...props }) {
                 <Label htmlFor="password">Senha</Label>
               
               </div>
-              <Input id="password" type="password" placeholder="••••••••" required />
+              <Input id="password" type="password" className={"bg-background"} placeholder="••••••••" required />
             </div>
             <Button type="submit" className="w-full font-semibold">
               Entrar
@@ -56,7 +57,7 @@ export function LoginForm({ className, ...props }) {
         <p> 
           Não tem uma conta?
           {" "}
-          <a href="#" className="font-medium underline-offset-4 hover:text-primary hover:underline"> Cadastre-se </a>
+          <a href="/cadastro" className="font-medium underline-offset-4 hover:text-primary hover:underline"> Cadastre-se </a>
         </p>
 
 

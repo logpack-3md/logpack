@@ -81,7 +81,7 @@
   --background2: #dfdfdf;
   --background-button: oklch(#e6c4ad);  /* my color */
   --foreground: oklch(0.2161 0.0061 56.0434);
-  --card: oklch(1.0000 0 0);
+  --card: oklch(87.61% 0.0001 271.152);
   --card-foreground: oklch(0.2161 0.0061 56.0434);
   --popover: oklch(1.0000 0 0);
   --popover-header: #dbdbdb;
@@ -145,6 +145,7 @@
   --card: oklch(0.2685 0.0063 34.2976);
   --card-foreground: oklch(0.9848 0.0013 106.4233);
   --popover: oklch(0.2685 0.0063 34.2976);
+  --popover-header: oklch(26.285% 0.0058 55.964);
   --popover-foreground: oklch(0.9848 0.0013 106.4233);
   --primary: oklch(0.6594 0.1133 54.7928);
   --primary-foreground: oklch(0.2161 0.0061 56.0434);

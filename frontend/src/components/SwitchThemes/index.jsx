@@ -19,7 +19,7 @@ export function SwitchTheme() {
     };
 
     return (
-        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className={"bg-background dark:bg-secondary"}>
             {mounted && theme === "dark" ? (
                 <Sun className="h-[1.2rem] w-[1.2rem]" />
             ) : mounted ? (

@@ -30,7 +30,7 @@ import {
   AvatarImage
 } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, LogIn } from "lucide-react"; // Importando o ícone de Login
 import { SwitchTheme } from "../SwitchThemes";
 import LogoSite from "@/components/icons/logo";
 
@@ -46,8 +46,7 @@ export default function Header() {
             <LogoSite />
             {/* px-2 apos isso é o Gradient */}
             <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
-
-                        hover:from-[#8f5f3b] hover:to-[#e0a273]" >
+              hover:from-[#8f5f3b] hover:to-[#e0a273]" >
               LogPack
             </h2>
           </div>
@@ -59,7 +58,7 @@ export default function Header() {
 
               {/* item 1 */}
               <NavigationMenuItem>
-                <NavigationMenuLink href="/" className="px-4 py-2 block text-lg font-bold rounded-md">Home</NavigationMenuLink>
+                <NavigationMenuLink href="/" className="px-4 block text-lg font-bold rounded-md">Home</NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* item 2 */}
@@ -93,13 +92,21 @@ export default function Header() {
         </div>
 
 
-        {/* Avatar do usuario e Menu Mobile*/}
-        <div className="flex items-center gap-4 ">
+        {/* Botão de Login, Avatar do usuario e Menu Mobile*/}
+        <div className="flex items-center gap-2 md:gap-4">
 
           <SwitchTheme />
 
 
-          <div className="lg:hidden ">
+          {/* Botão de Login */}
+          <a href="/login" className="hidden px-5  lg:block">
+            <Button variant="outline" className={"bg-background"}>
+              <LogIn className="mr-2 h-4 w-4" /> {/* Ícone de login */}
+              Login
+            </Button>
+          </a>
+
+          <div className="lg:hidden">
 
             <Drawer direction="right">
 
@@ -118,6 +125,17 @@ export default function Header() {
                 </DrawerHeader>
 
                 <div className="p-4 overflow-y-auto">
+
+                  {/* Botão de Login para o Drawer */}
+                  <div className="pb-4">
+                    <a href="/login" className="w-full">
+                      <Button className="w-full">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                      </Button>
+                    </a>
+                  </div>
+
                   <Accordion type="single" collapsible className="w-full">
                     {/* item 1 */}
                     <AccordionItem value="item-1">
