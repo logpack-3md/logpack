@@ -17,7 +17,7 @@ class InsumosController {
                     'id',
                     'name',
                     'sku',
-                    'setor',
+                    'setorId',
                     'measure',
                     'image',
                     'description',

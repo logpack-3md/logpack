@@ -11,7 +11,7 @@ router.post('/', FirstAdminController.createInitialAdmin)
 // paginação de usuarios
 router.get('/', 
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     AuthMiddleware.isAdmin,
     AdminController.getUsers
 )
@@ -19,7 +19,7 @@ router.get('/',
 // buscar usuario
 router.get('/:id', 
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     AuthMiddleware.isAdmin,
     AdminController.getUser
 )
@@ -27,7 +27,7 @@ router.get('/:id',
 // editar nome ou cargo de usuario
 router.put('/manage/:id', 
     AuthMiddleware.verifyToken,
-    AuthMiddleware.isActive,
+    AuthMiddleware.isActiveUser,
     AuthMiddleware.isAdmin,
     AdminController.updateUser
 )
