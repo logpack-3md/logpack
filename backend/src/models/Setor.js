@@ -13,6 +13,7 @@ Setor.init({
     name: {
         type: DataTypes.STRING(6),
         allowNull: false,
+        unique: true
     },
 
     status: {

@@ -24,7 +24,7 @@ router.put('/insumos/:id',
     InsumosController.updateItem
 )
 
-router.put('/insumos/status/:id', 
+router.patch('/insumos/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
@@ -38,7 +38,7 @@ router.post('/setor',
     SetorController.createSetor
 )
 
-router.put('/setor/status/:id', 
+router.patch('/setor/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,

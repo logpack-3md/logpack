@@ -18,7 +18,7 @@ class InsumosController {
     static updateSchema = z.object({
         name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }).optional(),
         SKU: z.string().trim().min(3, { message: "O SKU deve conter no mínimo três caracteres." }).optional(),
-        // setor: z.string().trim().min(3, { message: "O setor deve conter no mínimo três caracteres." }).optional(),
+        setorName: z.string().trim().min(3, { message: "O setor deve conter no mínimo três caracteres." }).optional(),
         description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
     });
@@ -83,10 +83,15 @@ class InsumosController {
 
         try {
             const validatedSchema = InsumosController.createSchema.parse(req.body)
-            const { setorName, ...insumoData } = validatedSchema;
+            const { SKU, setorName, ...insumoData } = validatedSchema;
 
             const setor = await Setor.findOne({
                 where: { name: setorName },
+                attributes: ['id']
+            })
+
+            const codigo = await Insumos.findOne({
+                where: { SKU: SKU },
                 attributes: ['id']
             })
 
@@ -94,7 +99,9 @@ class InsumosController {
                 return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
             }
 
-            const setorId = setor.id
+            if (codigo) {
+                return res.status(400).json({ message: `Já existe um item com o SKU: '${SKU}'.`})
+            }
 
             if (file) {
                 const filename = `${Date.now()}_${file.originalname}`
@@ -184,14 +191,11 @@ class InsumosController {
                     try {
                         await del(oldImageUrl);
                         console.log(`Imagem antiga excluída do Blob: ${oldImageUrl}`);
-                    } catch (deleteError) {
-                        console.error(`Falha ao excluir imagem antiga do Blob (${oldImageUrl}):`, deleteError);
+                    } catch (error) {
+                        console.error(`Falha ao excluir imagem antiga do Blob (${oldImageUrl}):`, error);
                     }
                 }
-
             }
-
-
 
             if (Object.keys(updateData).length === 0) {
                 return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização." })
