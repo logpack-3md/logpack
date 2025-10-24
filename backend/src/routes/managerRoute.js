@@ -31,6 +31,13 @@ router.patch('/insumos/status/:id',
     ManagerController.setStatusInsumo
 )
 
+router.post('/insumos/verify/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.verifyInsumo
+)
+
 router.post('/setor',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,

@@ -38,6 +38,36 @@ class ManagerController {
         }
     }
 
+    static async verifyInsumo(req, res) {
+        const { id } = req.params
+
+        try {
+            const updateData = {
+                last_check: new Date()
+            }
+
+            const [rowsAffected] = await Insumos.update(updateData, {
+                where: { id: id }
+            })
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Insumo não encontrado" })
+            }
+
+            const verifiedInsumo = await Insumos.findByPk(id, {
+                attributes: ['id', 'name', 'last_check']
+            })
+
+            return res.status(200).json({
+                message: `Insumo verificado com sucesso.`,
+                lastCheck: verifiedInsumo.last_check
+            })
+        } catch (error) {
+            console.error("Erro ao verificar insumo: ", error)
+            return res.status(500).json({ error: "Erro ao verificar insumo." })
+        }
+    }
+
     static async setStatusSetor(req, res) {
         const { id } = req.params
 
