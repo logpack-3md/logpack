@@ -44,7 +44,7 @@ class InsumosController {
                     'image',
                     'description',
                     'current_storage',
-                    'max_level_carga',  
+                    'max_level_carga',
                     'status',
                     'last_check'
                 ]
@@ -101,7 +101,7 @@ class InsumosController {
             }
 
             if (codigo) {
-                return res.status(400).json({ message: `Já existe um item com o SKU: '${SKU}'.`})
+                return res.status(409).json({ message: `Já existe um item com o SKU: '${SKU}'. Procure o item pelo SKU e adicione mais insumos.`})
             }
 
             if (file) {
