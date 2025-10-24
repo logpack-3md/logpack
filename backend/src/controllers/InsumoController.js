@@ -121,7 +121,8 @@ class InsumosController {
             const insumo = await Insumos.create({
                 ...insumoData,
                 image: imageUrl,
-                setorName: setorName
+                setorName: setorName,
+                SKU: SKU
             })
 
             return res.status(201).json(insumo)
@@ -167,7 +168,7 @@ class InsumosController {
 
             const oldImageUrl = existingInsumo.image;
 
-            const validatedUpdate = ManagerController.updateSchema.parse(req.body)
+            const validatedUpdate = InsumosController.updateSchema.parse(req.body)
 
             let updateData = { ...validatedUpdate }
 
