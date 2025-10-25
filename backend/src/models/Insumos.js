@@ -51,20 +51,60 @@ Insumos.init({
         defaultValue: 0,
     },
 
-    // max_storage: {
-    //     type: DataTypes.INTEGER,
-    //     defaultValue: ?
-    // }
+    max_storage: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10000,
+        allowNull: false
+    },
 
-    current_level_carga: { // esse vem do MQTT
-        type: DataTypes.DECIMAL(10, 2),
+    current_weight_carga: { // esse vem do MQTT
+        type: DataTypes.DECIMAL(5, 2),
         allowNull: true,
         defaultValue: 0
     },
 
-    max_level_carga: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
+    max_weight_carga: {
+        type: DataTypes.DECIMAL(5,2),
+        defaultValue: 100.00
+    },
+
+    // Campo VIRTUAL para calcular a porcentagem da CARGA
+    current_level_carga_pct: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            const current = this.getDataValue('current_weight_carga');
+            const max = this.getDataValue('max_weight_carga');
+
+            if (max === 0 || !max) return 0;
+
+            // Retorna a porcentagem da carga
+            return parseFloat(((current / max) * 100).toFixed(2));
+        }
+    },
+
+    // Campo VIRTUAL para calcular a porcentagem do ESTOQUE TOTAL
+    current_storage_pct: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            const current = this.getDataValue('current_storage');
+            const max = this.getDataValue('max_storage'); 
+
+            if (max === 0 || !max) return 0;
+
+            return parseFloat(((current / max) * 100).toFixed(2));
+        }
+    },
+
+    status_solicitacao: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            const currentPct = this.getDataValue('current_storage_pct') || 0;
+
+            if (currentPct < 40) {
+                return 'SOLICITAR_REPOSIÇÃO';
+            }
+            return 'ESTOQUE_OK';
+        }
     },
 
     last_check: {

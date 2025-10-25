@@ -11,7 +11,7 @@ class InsumosController {
         description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
         current_storage: z.number().int("O estoque atual deve ser um número inteiro.").min(0).optional(),
-        max_level_carga: z.number().int("O nível máximo deve ser um número inteiro.").min(0).optional(),
+        max_weight_carga: z.number().int("O nível máximo deve ser um número inteiro.").min(0).optional(),
         status: z.enum(['ativo', 'inativo'], { message: "O status deve ser 'ativo' ou 'inativo'." }).optional(),
     });
 
@@ -44,7 +44,9 @@ class InsumosController {
                     'image',
                     'description',
                     'current_storage',
-                    'max_level_carga',
+                    'max_weight_carga',
+                    'current_storage_pct',
+                    'status_solicitacao',
                     'status',
                     'last_check'
                 ]
