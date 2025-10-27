@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { api } from "@/lib/api"; // Certifique-se de que este caminho está correto
+import { api } from "@/lib/api"; 
 
-const USER_ENDPOINT = "admin"; // Endpoint base para todas as operações
-
+const USER_ENDPOINT = "admin"; 
 export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,13 +34,8 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
       setError(null);
 
       try {
-        // Converte o pageIndex (0-based) para 1-based para a requisição da API
         const apiPage = pageIndex + 1;
-
-        // ATUALIZADO:
-        // O objeto 'params' do Axios/api vai construir a URL
-        // como: /admin?$page=[apiPage]&limit=[size]
-console.log("-----------------------------",apiPage, size )
+  
         const result = await api.get(`${USER_ENDPOINT}?page=${apiPage}&limit=${size}`);
 
         if (result && result.error) {
