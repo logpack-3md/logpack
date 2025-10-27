@@ -7,7 +7,7 @@ class EmployeeController {
 
         try {
             const current_weight_carga = Insumos.findByPk(id)
-
+            
 
 
         } catch (error) {

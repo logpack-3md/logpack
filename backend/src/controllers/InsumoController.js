@@ -45,6 +45,7 @@ class InsumosController {
                     'description',
                     'current_storage',
                     'max_storage',
+                    'current_weight_carga',
                     'max_weight_carga',
                     'status_solicitacao',
                     'status',

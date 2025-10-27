@@ -27,7 +27,7 @@ Insumos.hasMany(Pedidos, {
 Pedidos.belongsTo(Insumos, {
     foreignKey: 'insumosName',
     targetKey: 'name',
-    as: 'insumoDetalhes'
+    as: 'insumosDetalhes'
 })
 
 // -- //

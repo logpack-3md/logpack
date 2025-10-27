@@ -12,7 +12,8 @@ Insumos.init({
 
     name: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
 
     SKU: {
@@ -69,7 +70,7 @@ Insumos.init({
     },
 
     status_solicitacao: {
-        type: DataTypes.STRING,
+        type: DataTypes.VIRTUAL,
         get() {
             const current_storage = this.getDataValue('current_storage') || 0;
 

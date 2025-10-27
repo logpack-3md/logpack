@@ -10,7 +10,7 @@ Pedidos.init({
         primaryKey: true
     },
 
-    insumoName: {
+    insumosName: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
