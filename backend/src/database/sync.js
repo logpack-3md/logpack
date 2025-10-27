@@ -4,14 +4,16 @@ import Insumos from '../models/Insumos.js';
 import Setor from "../models/Setor.js";
 
 Setor.hasMany(Insumos, {
-    foreignKey: 'setorName',
-    as: 'insumos',
-})
+    foreignKey: 'setorName', 
+    sourceKey: 'name',       
+    as: 'insumos'
+});
 
 Insumos.belongsTo(Setor, {
     foreignKey: 'setorName',
-    as: 'setor'
-})  
+    targetKey: 'name',
+    as: 'setorDetalhes'
+});
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');
