@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// O componente agora recebe os dados iniciais carregados pelo Server Component
 export function ListUser({ 
   initialUsers = [], 
   initialTotalItems = 0, 
@@ -36,7 +35,7 @@ export function ListUser({
   initialPageSize = 10 
 }) {
   
-  // 1. Usa o hook com os dados iniciais
+ 
   const {
     users,
     loading,

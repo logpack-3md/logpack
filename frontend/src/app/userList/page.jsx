@@ -4,16 +4,14 @@ import { apiServer } from "@/lib/api-server"; // Certifique-se de que este camin
 export default async function UserListPage () {
     let initialUsersData = { data: [], totalItems: 0, currentPage: 0, pageSize: 10 };
 
-    // Define os parâmetros iniciais para a requisição do servidor (1-based para a API)
     const initialPage = 1; 
     const initialLimit = 10;
 
     try {
         // ATUALIZADO: Ajustado para usar '$page' e 'limit',
-        // correspondendo à chamada da API definida no hook useUsers.
         const response = await apiServer.get("admin", { 
             params: { 
-              $page: initialPage, // <-- Alterado de 'page' para '$page'
+              $page: initialPage, 
               limit: initialLimit 
             } 
         });
