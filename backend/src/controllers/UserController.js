@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import User from "../models/User.js ";
 import validarCpf from "validar-cpf";
 import z from "zod";
 
