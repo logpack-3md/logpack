@@ -33,7 +33,7 @@ router.put('/manage/:id',
 )
 
 // editar status de usuario
-router.patch('/status/:id', 
+router.put('/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isAdmin,
     AdminController.setStatusUser
