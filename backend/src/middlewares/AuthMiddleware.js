@@ -69,7 +69,7 @@ class AuthMiddleware {
     }
 
     async requestInsumo(req, res, next) {
-        const storage = req.body.current_storage
+        const storage = req.body.current_weight_carga
         try {
             if (storage > 35) {
                 return res.status(403).json({ message: "Pedido negado: Os insumos so podem ser solicitados se estiverem abaixo de 35% do estoque total."})
