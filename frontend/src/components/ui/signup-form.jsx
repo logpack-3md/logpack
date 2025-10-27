@@ -1,5 +1,7 @@
+"use client"
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import * as z from zod
 import {
   Card,
   CardContent,
@@ -24,7 +26,61 @@ import {
 } from "@/components/ui/select"; // Importe os componentes do Select
 import { HelpCircle } from "lucide-react";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+
+    static createSchema = z.object({
+        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
+        cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
+        email: z.email({ message: "Digite um email válido." }),
+        password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
+    });
+
 export function SignupForm({ className, ...props }) {
+  
+
+
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [cpf, setCpf] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState('')
+
+
+  const handleSingUp = async (e) => {
+    e.preventDefault()
+    // console.log({ email, password })
+    try {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "users", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, cpf, email, password, role })
+      })
+
+      const data = await response.json()
+      console.log(data)
+      if (!data.message) {
+        console.log("Pedido de Cadastro enviado")
+        router.push('/login')
+      }
+
+
+        // alert('login bem sucedido')
+        // console.log(data)
+      
+      if (data.message)
+        alert(data.message)
+    } catch (error) {
+
+    }
+  }
+
+
   return (
     <Card className={cn("w-200 max-w-lg", className)} {...props}>
       <CardHeader className="text-center">
@@ -38,13 +94,15 @@ export function SignupForm({ className, ...props }) {
 
       <CardContent>
         <div className="grid gap-6">
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleSingUp}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
               {/* Nome */}
               <div className="grid gap-2">
                 <Label htmlFor="full-name">Nome Completo</Label>
-                <Input id="full-name" placeholder="Seu nome completo" required />
+                <Input id="full-name" placeholder="Seu nome completo" required
+                  value={name}
+                  onChange={(e) => { setName(e.target.value) }} />
               </div>
 
               {/* CPF */}
@@ -55,6 +113,8 @@ export function SignupForm({ className, ...props }) {
                   type="text"
                   placeholder="000.000.000-00"
                   required
+                  value={cpf}
+                  onChange={(e) => { setCpf(e.target.value) }}
                 />
               </div>
 
@@ -68,29 +128,34 @@ export function SignupForm({ className, ...props }) {
                   type="email"
                   placeholder="seuemail@empresa.com"
                   required
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value) }}
                 />
               </div>
 
               {/* Cargo */}
               <div className="grid gap-2">
                 <Label htmlFor="role">Cargo</Label>
-                <Select>
+                <Select onValueChange={(value) => { setRole(value) }}>
                   <SelectTrigger id="role">
                     <SelectValue placeholder="Selecione um cargo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="developer">Funcionario</SelectItem>
-                    <SelectItem value="designer">Gerente de Produção</SelectItem>
-                    <SelectItem value="project-manager">Administrador</SelectItem>
-                    <SelectItem value="analyst">Gerente de Compras</SelectItem>
+                    <SelectItem value="employee">Funcionário</SelectItem>
+                    <SelectItem value="manager">Gerente de Produção</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="buyer">Gerente de Compras</SelectItem>
                   </SelectContent>
                 </Select>
+
               </div>
 
               {/* Senha e Confirm Senha */}
               <div className="grid gap-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" placeholder="••••••••" required />
+                <Input id="password" type="password" placeholder="••••••••" required
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value) }} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirmar Senha</Label>
