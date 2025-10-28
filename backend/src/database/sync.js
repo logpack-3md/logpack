@@ -2,6 +2,7 @@ import sequelize from "./sequelize.js";
 import User from '../models/User.js';
 import Insumos from '../models/Insumos.js';
 import Setor from "../models/Setor.js";
+import Pedidos from "../models/Pedidos.js";
 
 Setor.hasMany(Insumos, {
     foreignKey: 'setorName', 
@@ -14,6 +15,22 @@ Insumos.belongsTo(Setor, {
     targetKey: 'name',
     as: 'setorDetalhes'
 });
+
+// -- //
+
+Insumos.hasMany(Pedidos, {
+    foreignKey: 'insumosName',
+    sourceKey: 'name',
+    as: 'pedidos'
+})
+
+Pedidos.belongsTo(Insumos, {
+    foreignKey: 'insumosName',
+    targetKey: 'name',
+    as: 'insumosDetalhes'
+})
+
+// -- //
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');

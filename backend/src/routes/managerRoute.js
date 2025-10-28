@@ -24,7 +24,7 @@ router.put('/insumos/:id',
     InsumosController.updateItem
 )
 
-router.patch('/insumos/status/:id', 
+router.put('/insumos/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
@@ -38,6 +38,13 @@ router.post('/insumos/verify/:id',
     ManagerController.verifyInsumo
 )
 
+router.put('/insumos/storage/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.setMaxStorage
+)
+
 router.post('/setor',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -45,7 +52,7 @@ router.post('/setor',
     SetorController.createSetor
 )
 
-router.patch('/setor/status/:id', 
+router.put('/setor/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,

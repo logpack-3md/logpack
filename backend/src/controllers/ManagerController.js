@@ -80,7 +80,7 @@ class ManagerController {
         try {
             const { status } = statusSchema.parse(req.body)
 
-            const rowsAffected = await Setor.update(
+            const [rowsAffected] = await Setor.update(
                 { status: status },
                 { where: { id: id } }
             )
@@ -100,6 +100,38 @@ class ManagerController {
             }
             console.error("Erro ao alterar status: ", error)
             return res.status(500).json({ error: "Erro ao alterar status." })
+        }
+    }
+
+    static async setMaxStorage(req, res) {
+        const { id } = req.params
+        const maxStorageSchema = z.object({
+            max_storage: z.int().min(200, { message: "Insira um valor acima de 200." })
+        })
+
+        try {
+            const { max_storage } = maxStorageSchema.parse(req.body)
+
+            const [rowsAffected] = await Insumos.update(
+                { max_storage: max_storage },
+                { where: { id: id } }
+            )
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            }
+
+            return res.status(200).json({message: `Estoque máximo atualizado para ${max_storage}`})
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de atualização inválidos",
+                    issues: error.issues
+                })
+            }
+            console.error("Erro ao alterar estoque máximo: ", error)
+            return res.status(500).json({ error: "Erro ao alterar estoque máximo." })
         }
     }
 }

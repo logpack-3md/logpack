@@ -67,6 +67,19 @@ class AuthMiddleware {
             return res.status(500).json({ message: "Erro interno do servidor ao verificar o setor." });
         }
     }
+
+    async requestInsumo(req, res, next) {
+        const storage = req.body.current_weight_carga
+        try {
+            if (storage > 35) {
+                return res.status(403).json({ message: "Pedido negado: Os insumos so podem ser solicitados se estiverem abaixo de 35% do estoque total."})
+            }
+            next()
+        } catch (error) {
+            console.error("Erro no middleware requestInsumo", error)
+            return res.status(500).json({ message: "Erro interno do servidor ao verificar pedido de insumos."})
+        }
+    }
 }
 
 export default new AuthMiddleware
