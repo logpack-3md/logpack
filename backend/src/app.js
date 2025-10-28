@@ -6,6 +6,7 @@ import admRoute from './routes/admRoute.js';
 import managerRoute from './routes/managerRoute.js';
 import insumoRoute from './routes/insumoRoute.js';
 import setorRoute from './routes/setorRoute.js';
+import employeeRoute from './routes/employeeRoute.js';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 app.use('/users', userRoute) // funções gerais que todos usuários podem usar
 app.use('/admin', admRoute) // liberação de usuários
 app.use('/manager', managerRoute) // todas funções que envolvem insumos e setores
+app.use('/employee', employeeRoute) // funções de solicitação
 app.use('/insumos', insumoRoute) // apenas get
 app.use('/setor', setorRoute) // apenas get
 

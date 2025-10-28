@@ -72,11 +72,19 @@ Insumos.init({
     status_solicitacao: {
         type: DataTypes.VIRTUAL,
         get() {
-            const current_storage = this.getDataValue('current_storage') || 0;
+            const current = this.getDataValue('current_storage') || 0;
+            const max= this.getDataValue('max_storage') || 0
 
-            if (current_storage < 40) {
+            if (max === 0) {
+                return 'Definir estoque máximo.'
+            }
+
+            const current_pct = (current / max) * 100 
+
+            if (current_pct <= 35) {
                 return 'Solicitar Reposição';
             }
+
             return 'Estoque Ok';
         }
     },
