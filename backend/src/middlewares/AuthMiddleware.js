@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken'
 import Setor from '../models/Setor.js';
+import Insumos from '../models/Insumos.js';
+import Pedidos from '../models/Pedidos.js';
 
 class AuthMiddleware {
     async verifyToken(req, res, next) {
@@ -69,15 +71,67 @@ class AuthMiddleware {
     }
 
     async requestInsumo(req, res, next) {
-        const storage = req.body.current_weight_carga
+        const { insumoSKU } = req.body
+
+
         try {
-            if (storage > 35) {
-                return res.status(403).json({ message: "Pedido negado: Os insumos so podem ser solicitados se estiverem abaixo de 35% do estoque total."})
+            const insumo = await Insumos.findOne({ where: { SKU: insumoSKU } })
+
+            if (!insumo) {
+                return res.status(404).json({ message: "Insumo não encontrado. " })
             }
+
+            const status = insumo.get('status_solicitacao')
+
+            if (status !== 'Solicitar Reposição') {
+                return res.status(403).json({ message: `Pedido negado. Estoque atual está acima do limite de 35%: ${status}` })
+            }
+
+            req.insumo = insumo
             next()
+
         } catch (error) {
-            console.error("Erro no middleware requestInsumo", error)
-            return res.status(500).json({ message: "Erro interno do servidor ao verificar pedido de insumos."})
+            console.error("Erro no middleware requestInsumo:", error)
+            return res.status(500).json({ error: 'Erro interno no servidor ao verificar pedido de insumos.' })
+        }
+    }
+
+    async alreadyRequested(req, res, next) {
+        const { insumoSKU } = req.body
+
+        if (!insumoSKU) {
+            return res.status(400).json({ message: "O SKU do insumo é obrigatório para verificar pedidos duplicados." })
+        }
+
+        try {
+            const existingRequest = await Pedidos.findOne({
+                where: {
+                    insumoSKU: insumoSKU,
+                    status: 'solicitado'
+                }
+            })
+
+            if (existingRequest) {
+                return res.status(409).json({
+                    message: `Pedido negado: Já existe uma solicitação aberta para o SKU ${insumoSKU}.`,
+                });
+            }
+
+            if (req.insumo) {
+                next()
+            } else {
+                const insumo = await Insumos.findOne({ where: { SKU: insumoSKU } });
+
+                if (!insumo) {
+                    return res.status(404).json({ message: "Insumo não encontrado." });
+                }
+
+                req.insumo = insumo;
+                next();
+            }
+        } catch (error) {
+            console.error("Erro no middleware alreadyRequested:", error)
+            return res.status(500).json({ error: 'Erro interno no servidor ao verificar duplicidade de insumos.' })
         }
     }
 }

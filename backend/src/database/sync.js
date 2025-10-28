@@ -19,14 +19,14 @@ Insumos.belongsTo(Setor, {
 // -- //
 
 Insumos.hasMany(Pedidos, {
-    foreignKey: 'insumosName',
-    sourceKey: 'name',
+    foreignKey: 'insumoSKU',
+    sourceKey: 'SKU',
     as: 'pedidos'
 })
 
 Pedidos.belongsTo(Insumos, {
-    foreignKey: 'insumosName',
-    targetKey: 'name',
+    foreignKey: 'insumoSKU',
+    targetKey: 'SKU',
     as: 'insumosDetalhes'
 })
 

@@ -10,14 +10,15 @@ Pedidos.init({
         primaryKey: true
     },
 
-    insumosName: {
+    insumoSKU: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
 
     status: {
         type: DataTypes.ENUM,
-        values: ['solicitado', 'realizado']
+        values: ['solicitado', 'realizado'],
+        defaultValue: 'solicitado'
     }
 
 }, {
