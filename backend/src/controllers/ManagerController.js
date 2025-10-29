@@ -8,7 +8,7 @@ class ManagerController {
 
         const statusSchema = z.object({
             status: z.enum(['inativo', 'ativo'], {
-                message: "O status deve ser 'ativo' ou 'inativo'."
+                error: "O status deve ser 'ativo' ou 'inativo'."
             })
         })
 
@@ -73,7 +73,7 @@ class ManagerController {
 
         const statusSchema = z.object({
             status: z.enum(['inativo', 'ativo'], {
-                message: "O status deve ser 'ativo' ou 'inativo'."
+                error: "O status deve ser 'ativo' ou 'inativo'."
             })
         })
 
@@ -106,7 +106,9 @@ class ManagerController {
     static async setMaxStorage(req, res) {
         const { id } = req.params
         const maxStorageSchema = z.object({
-            max_storage: z.int().min(200, { message: "Insira um valor acima de 200." })
+            max_storage: z.int()
+                .min(200, { error: "Insira um valor acima de 200." })
+                .refine(value => value % 200 === 0, { error: "O estoque máximo deve ser sempre um MÚLTIPLO de 200 (ex: 200, 400, 600, etc.)." })
         })
 
         try {
@@ -121,7 +123,7 @@ class ManagerController {
                 return res.status(404).json({ message: "Insumo não encontrado." })
             }
 
-            return res.status(200).json({message: `Estoque máximo atualizado para ${max_storage}`})
+            return res.status(200).json({ message: `Estoque máximo atualizado para ${max_storage}` })
 
         } catch (error) {
             if (error instanceof z.ZodError) {

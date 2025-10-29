@@ -3,8 +3,8 @@ import z from "zod"
 
 class AdminController {
     static updateSchema = z.object({
-        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "Escolha entre 'employee', 'admin', 'buyer' ou 'manager'." })
+        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { error: "Escolha entre 'employee', 'admin', 'buyer' ou 'manager'." })
     }).partial();
 
     static async setStatusUser(req, res) {
@@ -12,7 +12,7 @@ class AdminController {
 
         const statusSchema = z.object({
             status: z.enum(['ativo', 'inativo'], {
-                message: "Status deve ser 'ativo' ou 'inativo'."
+                error: "Status deve ser 'ativo' ou 'inativo'."
             })
         })
 

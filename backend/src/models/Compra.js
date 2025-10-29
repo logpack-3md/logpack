@@ -1,0 +1,56 @@
+import { Model, DataTypes } from 'sequelize'
+import sequelize from '../database/sequelize.js'
+
+class Compra extends Model { }
+
+Compra.init({
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
+
+    gerenteId: {
+        type: DataTypes.UUID,
+        allowNull: false
+    },
+
+    pedidoId: {
+        type: DataTypes.UUID,
+        allowNull: false
+    },
+
+    status: {
+        type: DataTypes.ENUM,
+        values: ['pendente', 'fase de orçamento', 'concluído'],
+        defaultValue: 'pendente'
+    },
+
+    description: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
+    amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+
+    responsible_budget: {
+        type: DataTypes.STRING,
+    },
+
+    approval_date: {
+        type: DataTypes.DATE
+    },
+
+}, {
+    sequelize,
+    modelName: 'Compra',
+    tableName: 'compras',
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+})
+
+export default Compra;

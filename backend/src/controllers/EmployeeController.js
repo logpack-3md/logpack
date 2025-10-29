@@ -3,12 +3,14 @@ import Pedidos from "../models/Pedidos.js";
 
 class EmployeeController {
     static async sendRequest(req, res) {
+        const userId = req.user.id
         const insumo = req.insumo
         const insumoSKU = insumo.SKU
 
         try {
             const pedido = await Pedidos.create({
                 insumoSKU: insumoSKU,
+                userId: userId
             })
 
             return res.status(201).json({
@@ -18,7 +20,7 @@ class EmployeeController {
 
         } catch (error) {
             console.error("Erro interno no servidor ao tentar criar pedido", error)
-            return res.status(500).json({error: "Ocorreu um erro interno no servidor."})
+            return res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
         }
     }
 }

@@ -10,6 +10,11 @@ Pedidos.init({
         primaryKey: true
     },
 
+    userId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+    },
+
     insumoSKU: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -17,7 +22,7 @@ Pedidos.init({
 
     status: {
         type: DataTypes.ENUM,
-        values: ['solicitado', 'realizado'],
+        values: ['solicitado', 'aprovado', 'rejeitado', 'compra_iniciada'],
         defaultValue: 'solicitado'
     }
 

@@ -6,17 +6,17 @@ import z from "zod";
 class UserController {
 
     static createSchema = z.object({
-        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-        cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
-        email: z.email({ message: "Digite um email válido." }),
-        password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
+        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
+        cpf: z.string().refine(validarCpf, { error: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
+        email: z.email({ error: "Digite um email válido." }),
+        password: z.string().min(6, { error: "A senha deve conter no mínimo 6 caracteres." }),
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { error: "A função é obrigatória." })
     });
 
     static updateSchema = z.object({
-        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-        password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-        email: z.email({ message: "Digite um email válido." }),
+        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
+        password: z.string().min(6, { error: "A senha deve conter no mínimo 6 caracteres." }),
+        email: z.email({ error: "Digite um email válido." }),
     }).partial();
 
     static async createUser(req, res) {
