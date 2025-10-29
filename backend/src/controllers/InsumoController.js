@@ -5,22 +5,22 @@ import Setor from '../models/Setor.js';
 
 class InsumosController {
     static createSchema = z.object({
-        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-        SKU: z.string().trim().min(3, { message: "O SKU deve conter no mínimo três caracteres." }),
-        setorName: z.string().min(2, { message: "O nome do setor deve ser válido." }),
-        description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
-        measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
-        current_storage: z.number().int("O estoque atual deve ser um número inteiro.").min(0).optional(),
-        max_weight_carga: z.number().int("O nível máximo deve ser um número inteiro.").min(0).optional(),
-        status: z.enum(['ativo', 'inativo'], { message: "O status deve ser 'ativo' ou 'inativo'." }).optional(),
+        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
+        SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }),
+        setorName: z.string().min(2, { error: "O nome do setor deve ser válido." }),
+        description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
+        current_storage: z.number().int({ error: "O estoque atual deve ser um número inteiro." }).min(0).optional(),
+        max_weight_carga: z.number().int({ error: "O nível máximo deve ser um número inteiro." }).min(0).optional(),
+        status: z.enum(['ativo', 'inativo'], { error: "O status deve ser 'ativo' ou 'inativo'." }).optional(),
     });
 
     static updateSchema = z.object({
-        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }).optional(),
-        SKU: z.string().trim().min(3, { message: "O SKU deve conter no mínimo três caracteres." }).optional(),
-        setorName: z.string().trim().min(3, { message: "O setor deve conter no mínimo três caracteres." }).optional(),
-        description: z.string().trim().min(10, { message: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
-        measure: z.enum(['KG', 'G', 'ML', 'L'], { message: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
+        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }).optional(),
+        SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }).optional(),
+        setorName: z.string().trim().min(3, { error: "O setor deve conter no mínimo três caracteres." }).optional(),
+        description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
     });
 
     static async getItems(req, res) {
@@ -104,7 +104,7 @@ class InsumosController {
             }
 
             if (codigo) {
-                return res.status(409).json({ message: `Já existe um item com o SKU: '${SKU}'. Procure o item pelo SKU e adicione mais insumos.`})
+                return res.status(409).json({ message: `Já existe um item com o SKU: '${SKU}'. Procure o item pelo SKU e adicione mais insumos.` })
             }
 
             if (file) {

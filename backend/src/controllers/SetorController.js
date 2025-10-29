@@ -3,8 +3,8 @@ import Setor from "../models/Setor.js";
 
 class SetorController {
     static createUpdateSchema = z.object({
-        name: z.string().max(6, { message: "O nome do setor deve conter no máximo 6 caracteres." }),
-        status: z.enum(['ativo', 'inativo'], { message: 'O setor só pode estar ativo ou inativo.' }).optional()
+        name: z.string().max(6, { error: "O nome do setor deve conter no máximo 6 caracteres." }),
+        status: z.enum(['ativo', 'inativo'], { error: 'O setor só pode estar ativo ou inativo.' }).optional()
     });
 
     static async createSetor(req, res) {
