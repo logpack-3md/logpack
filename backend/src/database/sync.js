@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Insumos from '../models/Insumos.js';
 import Setor from "../models/Setor.js";
 import Pedidos from "../models/Pedidos.js";
+import Compra from "../models/Compra.js";
 
 Setor.hasMany(Insumos, {
     foreignKey: 'setorName', 
@@ -18,6 +19,20 @@ Insumos.belongsTo(Setor, {
 
 // -- //
 
+User.hasMany(Pedidos, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: 'user'
+})
+
+Pedidos.belongsTo(User, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: 'userDetalhes'
+})
+
+// -- //
+
 Insumos.hasMany(Pedidos, {
     foreignKey: 'insumoSKU',
     sourceKey: 'SKU',
@@ -28,6 +43,34 @@ Pedidos.belongsTo(Insumos, {
     foreignKey: 'insumoSKU',
     targetKey: 'SKU',
     as: 'insumosDetalhes'
+})
+
+// -- //
+
+Pedidos.hasMany(Compra, {
+    foreignKey: 'pedidoId',
+    sourceKey: 'id',
+    as: 'compras'
+})
+
+Compra.belongsTo(Pedidos, {
+    foreignKey: 'pedidoId',
+    targetKey: 'id',
+    as: 'pedidoDetalhes'
+})
+
+// -- //
+
+User.hasMany(Compra, {
+    foreignKey: 'gerenteId',
+    sourceKey: 'id',
+    as: 'comprasIniciadas'
+})
+
+Compra.belongsTo(User, {
+    foreignKey: 'gerenteId',
+    targetKey: 'id',
+    as: 'gerenteResponsavel'
 })
 
 // -- //
