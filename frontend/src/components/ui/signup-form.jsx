@@ -1,7 +1,7 @@
 "use client"
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import * as z from zod
+// import * as z from zod
 import {
   Card,
   CardContent,
@@ -23,20 +23,20 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // Importe os componentes do Select
+} from "@/components/ui/select";
 import { HelpCircle } from "lucide-react";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
-    static createSchema = z.object({
-        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-        cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
-        email: z.email({ message: "Digite um email válido." }),
-        password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
-    });
+    // static createSchema = z.object({
+    //     name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
+    //     cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
+    //     email: z.email({ message: "Digite um email válido." }),
+    //     password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
+    //     role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
+    // });
 
 export function SignupForm({ className, ...props }) {
   
@@ -82,7 +82,7 @@ export function SignupForm({ className, ...props }) {
 
 
   return (
-    <Card className={cn("w-200 max-w-lg", className)} {...props}>
+    <Card className={cn("w-full max-w-lg lg:w-200", className)} {...props}>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold tracking-tight">
           Crie sua conta
@@ -94,8 +94,8 @@ export function SignupForm({ className, ...props }) {
 
       <CardContent>
         <div className="grid gap-6">
-          <form className="grid gap-4" onSubmit={handleSingUp}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <form className="grid gap-3" onSubmit={handleSingUp}>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
 
               {/* Nome */}
               <div className="grid gap-2">
@@ -134,10 +134,10 @@ export function SignupForm({ className, ...props }) {
               </div>
 
               {/* Cargo */}
-              <div className="grid gap-2">
+              <div className="grid gap-2 ">
                 <Label htmlFor="role">Cargo</Label>
-                <Select onValueChange={(value) => { setRole(value) }}>
-                  <SelectTrigger id="role">
+                <Select onValueChange={(value) => { setRole(value) }} >
+                  <SelectTrigger id="role" className="w-full">
                     <SelectValue placeholder="Selecione um cargo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -171,7 +171,7 @@ export function SignupForm({ className, ...props }) {
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col text-center text-sm text-muted-foreground gap-4">
+      <CardFooter className="flex flex-col text-center text-sm text-muted-foreground gap-1 lg:gap-4">
         <p>
           Já tem uma conta?
           {" "}
