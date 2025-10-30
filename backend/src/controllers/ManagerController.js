@@ -3,12 +3,16 @@ import Setor from '../models/Setor.js'
 import z from 'zod'
 
 class ManagerController {
+    static createCompraSchema = z.object({
+        
+    })
+
     static async setStatusInsumo(req, res) {
         const { id } = req.params
 
         const statusSchema = z.object({
             status: z.enum(['inativo', 'ativo'], {
-                message: "O status deve ser 'ativo' ou 'inativo'."
+                error: "O status deve ser 'ativo' ou 'inativo'."
             })
         })
 
@@ -73,14 +77,14 @@ class ManagerController {
 
         const statusSchema = z.object({
             status: z.enum(['inativo', 'ativo'], {
-                message: "O status deve ser 'ativo' ou 'inativo'."
+                error: "O status deve ser 'ativo' ou 'inativo'."
             })
         })
 
         try {
             const { status } = statusSchema.parse(req.body)
 
-            const rowsAffected = await Setor.update(
+            const [rowsAffected] = await Setor.update(
                 { status: status },
                 { where: { id: id } }
             )
@@ -101,6 +105,44 @@ class ManagerController {
             console.error("Erro ao alterar status: ", error)
             return res.status(500).json({ error: "Erro ao alterar status." })
         }
+    }
+
+    static async setMaxStorage(req, res) {
+        const { id } = req.params
+        const maxStorageSchema = z.object({
+            max_storage: z.int()
+                .min(200, { error: "Insira um valor acima de 200." })
+                .refine(value => value % 200 === 0, { error: "O estoque máximo deve ser sempre um MÚLTIPLO de 200 (ex: 200, 400, 600, etc.)." })
+        })
+
+        try {
+            const { max_storage } = maxStorageSchema.parse(req.body)
+
+            const [rowsAffected] = await Insumos.update(
+                { max_storage: max_storage },
+                { where: { id: id } }
+            )
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            }
+
+            return res.status(200).json({ message: `Estoque máximo atualizado para ${max_storage}` })
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de atualização inválidos",
+                    issues: error.issues
+                })
+            }
+            console.error("Erro ao alterar estoque máximo: ", error)
+            return res.status(500).json({ error: "Erro ao alterar estoque máximo." })
+        }
+    }
+
+    static async createCompra(req, res) {
+
     }
 }
 

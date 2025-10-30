@@ -12,7 +12,8 @@ Insumos.init({
 
     name: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
 
     SKU: {
@@ -24,7 +25,7 @@ Insumos.init({
     setorName: {
         type: DataTypes.STRING(6),
         allowNull: false,
-        // unique: true
+        unique: true
     },
 
     description: {
@@ -53,7 +54,7 @@ Insumos.init({
 
     max_storage: {
         type: DataTypes.INTEGER,
-        defaultValue: 10000,
+        defaultValue: 0,
         allowNull: false
     },
 
@@ -68,42 +69,23 @@ Insumos.init({
         defaultValue: 100.00
     },
 
-    // Campo VIRTUAL para calcular a porcentagem da CARGA
-    current_level_carga_pct: {
-        type: DataTypes.VIRTUAL,
-        get() {
-            const current = this.getDataValue('current_weight_carga');
-            const max = this.getDataValue('max_weight_carga');
-
-            if (max === 0 || !max) return 0;
-
-            // Retorna a porcentagem da carga
-            return parseFloat(((current / max) * 100).toFixed(2));
-        }
-    },
-
-    // Campo VIRTUAL para calcular a porcentagem do ESTOQUE TOTAL
-    current_storage_pct: {
-        type: DataTypes.VIRTUAL,
-        get() {
-            const current = this.getDataValue('current_storage');
-            const max = this.getDataValue('max_storage'); 
-
-            if (max === 0 || !max) return 0;
-
-            return parseFloat(((current / max) * 100).toFixed(2));
-        }
-    },
-
     status_solicitacao: {
         type: DataTypes.VIRTUAL,
         get() {
-            const currentPct = this.getDataValue('current_storage_pct') || 0;
+            const current = this.getDataValue('current_storage') || 0;
+            const max= this.getDataValue('max_storage') || 0
 
-            if (currentPct < 40) {
-                return 'SOLICITAR_REPOSIÇÃO';
+            if (max === 0) {
+                return 'Definir estoque máximo.'
             }
-            return 'ESTOQUE_OK';
+
+            const current_pct = (current / max) * 100 
+
+            if (current_pct <= 35) {
+                return 'Solicitar Reposição';
+            }
+
+            return 'Estoque Ok';
         }
     },
 
