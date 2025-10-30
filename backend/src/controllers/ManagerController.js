@@ -3,6 +3,10 @@ import Setor from '../models/Setor.js'
 import z from 'zod'
 
 class ManagerController {
+    static createCompraSchema = z.object({
+        
+    })
+
     static async setStatusInsumo(req, res) {
         const { id } = req.params
 
@@ -135,6 +139,10 @@ class ManagerController {
             console.error("Erro ao alterar estoque máximo: ", error)
             return res.status(500).json({ error: "Erro ao alterar estoque máximo." })
         }
+    }
+
+    static async createCompra(req, res) {
+
     }
 }
 

@@ -4,6 +4,7 @@ import Insumos from '../models/Insumos.js';
 import Setor from "../models/Setor.js";
 import Pedidos from "../models/Pedidos.js";
 import Compra from "../models/Compra.js";
+import Orcamento from "../models/Orcamento.js";
 
 Setor.hasMany(Insumos, {
     foreignKey: 'setorName', 
@@ -71,6 +72,34 @@ Compra.belongsTo(User, {
     foreignKey: 'gerenteId',
     targetKey: 'id',
     as: 'gerenteResponsavel'
+})
+
+// -- //
+
+Compra.hasMany(Orcamento, {
+    foreignKey: 'compraId',
+    sourceKey: 'id',
+    as: 'compraIniciada'
+})/
+
+Orcamento.belongsTo(Compra, {
+    foreignKey: 'compraId',
+    targetKey: 'id',
+    as: 'compraSelecionada'
+})
+
+// -- //
+
+User.hasMany(Orcamento, {
+    foreignKey: 'buyerId',
+    sourceKey: 'id',
+    as: 'fornecedorResponsavel'
+});
+
+Orcamento.belongsTo(User, {
+    foreignKey: 'buyerId',
+    targetKey: 'id',
+    as: 'orcamentoIniciado'
 })
 
 // -- //
