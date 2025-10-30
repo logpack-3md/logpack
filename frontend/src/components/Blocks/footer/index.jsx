@@ -1,3 +1,4 @@
+import LogoSite from "@/components/icons/logo";
 import React from "react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
@@ -45,10 +46,10 @@ const defaultLegalLinks = [
 
 const Footer = ({
   logo = {
-    url: "https://www.shadcnblocks.com",
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
+    url: "#",
+    src: "@/public/logo",
     alt: "logo",
-    title: "Shadcnblocks.com",
+    title: "LogPack.com",
   },
   sections = defaultSections,
   description = "A collection of components for your startup business or side project.",
@@ -64,12 +65,7 @@ const Footer = ({
             {/* Logo */}
             <div className="flex items-center gap-2 lg:justify-start">
               <a href={logo.url}>
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  title={logo.title}
-                  className="h-8"
-                />
+               <LogoSite />         
               </a>
               <h2 className="text-xl font-semibold">{logo.title}</h2>
             </div>

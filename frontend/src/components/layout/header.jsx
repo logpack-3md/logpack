@@ -43,7 +43,9 @@ export default function Header() {
         <div className="flex items-center gap-4 lg:gap-8">
           {/* Logo */}
           <div className="flex items-center gap-1">
+
             <LogoSite />
+            
             {/* px-2 apos isso é o Gradient */}
             <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
               hover:from-[#8f5f3b] hover:to-[#e0a273]" >
