@@ -1,4 +1,5 @@
 import { About } from "@/components/Blocks/about";
+import { Footer } from "@/components/Blocks/footer";
 import Header from "@/components/layout/header";
 import Image from "next/image";
 
@@ -13,6 +14,8 @@ export default function Home() {
           <About />
         </div>
 
+        <Footer />
+        
       </div>
     </>
   );

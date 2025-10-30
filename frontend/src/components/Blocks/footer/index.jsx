@@ -57,7 +57,7 @@ const Footer = ({
   legalLinks = defaultLegalLinks,
 }) => {
   return (
-    <section className="py-32">
+    <section className="flex justify-center items-center">
       <div className="container">
         <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start lg:text-left">
           <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
