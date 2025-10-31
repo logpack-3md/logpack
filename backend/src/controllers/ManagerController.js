@@ -1,10 +1,13 @@
+import Compra from '../models/Compra.js'
 import Insumos from '../models/Insumos.js'
+import Pedidos from '../models/Pedidos.js'
 import Setor from '../models/Setor.js'
 import z from 'zod'
 
 class ManagerController {
     static createCompraSchema = z.object({
-        
+        description: z.string().min(10, { error: "Digite no mínimo 10 caracteres." }),
+        amount: z.int().min(200, { error: "Insira um valor acima e múltiplo de 200." }).refine(value => value % 200 === 0, { error: "O valor deve ser MÚLTIPLO de 200. (ex.: 200, 400, 600, etc.)." }),
     })
 
     static async setStatusInsumo(req, res) {
@@ -141,8 +144,72 @@ class ManagerController {
         }
     }
 
-    static async createCompra(req, res) {
+    static async approvePedido(req, res) {
+        const { id } = req.params
+        const approveSchema = z.object({
+            status: z.enum(['rejeitado', 'aprovado'], { error: "O gerente so pode determinar se o pedido foi aprovado ou rejeitado." })
+        })
 
+        try {
+            const { status } = approveSchema.parse(req.body)
+
+            const [rowsAffected] = await Pedidos.update(
+                { status: status },
+                { where: { id: id } }
+            )
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Pedido não encontrado." })
+            };
+
+            return res.status(200).json({ message: `Status de pedido alterado para ${status}.`})
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de entrado inválidos",
+                    issues: error.issues
+                })
+            }
+            console.error("Erro ao determinar status de pedido", error);
+            return res.status(500).json({error: "Ocorreu um erro interno no servidor ao determinar status de pedido."})
+        }
+    }
+
+    static async createCompra(req, res) {
+        const gerenteId = req.user.id
+        const { pedidoId } = req.params
+
+        try {
+            const validatedSchema = ManagerController.createCompraSchema.parse(req.body)
+
+            const newCompraData = {
+                ...validatedSchema,
+                gerenteId: gerenteId,
+                pedidoId: pedidoId
+            }
+
+            const compra = await Compra.create(newCompraData)
+
+            await Pedidos.update(
+                { status: "compra_iniciada" },
+                { where: { id: pedidoId, status: 'aprovado' } }
+            )
+
+            return res.status(201).json({
+                message: `Compra iniciada para o pedido de id: ${pedidoId}`,
+                compra: compra
+            })
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de entrada inválidos",
+                    issues: error.issues
+                })
+            }
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
+            console.error("Erro ao criar compra", error);
+        }
     }
 }
 
