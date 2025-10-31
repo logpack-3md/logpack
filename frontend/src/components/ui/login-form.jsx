@@ -72,11 +72,11 @@ export function LoginForm({ className, ...props }) {
           {/* Formulário de email e Senha */}
           <form className="grid gap-4" onSubmit={handleLogin}>
             <div className="grid gap-2">
-              <Label htmlFor="email">email</Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="000.000.000-00"
+                placeholder="email@gmail.com"
                 className={"bg-background"}
                 required
                 value = {email}

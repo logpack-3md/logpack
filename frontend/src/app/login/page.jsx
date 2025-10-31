@@ -1,12 +1,4 @@
-import { GalleryVerticalEnd } from "lucide-react"
-import Logo from "@/components/icons/logo";
 import { LoginForm } from "@/components/ui/login-form"
-import { imageOptimizer } from "next/dist/server/image-optimizer";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage
-} from "@/components/ui/avatar";
 import LogoSite from "@/components/icons/logo";
 
 export default function LoginPage() {
