@@ -31,7 +31,7 @@ class BuyerController {
 
             await Compra.update(
                 { status: 'fase_de_orcamento' },
-                { where: {id: compraId, status: ''}}
+                { where: {id: compraId, status: 'pendente'}}
             )
 
             return res.status(201).json({
@@ -40,9 +40,15 @@ class BuyerController {
             })
 
         } catch (error) {
-
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: "Dados de entrada inválidos",
+                    issues: error.issues
+                })
+            }
+            console.error("Erro no servidor ao criar orçamento", error)
+            return res.status(500).json({ error: "Erro interno no servidor ao criar orçamento."})
         }
-
     }
 }
 
