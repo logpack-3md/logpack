@@ -46,13 +46,13 @@ class AuthMiddleware {
         }
         next()
     }
-    
+
     async isBuyer(req, res, next) {
         if (!req.user || req.user.role !== 'buyer') {
             res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente de compras." })
         }
         next()
-        
+
     }
 
     async isActiveSector(req, res, next) {
@@ -140,6 +140,30 @@ class AuthMiddleware {
         } catch (error) {
             console.error("Erro no middleware alreadyRequested:", error)
             return res.status(500).json({ error: 'Erro interno no servidor ao verificar duplicidade de insumos.' })
+        }
+    }
+
+    async isApproved(req, res, next) {
+        const { pedidoId } = req.params     
+
+        try {
+            const pedido = await Pedidos.findOne({
+                where: { id: pedidoId },
+                attributes: ['status']
+            })
+
+            if (!pedido) {
+                return res.status(404).json({ message: "Pedido não encontrado." })
+            }
+
+            if (pedido.status === 'solicitado') {
+                return res.status(403).json({ message: "Acesso negado: O pedido primeiro precisa ser aprovado por algum gerente de produção." })
+            }
+
+            next()
+        } catch (error) {
+            console.error("Erro no middleware isApproved", error)
+            return res.status(500).json({ message: "Erro interno no servidor ao verificar se o pedido foi aprovado." })
         }
     }
 }

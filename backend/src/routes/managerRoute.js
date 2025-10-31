@@ -63,6 +63,7 @@ router.post('/compra/:pedidoId',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
+    AuthMiddleware.isApproved,
     ManagerController.createCompra
 )
 
