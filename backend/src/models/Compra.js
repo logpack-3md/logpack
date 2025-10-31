@@ -22,7 +22,7 @@ Compra.init({
 
     status: {
         type: DataTypes.ENUM,
-        values: ['pendente', 'fase de orçamento', 'concluído'],
+        values: ['pendente', 'fase_de_orcamento', 'concluído'],
         defaultValue: 'pendente'
     },
 
