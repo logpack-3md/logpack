@@ -42,9 +42,17 @@ class AuthMiddleware {
 
     async isManager(req, res, next) {
         if (!req.user || req.user.role !== 'manager') {
-            res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente." })
+            res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente de produção." })
         }
         next()
+    }
+    
+    async isBuyer(req, res, next) {
+        if (!req.user || req.user.role !== 'buyer') {
+            res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente de compras." })
+        }
+        next()
+        
     }
 
     async isActiveSector(req, res, next) {
