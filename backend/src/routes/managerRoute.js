@@ -59,5 +59,12 @@ router.put('/setor/status/:id',
     ManagerController.setStatusSetor
 ) 
 
+router.post('/compra/:pedidoId',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.createCompra
+)
+
 export default router
 

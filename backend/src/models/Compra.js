@@ -36,12 +36,9 @@ Compra.init({
         allowNull: false
     },
 
-    responsible_budget: {
-        type: DataTypes.STRING,
-    },
-
     approval_date: {
-        type: DataTypes.DATE
+        type: DataTypes.DATE,
+        allowNull: true
     },
 
 }, {
