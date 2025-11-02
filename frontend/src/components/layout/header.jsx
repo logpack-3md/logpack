@@ -146,16 +146,8 @@ export default function Header() {
                       </AccordionContent>
                     </AccordionItem>
 
-                    {/* item 3 */}
-                    <AccordionItem value="item-3">
-                      <AccordionTrigger>Sobre</AccordionTrigger>
-                      <AccordionContent>
-                        <a href="/sobre" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Nossa História</a>
-                        <a href="/sobre" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Objetivo</a>
-                      </AccordionContent>
-                    </AccordionItem>
 
-                    {/* item 4 */}
+                    {/* item 3 */}
                     <AccordionItem value="item-4">
                       <AccordionTrigger>Contato</AccordionTrigger>
                       <AccordionContent>

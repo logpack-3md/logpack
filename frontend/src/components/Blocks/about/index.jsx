@@ -118,7 +118,7 @@ const About = ({
 
 
       {/* Plano */}
-          <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
+      <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
         <h2 className="text-3xl font-bold tracking-tight lg:text-4xl"> Planos de Negócios </h2>
 
         <p className="text-muted-foreground max-w-2xl">
