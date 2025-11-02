@@ -6,28 +6,28 @@ import { ArrowRight, BarChart, Bell, Cpu, Scan } from "lucide-react";
 // Dados para os passos do serviço (facilita a manutenção)
 const servicosInformation = [
   {
-    step: "01",
+    etapa: "01",
     icon: Scan,
-    title: "Instalação dos Sensores",
-    description: "Nossa equipe instala sensores IoT de alta precisão em suas prateleiras, paletes ou áreas de estoque, sem interromper sua operação.",
+    titulo: "Instalação dos Sensores",
+    descricao: "Nossa equipe instala sensores IoT de alta precisão em suas prateleiras, paletes ou áreas de estoque, sem interromper sua operação.",
   },
   {
-    step: "02",
+    etapa: "02",
     icon: BarChart,
-    title: "Monitoramento em Tempo Real",
-    description: "Os sensores capturam dados de peso e volume 24/7 e os transmitem para nossa plataforma na nuvem de forma segura e contínua.",
+    titulo: "Monitoramento em Tempo Real",
+    descricao: "Os sensores capturam dados de peso e volume 24/7 e os transmitem para nossa plataforma na nuvem de forma segura e contínua.",
   },
   {
-    step: "03",
+    etapa: "03",
     icon: Cpu,
-    title: "Análise com Inteligência Artificial",
-    description: "Nossos algoritmos de IA analisam os dados recebidos, identificando padrões, prevendo demandas e detectando anomalias instantaneamente.",
+    titulo: "Análise com Inteligência Artificial",
+    descricao: "Nossos algoritmos de IA analisam os dados recebidos, identificando padrões, prevendo demandas e detectando anomalias instantaneamente.",
   },
   {
-    step: "04",
+    etapa: "04",
     icon: Bell,
-    title: "Alertas e Insights Visuais",
-    description: "Você recebe insights claros em um dashboard intuitivo e alertas automáticos sobre níveis de estoque críticos, movimentações e possíveis perdas.",
+    titulo: "Alertas e Insights Visuais",
+    descricao: "Você recebe insights claros em um dashboard intuitivo e alertas automáticos sobre níveis de estoque críticos, movimentações e possíveis perdas.",
   },
 ];
 
@@ -54,15 +54,15 @@ const servico = () => {
             {servicosInformation.map((item) => {
               const IconComponent = item.icon;
               return (
-                <div key={item.step} className="bg-slate-50 dark:bg-card border rounded-2xl p-6 lg:p-8 flex flex-col gap-4 text-center md:text-left">
+                <div key={item.etapa} className="bg-slate-50 dark:bg-card border rounded-2xl p-6 lg:p-8 flex flex-col gap-4 text-center md:text-left">
                   <div className="flex justify-center md:justify-start items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-lg text-primary">
                       <IconComponent className="h-7 w-7" />
                     </div>
-                    <span className="text-5xl font-bold text-primary/20">{item.step}</span>
+                    <span className="text-5xl font-bold text-primary/20">{item.etapa}</span>
                   </div>
-                  <h3 className="text-xl font-semibold mt-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.description}</p>
+                  <h3 className="text-xl font-semibold mt-2">{item.titulo}</h3>
+                  <p className="text-muted-foreground text-sm">{item.descricao}</p>
                 </div>
               );
             })}
