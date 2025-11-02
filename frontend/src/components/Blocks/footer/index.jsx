@@ -2,63 +2,64 @@ import LogoSite from "@/components/icons/logo";
 import React from "react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
+
 const defaultSections = [
   {
-    title: "Product",
+    title: "Sobre",
     links: [
-      { name: "Overview", href: "#" },
-      { name: "Pricing", href: "#" },
-      { name: "Marketplace", href: "#" },
-      { name: "Features", href: "#" },
+      { name: "Sobre o LogPack", href: "/" },
+      { name: "Impacto Real", href: "/" },
+      { name: "Marketplace", href: "/" },
+      { name: "Features", href: "/" },
     ],
   },
   {
-    title: "Company",
+    title: "Serviços",
     links: [
-      { name: "About", href: "#" },
-      { name: "Team", href: "#" },
-      { name: "Blog", href: "#" },
-      { name: "Careers", href: "#" },
+      { name: "About", href: "/" },
+      { name: "Team", href: "/" },
+      { name: "Blog", href: "/" },
+      { name: "Careers", href: "/" },
     ],
   },
   {
-    title: "Resources",
+    title: "Contato",
     links: [
-      { name: "Help", href: "#" },
-      { name: "Sales", href: "#" },
-      { name: "Advertise", href: "#" },
-      { name: "Privacy", href: "#" },
+      { name: "Ajuda", href: "/" },
+      { name: "Contato", href: "/" },
     ],
   },
 ];
 
 const defaultSocialLinks = [
-  { icon: <FaInstagram className="size-5" />, href: "#", label: "Instagram" },
-  { icon: <FaFacebook className="size-5" />, href: "#", label: "Facebook" },
-  { icon: <FaTwitter className="size-5" />, href: "#", label: "Twitter" },
-  { icon: <FaLinkedin className="size-5" />, href: "#", label: "LinkedIn" },
+  { icon: <FaInstagram className="size-5" />, href: "/", label: "Instagram" },
+  { icon: <FaFacebook className="size-5" />, href: "/", label: "Facebook" },
+  { icon: <FaTwitter className="size-5" />, href: "/", label: "Twitter" },
+  { icon: <FaLinkedin className="size-5" />, href: "/", label: "LinkedIn" },
 ];
 
 const defaultLegalLinks = [
-  { name: "Terms and Conditions", href: "#" },
-  { name: "Privacy Policy", href: "#" },
+  { name: "Terms and Conditions", href: "/" },
+  { name: "Privacy Policy", href: "/" },
 ];
 
 const Footer = ({
   logo = {
-    url: "#",
+    url: "/",
     src: "@/public/logo",
-    alt: "logo",
+    alt: "LogPack Logo",
     title: "LogPack.com",
   },
   sections = defaultSections,
-  description = "A collection of components for your startup business or side project.",
+  description = "Seu controle e monitoramento logístico de seu estoque em um só lugar.",
   socialLinks = defaultSocialLinks,
-  copyright = "© 2024 Shadcnblocks.com. All rights reserved.",
+  copyright = "© 2025 LogPack.com. Todos os direitos reservados.",
   legalLinks = defaultLegalLinks,
 }) => {
+
+
   return (
-    <section className="flex justify-center items-center">
+    <section className="flex justify-center items-center px-10 pt-3">
       <div className="container">
         <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start lg:text-left">
           <div className="flex w-full flex-col justify-between gap-6 lg:items-start">

@@ -3,33 +3,6 @@ import IconSiteTecnologia from "@/components/icons/icons-tecnologia";
 import { Button } from "@/components/ui/button";
 import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
-const defaultCompanies = [
-  {
-    src: "#",
-    alt: "Empresa 1 ",
-  },
-  {
-    src: "#",
-    alt: "Empresa 2",
-  },
-  {
-    src: "#",
-    alt: "Empresa 3",
-  },
-  {
-    src: "#",
-    alt: "Empresa 4",
-  },
-  {
-    src: "#",
-    alt: "Empresa 5",
-  },
-  {
-    src: "#",
-    alt: "Empresa 6",
-  },
-];
-
 const defaultAchievements = [
   { icon: Package, label: "Produtos Monitorados", value: "50k+" },
   { icon: Users, label: "Clientes Atendidos", value: "1.2k+" },
@@ -48,8 +21,6 @@ const About = ({
     buttonText: "Conheça nossa tecnologia",
     buttonUrl: "/tecnologia",
   },
-  companiesTitle = "Empresas que confiam na LogPack",
-  companies = defaultCompanies,
   achievementsTitle = "Impacto Real em Números",
   achievementsDescription = "Não entregamos apenas software, entregamos resultados mensuráveis que transformam a operação dos nossos parceiros.",
   achievements = defaultAchievements,
@@ -75,10 +46,9 @@ const About = ({
         </div>
 
 
-        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted justify-center flex">
+        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted justify-center flex w-full max-w-md">
           <IconSiteSobre className="object-cover w-full h-full items-center justify-center" />
         </div>
-
       </section>
 
       {/* Resultados */}
@@ -125,7 +95,7 @@ const About = ({
         <div className="relative aspect-video overflow-hidden rounded-xl shadow-xl border bg-muted flex justify-center">
           <IconSiteTecnologia className="object-cover w-full h-full" />
         </div>
-        
+
         {/* Card de Destaque */}
         <div className="order-1 lg:order-2 flex flex-col justify-center gap-6 rounded-xl bg-muted/50 p-8 lg:p-10 border shadow-sm">
           <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
@@ -144,17 +114,25 @@ const About = ({
         </div>
       </section>
 
-      {/* Logos */}
-      <section className="flex flex-col items-center text-center border-t pt-16">
-        <p className="text-sm font-medium text-muted-foreground mb-8 uppercase tracking-widest">
-          {companiesTitle}
+
+
+
+      {/* Plano */}
+          <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
+        <h2 className="text-3xl font-bold tracking-tight lg:text-4xl"> Planos de Negócios </h2>
+
+        <p className="text-muted-foreground max-w-2xl">
+          Oferecemos modelos de contratação adaptáveis, projetados para escalar com o seu crescimento. Seja você uma pequena empresa ou uma grande empresa, temos uma solução de monitoramento de estoque que se encaixa perfeitamente às suas necessidades operacionais e financeiras.
         </p>
-        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8">
-          {companies.map((company, idx) => (
-            <img key={company.src + idx} src={company.src} alt={company.alt} className="h-8 w-auto object-contain filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer" />
-          ))}
-        </div>
+
+        <Button className="w-fit gap-2 " asChild>
+          <a href="/contato">
+            Entre em contato para saber mais
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </Button>
       </section>
+
 
     </main>
   );

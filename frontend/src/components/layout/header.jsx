@@ -24,11 +24,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage
-} from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Menu, LogIn } from "lucide-react"; // Importando o ícone de Login
 import { SwitchTheme } from "../SwitchThemes";
@@ -41,6 +36,7 @@ export default function Header() {
       <div className="flex items-center justify-between w-full max-w-8xl mx-auto p-2">
 
         <div className="flex items-center gap-4 lg:gap-8">
+
           {/* Logo */}
           <div className="flex items-center gap-1">
 
@@ -63,16 +59,8 @@ export default function Header() {
                 <NavigationMenuLink href="/" className="px-4 block text-lg font-bold rounded-md">Home</NavigationMenuLink>
               </NavigationMenuItem>
 
-              {/* item 2 */}
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className={"font-bold"}>Sobre</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <NavigationMenuLink href="/sobre" className="px-2 py-2 block w-27">Nossa História</NavigationMenuLink>
-                  <NavigationMenuLink href="/sobre" className="px-2 py-2 block w-27">Objetivo</NavigationMenuLink>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
 
-              {/* item 3 */}
+              {/* item 2 */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger className={"font-bold"}>Serviços</NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -81,7 +69,7 @@ export default function Header() {
               </NavigationMenuItem>
 
 
-              {/* item 4 */}
+              {/* item 3 */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger className={"font-bold"}>Contato</NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -91,6 +79,7 @@ export default function Header() {
 
             </NavigationMenuList>
           </NavigationMenu>
+
         </div>
 
 
@@ -107,6 +96,7 @@ export default function Header() {
               Login
             </Button>
           </a>
+
 
           <div className="lg:hidden">
 
@@ -182,9 +172,13 @@ export default function Header() {
                 </DrawerFooter>
               </DrawerContent>
             </Drawer>
+
           </div>
+
         </div>
+
       </div>
+
     </header>
   )
 }
