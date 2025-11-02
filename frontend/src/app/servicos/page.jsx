@@ -110,7 +110,7 @@ const servico = () => {
           </div>
         </section>
 
-        {/* Seção 4: Call to Action */}
+        {/* Call to Action */}
         <section className="max-w-5xl mx-auto rounded-2xl bg-primary/5 dark:bg-card border px-6 py-12 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
           <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
             Pronto para Otimizar seu Estoque?
