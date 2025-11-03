@@ -14,6 +14,57 @@ class BuyerController {
 
     })
 
+    static async getCompras(req, res) {
+
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+
+        const offset = (page - 1) * limit
+
+        try {
+            const result = await Compra.findAndCountAll({
+                limit: limit,
+                offset: offset,
+                order: [['amount', 'ASC']],
+
+                attributes: [
+                    'id',
+                    'gerenteId',
+                    'pedidoId',
+                    'description',
+                    'amount',
+                    'status',
+                ]
+            })
+
+            const compras = result.rows;
+            const totalItems = result.count
+            const totalPages = Math.ceil(totalItems / limit)
+
+            if (compras.length === 0 && page > 1) {
+                return res.status(404).json({ message: "Página não encontrada ou vazia" })
+            }
+
+            if (totalItems === 0) {
+                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+            }
+
+            res.status(200).json({
+                data: compras,
+                meta: {
+                    totalItems: totalItems,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    itemsPerPage: limit
+                }
+            });
+
+        } catch (error) {
+            res.status(500).json({ error: "Erro ao listar usuários." })
+            console.error("Erro ao listar usuários: ", error)
+        }
+    }
+
     static async createOrcamento(req, res) {
         const buyerId = req.user.id
         const { compraId } = req.params
