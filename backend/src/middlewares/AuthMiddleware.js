@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken'
 import Setor from '../models/Setor.js';
 import Insumos from '../models/Insumos.js';
 import Pedidos from '../models/Pedidos.js';
+import Orcamento from '../models/Orcamento.js';
+import Compra from '../models/Compra.js';
 
 class AuthMiddleware {
     async verifyToken(req, res, next) {
@@ -143,7 +145,7 @@ class AuthMiddleware {
         }
     }
 
-    async isApproved(req, res, next) {
+    async isRequestApproved(req, res, next) {
         const { pedidoId } = req.params
 
         try {
@@ -162,8 +164,51 @@ class AuthMiddleware {
 
             next()
         } catch (error) {
-            console.error("Erro no middleware isApproved", error)
+            console.error("Erro no middleware isRequestApproved", error)
             return res.status(500).json({ message: "Erro interno no servidor ao verificar se o pedido foi aprovado." })
+        }
+    }
+
+    async isBuyApproved(req, res, next) {
+        const { orcamentoId } = req.params;
+
+        try {
+         
+            const orcamento = await Orcamento.findByPk(orcamentoId, {
+                attributes: ['compraId']
+            });
+
+            if (!orcamento) {
+                return res.status(404).json({ message: "Orçamento não encontrado." });
+            }
+
+            const compraId = orcamento.compraId;
+
+            if (!compraId) {
+                return res.status(400).json({ message: "O orçamento não está associado a nenhuma compra válida." });
+            }
+
+            const compra = await Compra.findOne({
+                where: { id: compraId },
+                attributes: ['status']
+            });
+
+            if (!compra) {
+                return res.status(404).json({ message: "Compra associada não encontrada." });
+            }
+
+            if (compra.status === 'pendente') {
+                return res.status(403).json({ message: "Acesso negado: A Compra ainda está pendente de orçamento." });
+            }
+
+            if (compra.status === 'concluído') {
+                return res.status(403).json({ message: "Acesso negado: Essa Compra já foi aprovada e concluída." });
+            }
+
+            next();
+        } catch (error) {
+            console.error("Erro no middleware isBuyApproved", error);
+            return res.status(500).json({ message: "Erro interno no servidor ao verificar o status da Compra." });
         }
     }
 }

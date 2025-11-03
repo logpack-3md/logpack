@@ -20,6 +20,7 @@ Compra.init({
         allowNull: false
     },
 
+
     status: {
         type: DataTypes.ENUM,
         values: ['pendente', 'fase_de_orcamento', 'concluído'],
@@ -34,6 +35,11 @@ Compra.init({
     amount: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+
+    who_approved_id: {
+        type: DataTypes.UUID,
+        allowNull: true
     },
 
     approval_date: {

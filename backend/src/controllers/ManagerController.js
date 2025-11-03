@@ -1,5 +1,6 @@
 import Compra from '../models/Compra.js'
 import Insumos from '../models/Insumos.js'
+import Orcamento from '../models/Orcamento.js'
 import Pedidos from '../models/Pedidos.js'
 import Setor from '../models/Setor.js'
 import z from 'zod'
@@ -259,6 +260,58 @@ class ManagerController {
             res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
             console.error("Erro ao criar compra", error);
         }
+    }
+
+    static async contestarOrcamento(req, res) {
+        const gerenteId = req.user.id
+        const { orcamentoId } = req.params;
+
+        const approveSchema = z.object({
+            status: z.enum(['negado', 'aprovado', 'renegociacao'],
+                { error: "O gerente so pode determinar se o pedido foi aprovado, rejeitado ou deseja renegociação." })
+        })
+
+        try {
+            const { status } = approveSchema.parse(req.body)
+
+            const [rowsAffected] = await Orcamento.update(
+                { status: status },
+                { where: { id: orcamentoId } },
+            )
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: 'Orçamento não encontrado.' })
+            }
+
+            const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId)
+
+            if (status === 'aprovado') {
+                const compraId = orcamentoAtualizado.compraId
+
+                await Compra.update(
+                    {
+                        approval_date: new Date(),
+                        status: 'concluído',
+                        who_approved_id: gerenteId
+                    },
+                    { where: { id: compraId } }
+
+                )
+            }
+
+            return res.status(200).json({ message: `Status do orçamento alterado para: ${status}`, orcamento: orcamentoAtualizado })
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({
+                    message: 'Dados de entrada inválidos',
+                    issues: error.issues
+                })
+            }
+            console.error("Erro interno no servidor ao contestar orçamento", error)
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor ao contestar o orçamento." })
+        }
+
     }
 }
 
