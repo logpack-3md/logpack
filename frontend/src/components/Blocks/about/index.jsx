@@ -29,7 +29,7 @@ const About = ({
 } = {}) => {
 
   return (
-    <main className="container mx-auto px-4 py-16 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-32">
+    <main className="container mx-auto px-4 py-16 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-30">
 
       {/* Introdução */}
       <section className="grid gap-10 lg:grid-cols-2 items-center">
@@ -45,10 +45,10 @@ const About = ({
           </div>
         </div>
 
-
         <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted justify-center flex w-full max-w-md">
           <IconSiteSobre className="object-cover w-full h-full items-center justify-center" />
         </div>
+
       </section>
 
       {/* Resultados */}
@@ -90,35 +90,8 @@ const About = ({
         </div>
       </section>
 
-      {/* Destaque */}
-      <section className="grid gap-10 lg:grid-cols-2 items-center">
-        <div className="relative aspect-video overflow-hidden rounded-xl shadow-xl border bg-muted flex justify-center">
-          <IconSiteTecnologia className="object-cover w-full h-full" />
-        </div>
-
-        {/* Card de Destaque */}
-        <div className="order-1 lg:order-2 flex flex-col justify-center gap-6 rounded-xl bg-muted/50 p-8 lg:p-10 border shadow-sm">
-          <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-            <breakout.icon className="h-6 w-6" />
-          </div>
-          <div>
-            <h3 className="mb-2 text-2xl font-semibold tracking-tight">{breakout.title}</h3>
-            <p className="text-muted-foreground leading-relaxed">{breakout.description}</p>
-          </div>
-          <Button className="w-fit gap-2" asChild>
-            <a href={breakout.buttonUrl}>
-              {breakout.buttonText}
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </Button>
-        </div>
-      </section>
-
-
-
-
       {/* Plano */}
-      <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
+      <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 dark:bg-card border px-6 py-16 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
         <h2 className="text-3xl font-bold tracking-tight lg:text-4xl"> Planos de Negócios </h2>
 
         <p className="text-muted-foreground max-w-2xl">

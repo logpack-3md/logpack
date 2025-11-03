@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toast"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function RootLayout({ children }) {
   return (
@@ -10,4 +10,4 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   )
-}https://youtube.com/shorts/pWc4pfBI1jU?si=HaHoXEQw0ozOtOYx
+}
