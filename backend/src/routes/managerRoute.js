@@ -59,6 +59,13 @@ router.put('/setor/status/:id',
     ManagerController.setStatusSetor
 ) 
 
+router.get('/pedido', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.getPedidos
+)
+
 router.put('/pedido/status/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,

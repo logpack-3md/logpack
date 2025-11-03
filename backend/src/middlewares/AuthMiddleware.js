@@ -56,7 +56,7 @@ class AuthMiddleware {
     }
 
     async isActiveSector(req, res, next) {
-        const setorName = req.body.setorName
+        const { setorName } = req.body
         try {
             const setor = await Setor.findOne({
                 where: { name: setorName },
@@ -144,7 +144,7 @@ class AuthMiddleware {
     }
 
     async isApproved(req, res, next) {
-        const { pedidoId } = req.params     
+        const { pedidoId } = req.params
 
         try {
             const pedido = await Pedidos.findOne({
