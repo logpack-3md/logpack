@@ -65,7 +65,7 @@ Compra.belongsTo(Pedidos, {
 User.hasMany(Compra, {
     foreignKey: 'gerenteId',
     sourceKey: 'id',
-    as: 'comprasIniciadas'
+    as: 'compraIniciadas'
 })
 
 Compra.belongsTo(User, {
@@ -73,6 +73,20 @@ Compra.belongsTo(User, {
     targetKey: 'id',
     as: 'gerenteResponsavel'
 })
+
+// -- //
+
+Compra.belongsTo(User, {
+    foreignKey: 'who_approved_id',
+    targetKey: 'id',
+    as: 'aprovadorDetalhes'
+});
+
+User.hasMany(Compra, {
+    foreignKey: 'who_approved_id',
+    sourceKey: 'id',
+    as: 'compraAprovadas'
+});
 
 // -- //
 

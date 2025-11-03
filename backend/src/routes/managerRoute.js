@@ -59,6 +59,13 @@ router.put('/setor/status/:id',
     ManagerController.setStatusSetor
 ) 
 
+router.get('/pedido', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.getPedidos
+)
+
 router.put('/pedido/status/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -70,8 +77,16 @@ router.post('/compra/:pedidoId',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
-    AuthMiddleware.isApproved,
+    AuthMiddleware.isRequestApproved,
     ManagerController.createCompra
+)
+
+router.put('/orcamento/:orcamentoId',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    AuthMiddleware.isBuyApproved,
+    ManagerController.contestarOrcamento
 )
 
 export default router
