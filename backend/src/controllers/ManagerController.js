@@ -41,7 +41,7 @@ class ManagerController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+                return res.status(404).json({ message: "Nenhum pedido solicitado" })
             }
 
             res.status(200).json({
@@ -288,6 +288,25 @@ class ManagerController {
             if (status === 'aprovado') {
                 const compraId = orcamentoAtualizado.compraId
 
+                const compraInfo = await Compra.findOne(
+                    { where: { id: compraId } },
+                    { attributes: ['pedidoId'] }
+                )
+
+                if (!compraInfo || !compraInfo.pedidoId) {
+
+                    console.warn(`Compra ${compraId} não tem Pedido associado.`);
+
+                } else {
+
+                    const pedidoId = compraInfo.pedidoId;
+
+                    await Pedidos.update(
+                        { status: 'compra_efetuada' },
+                        { where: { id: pedidoId } }
+                    );
+                }
+
                 await Compra.update(
                     {
                         approval_date: new Date(),
@@ -295,7 +314,6 @@ class ManagerController {
                         who_approved_id: gerenteId
                     },
                     { where: { id: compraId } }
-
                 )
             }
 
