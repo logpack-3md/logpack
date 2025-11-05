@@ -18,4 +18,10 @@ router.post('/orcamento/:compraId',
     BuyerController.createOrcamento
 )
 
+router.put('/orcamento/:id',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isBuyer,
+    BuyerController.updateOrcamento
+)
 export default router
