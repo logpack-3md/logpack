@@ -1,4 +1,4 @@
-    import Insumos from '../models/Insumos.js'
+import Insumos from '../models/Insumos.js'
 import z from 'zod'
 import { put, del } from '@vercel/blob'
 import Setor from '../models/Setor.js';

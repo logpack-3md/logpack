@@ -159,7 +159,7 @@ class AuthMiddleware {
             }
 
             if (pedido.status === 'solicitado' || pedido.status === 'rejeitado') {
-                return res.status(403).json({ message: "Acesso negado: O pedido primeiro precisa ser aprovado por algum gerente de produção." })
+                return res.status(403).json({ message: "Acesso negado: O pedido precisa ser aprovado por algum gerente de produção." })
             }
 
             next()

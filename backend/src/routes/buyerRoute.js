@@ -24,4 +24,12 @@ router.put('/orcamento/:id',
     AuthMiddleware.isBuyer,
     BuyerController.updateOrcamento
 )
+
+router.put('/orcamento/cancelar/:id',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isBuyer,
+    BuyerController.cancelarOrcamento
+)
+
 export default router

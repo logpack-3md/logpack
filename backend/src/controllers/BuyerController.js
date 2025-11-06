@@ -1,6 +1,7 @@
 import Compra from "../models/Compra.js";
 import Orcamento from "../models/Orcamento.js";
 import z from "zod";
+import Pedidos from "../models/Pedidos.js";
 
 class BuyerController {
     static createOrcamentoSchema = z.object({
@@ -135,6 +136,45 @@ class BuyerController {
             }
             console.error("Erro ao atualizar a descrição do orçamento", error)
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao atualizar orçamento" })
+        }
+    }
+
+    static async cancelarOrcamento(req, res) {
+        const { id } = req.params;
+
+        try {
+            const [rowsAffected] = await Orcamento.update(
+                { status: 'cancelado' },
+                { where: { id: id } }
+            )
+
+            if (rowsAffected === 0) {
+                res.status(404).json({ message: "Orçamento não encontrado" })
+            };
+
+            const orcamentoCancelado = await Orcamento.findByPk(id)
+            const compra = await Compra.findOne({
+                where: { id: orcamentoCancelado.compraId }
+            })
+
+            await Compra.update(
+                { status: 'cancelado' },
+                { where: { id: orcamentoCancelado.compraId } }
+            )
+            
+            await Pedidos.update(
+                { status: 'cancelado' },
+                { where: { id: compra.pedidoId } }
+            )
+
+            return res.status(200).json({
+                message: "Orçamento cancelado com sucesso.",
+                orcamento: orcamentoCancelado,
+            })
+
+        } catch (error) {
+            console.error("Erro ao cancelar orçamento: ", error)
+            return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao cancelar orçamento" })
         }
     }
 }
