@@ -1,40 +1,44 @@
+// app/dashboard/sections/dashboard/default/UniqueVisitorCard.jsx
 'use client';
 
+import { useState } from 'react';
+import { Button, Grid, Stack, Typography } from '@mui/material';
 import MainCard from '../../cards/MainCard';
-import { Box, Stack, Typography } from '@mui/material';
-import ReactApexChart from 'react-apexcharts';
+import IncomeAreaChart from './IncomeAreaChart';
 
 export default function UniqueVisitorCard() {
-  const series = [70];
-  const options = {
-    chart: { type: 'radialBar' },
-    plotOptions: {
-      radialBar: {
-        hollow: { size: '65%' },
-        track: { background: '#e6e6e6' },
-        dataLabels: {
-          show: true,
-          name: { show: false },
-          value: { fontSize: '1.5rem', fontWeight: 600 },
-        },
-      },
-    },
-    colors: ['#556cd6'],
-    labels: ['Visitors'],
-  };
+  const [view, setView] = useState('monthly');
 
   return (
-    <MainCard>
-      <Stack spacing={2}>
-        <Typography variant="h5">Unique Visitors</Typography>
-        <Box sx={{ textAlign: 'center' }}>
-          <ReactApexChart options={options} series={series} type="radialBar" height={250} />
-          <Typography variant="h4">2,300</Typography>
-          <Typography variant="body2" color="text.secondary">
-            +12% from last month
-          </Typography>
-        </Box>
-      </Stack>
-    </MainCard>
+    <>
+      <Grid container alignItems="center" justifyContent="space-between">
+        <Grid item>
+          <Typography variant="h5">Unique Visitor</Typography>
+        </Grid>
+        <Grid item>
+          <Stack direction="row" spacing={1}>
+            <Button
+              size="small"
+              onClick={() => setView('monthly')}
+              color={view === 'monthly' ? 'primary' : 'secondary'}
+              variant={view === 'monthly' ? 'outlined' : 'text'}
+            >
+              Month
+            </Button>
+            <Button
+              size="small"
+              onClick={() => setView('weekly')}
+              color={view === 'weekly' ? 'primary' : 'secondary'}
+              variant={view === 'weekly' ? 'outlined' : 'text'}
+            >
+              Week
+            </Button>
+          </Stack>
+        </Grid>
+      </Grid>
+      <MainCard content={false} sx={{ mt: 1.5 }}>
+        <IncomeAreaChart view={view} />
+      </MainCard>
+    </>
   );
 }

@@ -1,17 +1,20 @@
+// app/dashboard/sections/dashboard/default/ReportAreaChart.jsx
 'use client';
 
-import ReactApexChart from 'react-apexcharts';
+import { useTheme } from '@mui/material/styles';
+import { LineChart } from '@mui/x-charts';
+
+const data = [58, 115, 28, 83, 63, 75, 35];
+const labels = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function ReportAreaChart() {
-  const series = [{ name: 'Growth', data: [45, 52, 38, 24, 33, 26, 21, 20, 6, 8, 15, 10] }];
-  const options = {
-    chart: { type: 'area', toolbar: { show: false } },
-    dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2 },
-    xaxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
-    colors: ['#19857b'],
-    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.9 } },
-  };
-
-  return <ReactApexChart options={options} series={series} type="area" height={150} />;
+  const theme = useTheme();
+  return (
+    <LineChart
+      height={200}
+      series={[{ data, area: true, showMark: false, color: theme.palette.warning.main }]}
+      xAxis={[{ data: labels, scaleType: 'point' }]}
+      margin={{ top: 10, bottom: 30, left: 40, right: 20 }}
+    />
+  );
 }

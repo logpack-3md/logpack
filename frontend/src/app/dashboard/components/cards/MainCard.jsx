@@ -1,19 +1,40 @@
-'use client';
+import PropTypes from 'prop-types';
+import { Card, CardContent, CardHeader, Divider } from '@mui/material';
 
-import { Card, CardContent } from '@mui/material';
+const headerSX = {
+  '& .MuiCardHeader-action': { mt: 0, mr: 0 }
+};
 
-export default function MainCard({ children, content = true, ...others }) {
+export default function MainCard({
+  children,
+  content = true,
+  contentSX = {},
+  darkTitle,
+  divider = true,
+  secondary,
+  sx,
+  title,
+  ...others
+}) {
   return (
-    <Card
-      sx={{
-        borderRadius: 2,
-        boxShadow: '0 0 2rem 0 rgba(136, 152, 170, 0.15)',
-        overflow: 'hidden',
-        ...others.sx,
-      }}
-      {...others}
-    >
-      {content ? <CardContent sx={{ p: 3 }}>{children}</CardContent> : children}
+    <Card sx={{ ...sx }}>
+      {!darkTitle && title && (
+        <CardHeader title={title} action={secondary} sx={headerSX} />
+      )}
+      {title && divider && <Divider />}
+      {content && <CardContent sx={contentSX}>{children}</CardContent>}
+      {!content && children}
     </Card>
   );
 }
+
+MainCard.propTypes = {
+  children: PropTypes.node,
+  content: PropTypes.bool,
+  contentSX: PropTypes.object,
+  darkTitle: PropTypes.bool,
+  divider: PropTypes.bool,
+  secondary: PropTypes.any,
+  sx: PropTypes.object,
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
+};

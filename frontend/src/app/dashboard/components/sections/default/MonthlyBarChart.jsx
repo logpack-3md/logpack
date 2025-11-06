@@ -1,31 +1,22 @@
+// app/dashboard/sections/dashboard/default/MonthlyBarChart.jsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import { CardContent, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { BarChart } from '@mui/x-charts';
+
+const data = [80, 95, 70, 42, 65, 55, 78];
+const xLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 export default function MonthlyBarChart() {
-  const [series] = useState([
-    {
-      name: 'Income',
-      data: [1800, 2100, 1900, 2200, 2500, 2700, 3000, 3200, 3400, 3600, 3800, 4000],
-    },
-  ]);
-
-  const options = {
-    chart: { type: 'bar', height: 350, toolbar: { show: false } },
-    plotOptions: { bar: { borderRadius: 4, horizontal: false } },
-    dataLabels: { enabled: false },
-    xaxis: {
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    },
-    colors: ['#556cd6'],
-    tooltip: { theme: 'light' },
-  };
-
+  const theme = useTheme();
   return (
-    <CardContent sx={{ p: 0 }}>
-      <ReactApexChart options={options} series={series} type="bar" height={350} />
-    </CardContent>
+    <BarChart
+      height={300}
+      series={[{ data }]}
+      xAxis={[{ data: xLabels, scaleType: 'band' }]}
+      colors={[theme.palette.info.light]}
+      slotProps={{ bar: { rx: 5, ry: 5 } }}
+      margin={{ top: 10, bottom: 30, left: 40, right: 20 }}
+    />
   );
 }

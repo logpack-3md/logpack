@@ -1,24 +1,23 @@
+// app/dashboard/layout.jsx
 'use client';
 
-import { Box } from '@mui/material';
 import { useState } from 'react';
-
-import DashboardTheme from './theme';
+import { Box, CssBaseline } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from './theme';
 import Sidebar from './components/sidebar';
-import Header from './components/header';
+import Header from './components/Hader';
 
 export default function DashboardLayout({ children }) {
   const [open, setOpen] = useState(true);
-
-  const handleDrawerToggle = () => {
-    setOpen(!open);
-  };
+  const handleToggle = () => setOpen(!open);
 
   return (
-    <DashboardTheme>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Box sx={{ display: 'flex' }}>
-        <Header open={open} handleDrawerToggle={handleDrawerToggle} />
-        <Sidebar open={open} handleDrawerToggle={handleDrawerToggle} />
+        <Header open={open} onToggle={handleToggle} />
+        <Sidebar open={open} onToggle={handleToggle} />
         <Box
           component="main"
           sx={{
@@ -26,18 +25,13 @@ export default function DashboardLayout({ children }) {
             p: 3,
             backgroundColor: 'background.default',
             minHeight: '100vh',
-            width: { sm: `calc(100% - ${open ? 240 : 73}px)` },
-            ml: `${open ? 240 : 73}px`,
-            transition: (theme) =>
-              theme.transitions.create('margin', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
+            ml: { lg: open ? '280px' : '73px' },
+            transition: 'margin 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms'
           }}
         >
-          {children}
+          <Box sx={{ mt: 8 }}>{children}</Box>
         </Box>
       </Box>
-    </DashboardTheme>
+    </ThemeProvider>
   );
 }

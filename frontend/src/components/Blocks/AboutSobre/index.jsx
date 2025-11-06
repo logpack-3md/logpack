@@ -6,46 +6,58 @@ import { Card, CardContent } from "@/components/ui/card";
 
 
 const services = [
+  // Imagem real do pedrones
   {
     title: "Web Development",
-    image: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/photos/simone-hutsch-6jEVl7xPH3E-unsplash.jpg",
+    image: "https://img.freepik.com/fotos-gratis/trabalhador-de-armazem-que-opera-uma-empilhadeira-em-uma-instalacao-de-armazenamento_23-2151962537.jpg?semt=ais_hybrid&w=740&q=80",
     url: "",
   },
   {
     title: "Mobile App Development",
-    image: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/photos/simone-hutsch-gDmVqxZt1hg-unsplash.jpg",
+    image: "https://static.vecteezy.com/ti/fotos-gratis/p2/6024482-a-empilhadeira-esta-trabalhando-no-armazem-gratis-foto.jpg",
     url: "",
   },
+
+
+  // -----------------------------------------------------------------------------------------------------
+
   {
     title: "UI/UX Design",
-    image: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/photos/simone-hutsch-9__Q24sJqKg-unsplash.jpg",
+    image: "https://www.busup.com/hubfs/Imported_Blog_Media/estoque-baguncado-1024x683.jpg",
     url: "",
   },
   {
     title: "Digital Marketing",
-    image: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/photos/simone-hutsch-duxeKbu9FDE-unsplash.jpg",
+    image: "https://admin.ecommercebrasil.com.br/wp-content/uploads/2023/04/20-estoque-fulfillment.jpg.webp",
     url: "",
   },
   {
     title: "Cloud Solutions",
-    image: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/photos/simone-hutsch-5oYbG-sEImY-unsplash.jpg",
+    image: "https://facil123.com.br/wp-content/uploads/as-5-melhores-dicas-para-uma-gestao-de-estoque-eficiente.jpg",
     url: "",
   },
 ];
 
 const AboutSobre = () => {
   return (
-    <section className="flex justify-center items-center">
+    <section className="flex justify-center items-center px-4 lg:px-10">
       <div className="container grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="flex flex-col justify-between lg:col-span-1">
           <div>
-            <h2 className="text-foreground mb-4 text-4xl font-medium md:text-6xl">
-              Featured Services
+            <h2 className="text-foreground mb-4 text-4xl font-medium md:text-4xl">
+              Logística Inteligente para seu Negócio
             </h2>
-            <p className="text-muted-foreground w-72 text-base tracking-tight">
-              We offer comprehensive digital solutions to help your business
-              grow. From web development to mobile apps, we deliver quality
-              results that exceed expectations.
+            <p className="text-muted-foreground w-82 text-base tracking-tight">
+              Oferecemos uma plataforma completa para otimizar sua cadeia de
+              suprimentos. Da gestão de estoque ao rastreamento em tempo real,
+              garantimos eficiência e visibilidade total.
+              Nossa missão é impulsionar seu negócio com uma plataforma completa que
+              otimiza cada etapa da sua cadeia de suprimentos. Automatize a gestão de
+              estoque para reduzir desperdícios, planeje rotas eficientes para
+              diminuir custos de frete e proporcione visibilidade total com
+              rastreamento preciso e em tempo real. Com as ferramentas da LOGPACK,
+              você ganha agilidade, precisão e a confiança necessária para superar as
+              expectativas dos seus clientes.
             </p>
           </div>
         </div>

@@ -19,7 +19,7 @@ const Contact = () => {
                         Entre em Contato
                     </h1>
                     <p className="mt-4 text-lg text-muted-foreground lg:text-xl">
-                        Tem alguma dúvida ou quer ver nossa tecnologia em ação? Preencha o formulário abaixo ou utilize um de nossos canais de atendimento. Nossa equipe está pronta para ajudar.
+                        Tem alguma dúvida ou quer ver nossa tecnologia em ação? Preencha o formulário abaixo ou utilize um de nossos canais de atendimento. Nossa equipe está pronta para ajudar, caso esteja com dúvida sobre os preços basta entrar em contato.
                     </p>
                 </div>
 

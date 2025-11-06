@@ -1,30 +1,41 @@
+// app/dashboard/sections/dashboard/default/SaleReportCard.jsx
 'use client';
 
-import MainCard from '../../cards/MainCard';
-import { Box, Stack, Typography } from '@mui/material';
-import ReactApexChart from 'react-apexcharts';
+import { useState } from 'react';
+import { Grid, MenuItem, TextField, Typography } from '@mui/material';
+import SalesChart from './SalesChart';
+
+const status = [
+  { value: 'today', label: 'Today' },
+  { value: 'month', label: 'This Month' },
+  { value: 'year', label: 'This Year' }
+];
 
 export default function SaleReportCard() {
-  const series = [
-    { name: 'Sales', data: [31, 40, 28, 51, 42, 109, 100] },
-    { name: 'Revenue', data: [11, 32, 45, 32, 34, 52, 41] },
-  ];
-  const options = {
-    chart: { type: 'area', toolbar: { show: false } },
-    dataLabels: { enabled: false },
-    stroke: { curve: 'smooth' },
-    xaxis: { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
-    colors: ['#556cd6', '#19857b'],
-  };
-
+  const [value, setValue] = useState('today');
   return (
-    <MainCard>
-      <Stack spacing={2}>
-        <Typography variant="h5">Sales Report</Typography>
-        <Box>
-          <ReactApexChart options={options} series={series} type="area" height={300} />
-        </Box>
-      </Stack>
-    </MainCard>
+    <>
+      <Grid container alignItems="center" justifyContent="space-between">
+        <Grid item>
+          <Typography variant="h5">Sales Report</Typography>
+        </Grid>
+        <Grid item>
+          <TextField
+            size="small"
+            select
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            sx={{ '& .MuiInputBase-input': { py: 0.75, fontSize: '0.875rem' } }}
+          >
+            {status.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      </Grid>
+      <SalesChart />
+    </>
   );
 }
