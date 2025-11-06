@@ -4,6 +4,7 @@ import EmployeeController from "../controllers/EmployeeController.js";
 
 const router = express.Router()
 
+// pedido de estoque/insumo
 router.post('/request',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,

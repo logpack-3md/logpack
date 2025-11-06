@@ -4,6 +4,8 @@ import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 
 const router = express.Router()
 
+// paginação de setores
+
 router.get('/', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,

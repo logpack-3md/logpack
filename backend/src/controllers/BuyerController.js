@@ -17,6 +17,15 @@ class BuyerController {
         description: z.string().min(10, { error: "Adicione no mínimo 10 caracteres." }).nullable()
     })
 
+    static renegociarSchema = z.object({
+        valor_total: z.number({ error: "O valor total deve ser um número." })
+            .min(0.01, { error: "O valor de deve ser maior que zero" })
+            .refine((value) => {
+                const roundedValue = Math.round(value * 100) / 100;
+                return value === roundedValue;
+            }, { error: "O valor pode ter no máximo duas casas decimais.", }).optional(),
+    })
+
     static async getCompras(req, res) {
 
         const page = parseInt(req.query.page) || 1
@@ -109,24 +118,30 @@ class BuyerController {
         const { id } = req.params
 
         try {
-            const validatedSchema = BuyerController.updateOrcamentoSchema.parse(req.body)
+                const validatedSchema = BuyerController.updateOrcamentoSchema.parse(req.body)
 
-            const [rowsAffected] = await Orcamento.update(validatedSchema,
-                { where: { id: id } }
-            )
+                const [rowsAffected] = await Orcamento.update(validatedSchema,
+                    { where: { id: id } }
+                )
 
-            if (rowsAffected === 0) {
-                return res.status(404).json({ message: "Orçamento não encontrado" })
-            }
-
-            const orcamentoAtualizado = await Orcamento.findByPk(id);
-
-            return res.status(200).json(
-                {
-                    message: "Descrição atualizada com sucesso.",
-                    orcamento: orcamentoAtualizado
+                if (rowsAffected === 0) {
+                    return res.status(404).json({ message: "Orçamento não encontrado" })
                 }
-            )
+
+                const orcamentoAtualizado = await Orcamento.findByPk(id);
+
+                await Compra.update(
+                    { status: 'fase_de_orçamento' },
+                    { where: { id: orcamentoAtualizado.compraId } }
+                )
+
+                return res.status(200).json(
+                    {
+                        message: "Valor atualizado com sucesso.",
+                        orcamento: orcamentoAtualizado
+                    }
+                )
+
         } catch (error) {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({
@@ -136,6 +151,31 @@ class BuyerController {
             }
             console.error("Erro ao atualizar a descrição do orçamento", error)
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao atualizar orçamento" })
+        }
+    }
+
+    static async renegociarOrcamento(req, res) {
+        const { id } = req.params;
+
+        try {
+            const validatedSchema = BuyerController.renegociarSchema.parse(req.body);
+
+            const [rowsAffected] = await Orcamento.update(validatedSchema, {
+                where: { id: id }
+            })
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Orçamento não encontrado." })
+            }
+
+            const orcamentoAtualizado = await Orcamento.findByPk(id)
+
+            return res.status(200).json({
+                message: `Renegociação efetuada. Novo valor: ${orcamentoAtualizado.valor_total}`,
+                orcamento: orcamentoAtualizado
+            })
+        } catch (error) {
+
         }
     }
 
@@ -161,9 +201,9 @@ class BuyerController {
                 { status: 'cancelado' },
                 { where: { id: orcamentoCancelado.compraId } }
             )
-            
+
             await Pedidos.update(
-                { status: 'cancelado' },
+                { status: 'solicitado' },
                 { where: { id: compra.pedidoId } }
             )
 

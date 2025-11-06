@@ -7,6 +7,7 @@ import { uploadSingleImage } from '../middlewares/upload.js';
 
 const router = express.Router()
 
+// criar insumo
 router.post('/insumos', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -16,6 +17,7 @@ router.post('/insumos',
     InsumosController.createItem
 )
 
+// editar insumo
 router.put('/insumos/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -24,6 +26,7 @@ router.put('/insumos/:id',
     InsumosController.updateItem
 )
 
+// setar status de insumo (ativo/inativo) por id
 router.put('/insumos/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -31,6 +34,7 @@ router.put('/insumos/status/:id',
     ManagerController.setStatusInsumo
 )
 
+// verificar insumo / não é updateAt por id
 router.post('/insumos/verify/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -38,6 +42,7 @@ router.post('/insumos/verify/:id',
     ManagerController.verifyInsumo
 )
 
+// setar tamanho do estoque desse insumo por id
 router.put('/insumos/storage/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -45,6 +50,7 @@ router.put('/insumos/storage/:id',
     ManagerController.setMaxStorage
 )
 
+// criar setor
 router.post('/setor',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -52,6 +58,7 @@ router.post('/setor',
     SetorController.createSetor
 )
 
+// setiar status de setor (ativo/inativo) por ir
 router.put('/setor/status/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -59,6 +66,7 @@ router.put('/setor/status/:id',
     ManagerController.setStatusSetor
 ) 
 
+// paginação de pedidos
 router.get('/pedido', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -66,6 +74,7 @@ router.get('/pedido',
     ManagerController.getPedidos
 )
 
+// aprovar pedido por id
 router.put('/pedido/status/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -73,6 +82,7 @@ router.put('/pedido/status/:id',
     ManagerController.approvePedido
 )
 
+// criar compra a partir de id de pedido
 router.post('/compra/:pedidoId',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -81,6 +91,7 @@ router.post('/compra/:pedidoId',
     ManagerController.createCompra
 )
 
+// contestar orçamento ( aprovado / negado / renegociacao ) por id de orçamento
 router.put('/orcamento/:orcamentoId',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
