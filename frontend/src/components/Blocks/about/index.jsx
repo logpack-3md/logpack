@@ -1,5 +1,4 @@
-import IconSiteSobre from "@/components/icons/icons-Sobre";
-import IconSiteTecnologia from "@/components/icons/icons-tecnologia";
+import { IconSiteSobre } from "@/components/icons/logo";
 import { Button } from "@/components/ui/button";
 import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
@@ -13,14 +12,6 @@ const defaultAchievements = [
 const About = ({
   title = "Sobre a LogPack",
   description = "Somos especialistas em inteligência logística. Nossas soluções de monitoramento de estoque e controle de peso em tempo real ajudam negócios a eliminar perdas e maximizar a eficiência operacional.",
-  breakout = {
-    icon: Scale,
-    title: "Tecnologia de Ponta",
-    description:
-      "Sensores IoT de alta precisão e algoritmos de IA para rastrear variações de estoque e peso no momento em que acontecem.",
-    buttonText: "Conheça nossa tecnologia",
-    buttonUrl: "/tecnologia",
-  },
   achievementsTitle = "Impacto Real em Números",
   achievementsDescription = "Não entregamos apenas software, entregamos resultados mensuráveis que transformam a operação dos nossos parceiros.",
   achievements = defaultAchievements,

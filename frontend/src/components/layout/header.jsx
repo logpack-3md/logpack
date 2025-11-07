@@ -25,9 +25,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Menu, LogIn } from "lucide-react"; // Importando o ícone de Login
+import { Menu, LogIn } from "lucide-react"; 
 import { SwitchTheme } from "../SwitchThemes";
-import LogoSite from "@/components/icons/logo";
+import { LogoSite } from "@/components/icons/logo.jsx";
 
 export default function Header() {
   return (
@@ -41,7 +41,7 @@ export default function Header() {
           <div className="flex items-center gap-1">
 
             <LogoSite />
-            
+
             {/* px-2 apos isso é o Gradient */}
             <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
               hover:from-[#8f5f3b] hover:to-[#e0a273]" >

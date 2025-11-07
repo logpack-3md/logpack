@@ -1,56 +1,54 @@
-// app/dashboard/page.jsx
-'use client';
-//não tem o arquivo appnewsupdate
-import { Grid, Container, Typography } from '@mui/material';
-import { AttachMoney, People, ShoppingCart, BugReport } from '@mui/icons-material';
-import AppWidgetSummary from './components/sections/default/AppWidgetSummary';
-import AppCurrentVisits from './components/sections/default/AppCurrentVisits';
-import AppWebsiteVisits from './components/sections/default/AppWebsiteVisits';
-// import AppNewsUpdate from './components/sections/default/AppNewsUpdate';
-import AppTrafficBySite from './components/sections/default/AppTrafficBySite';
+"use client";
 
-export default function DashboardApp() {
+import React, { useState } from 'react';
+import Sidebar from '@/components/layout/sidebar';
+import DataStats from '@/components/ui/datastats';
+import { Menu } from 'lucide-react';
+import Blog from "../../components/blog";
+import { FloatingActions } from '@/components/ui/floating-actions';
+
+export default function DashboardPage() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   return (
-    <Container maxWidth="xl">
-      <Typography variant="h4" sx={{ mb: 5 }}>Hi, Welcome back</Typography>
+    <div className="flex h-full bg-gray-50"> {/* ← h-full, não h-screen */}
+      {/* Overlay mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
-      {/* 4 CARDS GRANDES NO TOPO */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
-          <AppWidgetSummary title="Weekly Sales" total="$15k" icon={<AttachMoney />} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <AppWidgetSummary title="New Users" total="1,350" icon={<People />} color="info" />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <AppWidgetSummary title="Item Orders" total="1,720" icon={<ShoppingCart />} color="warning" />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <AppWidgetSummary title="Bug Reports" total="234" icon={<BugReport />} color="error" />
-        </Grid>
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-        {/* GRÁFICOS GRANDES */}
-        <Grid item xs={12} md={8}>
-          <AppCurrentVisits />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <AppWebsiteVisits />
-        </Grid>
+      {/* Main Content - ÚNICO SCROLL */}
+      <div className="flex-1 overflow-y-auto relative"> {/* ← overflow-y-auto */}
+        <FloatingActions />
 
-        {/* OUTROS COMPONENTES */}
-        <Grid item xs={12} md={6} lg={8}>
-          {/* <AppNewsUpdate /> */}
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
-          {/* <AppOrderTimeline /> */}
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
-          {/* <AppTasks /> */}
-        </Grid>
-        <Grid item xs={12} md={6} lg={8}>
-          <AppTrafficBySite />
-        </Grid>
-      </Grid>
-    </Container>
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-sm border border-gray-200"
+        >
+          <Menu className="w-5 h-5 text-gray-700" />
+        </button>
+
+        {/* Conteúdo */}
+        <div className="pt-4 lg:pt-2">
+          <div className="max-w-7xl mx-auto">
+            <div className="px-6 mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">Hi, welcome back</h1>
+            </div>
+            <DataStats />
+          </div>
+        </div>
+
+        <div className="mt-8 px-6">
+          <Blog />
+        </div>
+      </div>
+    </div>
   );
 }

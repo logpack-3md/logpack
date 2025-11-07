@@ -1,7 +1,7 @@
 import { About } from "@/components/Blocks/about";
 import { AboutSobre } from "@/components/Blocks/AboutSobre";
 import { Footer } from "@/components/Blocks/footer";
-import Header from "@/components/layout/header";
+import Header from "@/components/layout/header.jsx";
 import { Separator } from "@/components/ui/separator";
 
 export default function Home() {

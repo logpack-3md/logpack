@@ -1,5 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react"
-import Logo from "@/components/icons/logo";
+import {LogoSite} from "@/components/icons/logo";
 import { SignupForm } from "@/components/ui/signup-form"
 import { imageOptimizer } from "next/dist/server/image-optimizer";
 import {

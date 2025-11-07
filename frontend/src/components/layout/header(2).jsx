@@ -2,7 +2,7 @@
 
 import { AppBar, Toolbar, IconButton, Typography, Box } from '@mui/material';
 import { Menu as MenuIcon, Notifications, AccountCircle } from '@mui/icons-material';
-import SearchBar from './search-bar';
+import SearchBar from '../ui/search-bar';
 
 export default function Header({ open, handleDrawerToggle }) {
   return (

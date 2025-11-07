@@ -1,4 +1,4 @@
-import LogoSite from "@/components/icons/logo";
+import {LogoSite} from "@/components/icons/logo.jsx";
 import React from "react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
