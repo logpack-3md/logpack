@@ -41,7 +41,8 @@ Orcamento.init({
 
     status: {
         type: DataTypes.ENUM,
-        values: ['pendente', 'aprovado', 'negado', 'renegociação']
+        values: ['pendente', 'aprovado', 'negado', 'renegociação', 'cancelado'],
+        defaultValue: 'pendente'
     }
 
 }, {

@@ -4,6 +4,7 @@ import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 
 const router = express.Router()
 
+// paginação de insumos 
 router.get('/', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
