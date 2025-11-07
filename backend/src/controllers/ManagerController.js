@@ -1,5 +1,6 @@
 import Compra from '../models/Compra.js'
 import Insumos from '../models/Insumos.js'
+import InsumosLog from '../models/InsumosLog.js'
 import Orcamento from '../models/Orcamento.js'
 import Pedidos from '../models/Pedidos.js'
 import Setor from '../models/Setor.js'
@@ -62,6 +63,7 @@ class ManagerController {
 
     static async setStatusInsumo(req, res) {
         const { id } = req.params
+        const userId = req.user.id
 
         const statusSchema = z.object({
             status: z.enum(['inativo', 'ativo'], {
@@ -72,6 +74,8 @@ class ManagerController {
         try {
             const { status } = statusSchema.parse(req.body)
 
+            const oldDataJson = await Insumos.findByPk(id)
+
             const rowsAffected = await Insumos.update(
                 { status: status },
                 { where: { id: id } }
@@ -80,6 +84,18 @@ class ManagerController {
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Insumo não encontrado." })
             }
+
+            const newDataJson = await Insumos.findByPk(id)
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: id,
+                actionType: 'UPDATE',
+                contextDetails: "Alteração de status do Insumo",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+
+            })
 
             return res.status(200).json({ message: `Status de insumo alterado para ${status}` })
 
@@ -97,11 +113,14 @@ class ManagerController {
 
     static async verifyInsumo(req, res) {
         const { id } = req.params
+        const userId = req.user.id
 
         try {
             const updateData = {
                 last_check: new Date()
             }
+
+            const oldDataJson = await Insumos.findByPk(id)
 
             const [rowsAffected] = await Insumos.update(updateData, {
                 where: { id: id }
@@ -113,6 +132,17 @@ class ManagerController {
 
             const verifiedInsumo = await Insumos.findByPk(id, {
                 attributes: ['id', 'name', 'last_check']
+            })
+
+            const newDataJson = await Insumos.findByPk(id)
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: id,
+                actionType: 'UPDATE',
+                contextDetails: "Insumo verificado por algum gerente.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
             })
 
             return res.status(200).json({
@@ -162,6 +192,7 @@ class ManagerController {
 
     static async setMaxStorage(req, res) {
         const { id } = req.params
+        const userId = req.user.id
         const maxStorageSchema = z.object({
             max_storage: z.int()
                 .min(200, { error: "Insira um valor acima de 200." })
@@ -171,6 +202,8 @@ class ManagerController {
         try {
             const { max_storage } = maxStorageSchema.parse(req.body)
 
+            const oldDataJson = await Insumos.findByPk(id)
+
             const [rowsAffected] = await Insumos.update(
                 { max_storage: max_storage },
                 { where: { id: id } }
@@ -179,6 +212,18 @@ class ManagerController {
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Insumo não encontrado." })
             }
+
+            const updatedInsumo = await Insumos.findByPk(id)
+            const newDataJson = updatedInsumo.toJSON()
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: id,
+                actionType: 'UPDATE',
+                contextDetails: "Atualização de tamanho máximo do estoque.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson
+            })
 
             return res.status(200).json({ message: `Estoque máximo atualizado para ${max_storage}` })
 

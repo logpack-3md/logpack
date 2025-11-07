@@ -1,4 +1,5 @@
 import Insumos from '../models/Insumos.js'
+import InsumosLog from '../models/InsumosLog.js';
 import z from 'zod'
 import { put, del } from '@vercel/blob'
 import Setor from '../models/Setor.js';
@@ -83,6 +84,7 @@ class InsumosController {
 
     static async createItem(req, res) {
         const file = req.file;
+        const userId = req.user.id;
         let imageUrl = null;
 
         try {
@@ -101,6 +103,17 @@ class InsumosController {
 
             if (!setor) {
                 return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
+            }
+
+            const insumoExistenteNoSetor = await Insumos.findOne({
+                where: { setorName: setorName },
+                attributes: ['SKU']
+            });
+
+            if (insumoExistenteNoSetor) {
+                return res.status(409).json({
+                    message: `O Setor '${setorName}' já está sendo utilizado pelo Insumo SKU: ${insumoExistenteNoSetor.SKU}. Um setor só pode ser associado a um único item (Insumo).`
+                });
             }
 
             if (codigo) {
@@ -129,6 +142,16 @@ class InsumosController {
                 SKU: SKU
             })
 
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: insumo.id,
+                actionType: 'INSERT',
+                contextDetails: "Criação inicial de Insumo.",
+                oldData: null,
+                newData: insumo.toJSON()
+
+            })
+
             return res.status(201).json(insumo)
 
         } catch (error) {
@@ -146,6 +169,7 @@ class InsumosController {
 
     static async updateItem(req, res) {
         const file = req.file;
+        const userId = req.user.id
         let imageUrl = null;
         const { id } = req.params
 
@@ -215,6 +239,19 @@ class InsumosController {
             }
 
             const updatedInsumo = await Insumos.findByPk(id);
+
+            const oldDataJson = existingInsumo.toJSON()
+            const newDataJson = updatedInsumo.toJSON()
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: updatedInsumo.id,
+                actionType: 'UPDATE',
+                contextDetails: "Atualização de dados de Insumo.",
+                oldData: oldDataJson,
+                newData: newDataJson
+            });
+            
             res.status(200).json({
                 message: "Insumo atualizado com sucesso.",
                 insumo: updatedInsumo

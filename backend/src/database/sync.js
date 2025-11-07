@@ -5,118 +5,117 @@ import Setor from "../models/Setor.js";
 import Pedidos from "../models/Pedidos.js";
 import Compra from "../models/Compra.js";
 import Orcamento from "../models/Orcamento.js";
+import InsumosLog from "../models/InsumosLog.js";
 
-Setor.hasMany(Insumos, {
+Setor.hasOne(Insumos, {
     foreignKey: 'setorName', 
     sourceKey: 'name',       
     as: 'insumos'
 });
-
 Insumos.belongsTo(Setor, {
     foreignKey: 'setorName',
     targetKey: 'name',
     as: 'setorDetalhes'
 });
-
 // -- //
-
 User.hasMany(Pedidos, {
     foreignKey: 'userId',
     targetKey: 'id',
     as: 'user'
 })
-
 Pedidos.belongsTo(User, {
     foreignKey: 'userId',
     targetKey: 'id',
     as: 'userDetalhes'
 })
-
 // -- //
-
 Insumos.hasMany(Pedidos, {
     foreignKey: 'insumoSKU',
     sourceKey: 'SKU',
     as: 'pedidos'
 })
-
 Pedidos.belongsTo(Insumos, {
     foreignKey: 'insumoSKU',
     targetKey: 'SKU',
     as: 'insumosDetalhes'
 })
-
 // -- //
-
 Pedidos.hasMany(Compra, {
     foreignKey: 'pedidoId',
     sourceKey: 'id',
     as: 'compras'
 })
-
 Compra.belongsTo(Pedidos, {
     foreignKey: 'pedidoId',
     targetKey: 'id',
     as: 'pedidoDetalhes'
 })
-
 // -- //
-
 User.hasMany(Compra, {
     foreignKey: 'gerenteId',
     sourceKey: 'id',
     as: 'compraIniciadas'
 })
-
 Compra.belongsTo(User, {
     foreignKey: 'gerenteId',
     targetKey: 'id',
     as: 'gerenteResponsavel'
 })
-
 // -- //
-
 Compra.belongsTo(User, {
     foreignKey: 'who_approved_id',
     targetKey: 'id',
     as: 'aprovadorDetalhes'
 });
-
 User.hasMany(Compra, {
     foreignKey: 'who_approved_id',
     sourceKey: 'id',
     as: 'compraAprovadas'
 });
-
 // -- //
-
 Compra.hasMany(Orcamento, {
     foreignKey: 'compraId',
     sourceKey: 'id',
     as: 'compraIniciada'
 })/
-
 Orcamento.belongsTo(Compra, {
     foreignKey: 'compraId',
     targetKey: 'id',
     as: 'compraSelecionada'
 })
-
 // -- //
-
 User.hasMany(Orcamento, {
     foreignKey: 'buyerId',
     sourceKey: 'id',
     as: 'fornecedorResponsavel'
 });
-
 Orcamento.belongsTo(User, {
     foreignKey: 'buyerId',
     targetKey: 'id',
     as: 'orcamentoIniciado'
 })
-
 // -- //
+User.hasMany(InsumosLog, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    as: 'acoesUser'
+})
+InsumosLog.belongsTo(User, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: "userResponsavel"
+})
+
+Insumos.hasMany(InsumosLog, {
+    foreignKey: 'insumoId',
+    sourceKey: 'id',
+    as: 'insumoActionId'
+})
+InsumosLog.belongsTo(Insumos, {
+    foreignKey: 'insumoId',
+    targetKey: 'id',
+    as: "insumoLogId"
+})
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');
