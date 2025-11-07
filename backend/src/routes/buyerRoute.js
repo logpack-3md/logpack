@@ -28,6 +28,7 @@ router.put('/orcamento/descricao/:id',
     BuyerController.updateOrcamento
 )
 
+// renegociação de orçamento / alterar valor de orçamento
 router.put('/orcamento/renegociar/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
@@ -37,6 +38,7 @@ router.put('/orcamento/renegociar/:id',
     BuyerController.renegociarOrcamento
 )
 
+// cancelar orçamento (altera status de compra e orçamento para "cancelado", e pedido volta para "solicitado")
 router.put('/orcamento/cancelar/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
