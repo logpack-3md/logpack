@@ -1,11 +1,12 @@
 import sequelize from "./sequelize.js";
 import User from '../models/User.js';
+import UserLog from "../models/UserLog.js";
 import Insumos from '../models/Insumos.js';
+import InsumosLog from "../models/InsumosLog.js";
 import Setor from "../models/Setor.js";
 import Pedidos from "../models/Pedidos.js";
 import Compra from "../models/Compra.js";
 import Orcamento from "../models/Orcamento.js";
-import InsumosLog from "../models/InsumosLog.js";
 
 Setor.hasOne(Insumos, {
     foreignKey: 'setorName', 
@@ -115,6 +116,20 @@ InsumosLog.belongsTo(Insumos, {
     foreignKey: 'insumoId',
     targetKey: 'id',
     as: "insumoLogId"
+})
+
+// -- //
+
+User.hasMany(UserLog, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    as: 'dadosUser'
+})
+
+UserLog.belongsTo(User, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    as: 'userLog'
 })
 
 async function runSync() {
