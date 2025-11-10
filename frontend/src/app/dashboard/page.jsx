@@ -9,6 +9,7 @@ import { FloatingActions } from '@/components/ui/floating-actions';
 import ChartCompose from '@/components/Blocks/Graphics/ChartCompose';
 import ItensSection from "@/components/Blocks/Itens/ItensSection";
 import ChartBar from '@/components/Blocks/Graphics/ChartBar';
+import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection'; // ← ADICIONADO
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -27,7 +28,7 @@ export default function DashboardPage() {
       <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
       {/* Main Content - Só uma rolagem */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1">
         <FloatingActions />
 
         {/* Mobile menu button */}
@@ -42,7 +43,7 @@ export default function DashboardPage() {
         <div className="pt-4 lg:pt-2">
           {/* Cabeçalho */}
           <div className="px-6 lg:px-0 lg:pl-6 mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Hi, welcome back</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Olá, bem vindo a LogPack</h1>
           </div>
 
           {/* DataStats: 100% largura */}
@@ -68,6 +69,11 @@ export default function DashboardPage() {
           {/* ItensSection: 100% largura */}
           <div className="mt-8 px-6 lg:px-0 lg:pl-6 lg:pr-6">
             <ItensSection />
+          </div>
+
+          {/* NOVA SEÇÃO: ESTOQUE POR ÁREA */}
+          <div className="mt-12 px-6 lg:px-0 lg:pl-6 lg:pr-6">
+            <EstoqueSection />
           </div>
         </div>
       </div>

@@ -1,24 +1,36 @@
-// app/dashboard/layout.jsx
+// app/produtos/layout.jsx
 'use client';
 
 import { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from './theme';
-import Sidebar from '../../components/layout/sidebar';
+import theme from '../theme'; // ← MESMO TEMA DO DASHBOARD
+import Sidebar from '@/components/layout/sidebar';
 
-export default function DashboardLayout({ children }) {
+export default function ProdutosLayout({ children }) {
   const [open, setOpen] = useState(true);
   const handleToggle = () => setOpen(!open);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <ThemeProvider theme={theme}>
+
+      {/* Overlay mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+
       <CssBaseline />
       <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-        {/* Sidebar */}
-        <Sidebar open={open} onToggle={handleToggle} />
 
-        {/* Main Content - ÚNICA ROLAGEM */}
+
+        {/* Main Content */}
         <Box
           component="main"
           sx={{
@@ -27,11 +39,10 @@ export default function DashboardLayout({ children }) {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            ml: { lg: open ? '280px' : '73px' },
+            ml: { lg: open ? '' : '73px' },
             transition: 'margin 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms',
           }}
         >
-          {/* ROLAGEM AQUI - SÓ UMA */}
           <Box
             sx={{
               flex: 1,

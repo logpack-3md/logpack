@@ -7,64 +7,105 @@ import {
   RiLayoutGridLine,
   RiListCheck,
 } from '@remixicon/react';
-import { User, Shield, Clock } from 'lucide-react';
+import { Package, Droplets, Box, FileText, Shield, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 const data = [
   {
-    name: 'Alissia Stone',
-    initial: 'AS',
-    bgColor: 'bg-fuchsia-100',
-    email: 'a.stone@gmail.com',
-    href: '#',
-    details: [{ type: 'Role', value: 'member' }, { type: 'Last active', value: '2d ago' }],
-  },
-  {
-    name: 'Emma Bern',
-    initial: 'EB',
-    bgColor: 'bg-blue-100',
-    email: 'e.bern@gmail.com',
-    href: '#',
-    details: [{ type: 'Role', value: 'member' }, { type: 'Last active', value: '1d ago' }],
-  },
-  {
-    name: 'Aaron McFlow',
+    name: 'Água Mineral',
     initial: 'AM',
-    bgColor: 'bg-pink-100',
-    email: 'a.flow@acme.com',
+    bgColor: 'bg-cyan-100',
+    email: 'agua@estoque.com',
     href: '#',
-    details: [{ type: 'Role', value: 'admin' }, { type: 'Last active', value: '2min ago' }],
+    details: [{ type: 'Tipo', value: 'insumo' }, { type: 'Última reposição', value: '2h ago' }],
   },
   {
-    name: 'Thomas Palstein',
-    initial: 'TP',
-    bgColor: 'bg-emerald-100',
-    email: 't.palstein@acme.com',
+    name: 'Óleo Lubrificante',
+    initial: 'OL',
+    bgColor: 'bg-amber-100',
+    email: 'oleo@estoque.com',
     href: '#',
-    details: [{ type: 'Role', value: 'admin' }, { type: 'Last active', value: '18min ago' }],
+    details: [{ type: 'Tipo', value: 'insumo' }, { type: 'Última reposição', value: '1d ago' }],
   },
   {
-    name: 'Sarah Johnson',
-    initial: 'SJ',
+    name: 'Caixa de Papelão',
+    initial: 'CP',
     bgColor: 'bg-orange-100',
-    email: 's.johnson@gmail.com',
+    email: 'caixa@estoque.com',
     href: '#',
-    details: [{ type: 'Role', value: 'member' }, { type: 'Last active', value: '3h ago' }],
+    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '30min ago' }],
   },
   {
-    name: 'David Smith',
-    initial: 'DS',
-    bgColor: 'bg-indigo-100',
-    email: 'd.smith@gmail.com',
-    href: '#',
-    details: [{ type: 'Role', value: 'guest' }, { type: 'Last active', value: '4h ago' }],
-  },
-  {
-    name: 'Megan Brown',
-    initial: 'MB',
+    name: 'Papelão Ondulado',
+    initial: 'PO',
     bgColor: 'bg-yellow-100',
-    email: 'm.brown@gmail.com',
+    email: 'papelao@estoque.com',
     href: '#',
-    details: [{ type: 'Role', value: 'admin' }, { type: 'Last active', value: '1d ago' }],
+    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '3h ago' }],
+  },
+  {
+    name: 'Fita Adesiva',
+    initial: 'FA',
+    bgColor: 'bg-purple-100',
+    email: 'fita@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'acessório' }, { type: 'Última reposição', value: '5h ago' }],
+  },
+  {
+    name: 'Saco Plástico',
+    initial: 'SP',
+    bgColor: 'bg-teal-100',
+    email: 'saco@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '1d ago' }],
+  },
+  {
+    name: 'Etiqueta Adesiva',
+    initial: 'EA',
+    bgColor: 'bg-pink-100',
+    email: 'etiqueta@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'acessório' }, { type: 'Última reposição', value: '4h ago' }],
+  },
+  {
+    name: 'Palete de Madeira',
+    initial: 'PM',
+    bgColor: 'bg-emerald-100',
+    email: 'palete@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'suporte' }, { type: 'Última reposição', value: '2d ago' }],
+  },
+  {
+    name: 'Filme Stretch',
+    initial: 'FS',
+    bgColor: 'bg-blue-100',
+    email: 'stretch@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '6h ago' }],
+  },
+  {
+    name: 'Caixa Plástica',
+    initial: 'CP',
+    bgColor: 'bg-indigo-100',
+    email: 'caixa-plastica@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '1d ago' }],
+  },
+  {
+    name: 'Bobina de Plástico',
+    initial: 'BP',
+    bgColor: 'bg-fuchsia-100',
+    email: 'bobina@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'insumo' }, { type: 'Última reposição', value: '3d ago' }],
+  },
+  {
+    name: 'Espuma Protetora',
+    initial: 'EP',
+    bgColor: 'bg-gray-100',
+    email: 'espuma@estoque.com',
+    href: '#',
+    details: [{ type: 'Tipo', value: 'proteção' }, { type: 'Última reposição', value: '2h ago' }],
   },
 ];
 
@@ -73,25 +114,38 @@ const data = [
 /* ------------------------------------------------- */
 const MemberCard = ({ member }) => {
   const colorMap = {
-    fuchsia: 'text-fuchsia-500',
-    blue: 'text-blue-500',
+    cyan: 'text-cyan-500',
+    amber: 'text-amber-500',
+    orange: 'text-orange-500',
+    yellow: 'text-yellow-500',
+    purple: 'text-purple-500',
+    teal: 'text-teal-500',
     pink: 'text-pink-500',
     emerald: 'text-emerald-500',
-    orange: 'text-orange-500',
+    blue: 'text-blue-500',
     indigo: 'text-indigo-500',
-    yellow: 'text-yellow-500',
+    fuchsia: 'text-fuchsia-500',
+    gray: 'text-gray-500',
   };
   const key = member.bgColor.match(/bg-([a-z]+)-100/)?.[1] || 'blue';
   const iconColor = colorMap[key] || colorMap.blue;
 
+  const iconMap = {
+    insumo: Droplets,
+    embalagem: Box,
+    acessório: FileText,
+    suporte: Package,
+    proteção: Shield,
+  };
+  const Icon = iconMap[member.details[0].value] || Package;
+
   return (
     <a href={member.href} className="block group">
       <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow transition-shadow duration-200 relative">
-        {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-3">
             <div className={`p-2 rounded-lg ${iconColor} bg-opacity-10`}>
-              <User className="w-5 h-5" />
+              <Icon className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-900 truncate max-w-[130px]">
@@ -102,17 +156,16 @@ const MemberCard = ({ member }) => {
           </div>
         </div>
 
-        {/* Details com separador cinza */}
         <div className="grid grid-cols-2 gap-3 text-xs border-t border-gray-200 pt-3">
           <div>
-            <p className="text-gray-500">Role</p>
+            <p className="text-gray-500">Tipo</p>
             <p className="font-medium text-gray-900 flex items-center mt-0.5">
               <Shield className="w-3.5 h-3.5 mr-1 text-gray-400" />
               {member.details[0].value}
             </p>
           </div>
           <div>
-            <p className="text-gray-500">Last active</p>
+            <p className="text-gray-500">Última reposição</p>
             <p className="font-medium text-gray-900 flex items-center mt-0.5">
               <Clock className="w-3.5 h-3.5 mr-1 text-gray-400" />
               {member.details[1].value}
@@ -120,7 +173,6 @@ const MemberCard = ({ member }) => {
           </div>
         </div>
 
-        {/* Seta no hover */}
         <RiArrowRightUpLine
           className="absolute right-3 top-3 w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
           aria-hidden="true"
@@ -135,23 +187,37 @@ const MemberCard = ({ member }) => {
 /* ------------------------------------------------- */
 const MemberRow = ({ member }) => {
   const colorMap = {
-    fuchsia: 'text-fuchsia-500',
-    blue: 'text-blue-500',
+    cyan: 'text-cyan-500',
+    amber: 'text-amber-500',
+    orange: 'text-orange-500',
+    yellow: 'text-yellow-500',
+    purple: 'text-purple-500',
+    teal: 'text-teal-500',
     pink: 'text-pink-500',
     emerald: 'text-emerald-500',
-    orange: 'text-orange-500',
+    blue: 'text-blue-500',
     indigo: 'text-indigo-500',
-    yellow: 'text-yellow-500',
+    fuchsia: 'text-fuchsia-500',
+    gray: 'text-gray-500',
   };
   const key = member.bgColor.match(/bg-([a-z]+)-100/)?.[1] || 'blue';
   const iconColor = colorMap[key] || colorMap.blue;
+
+  const iconMap = {
+    insumo: Droplets,
+    embalagem: Box,
+    acessório: FileText,
+    suporte: Package,
+    proteção: Shield,
+  };
+  const Icon = iconMap[member.details[0].value] || Package;
 
   return (
     <tr className="hover:bg-gray-50 transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
           <div className={`p-1.5 rounded-lg ${iconColor} bg-opacity-10`}>
-            <User className="w-4 h-4" />
+            <Icon className="w-4 h-4" />
           </div>
           <div>
             <p className="font-medium text-gray-900">{member.name}</p>
@@ -162,11 +228,8 @@ const MemberRow = ({ member }) => {
       <td className="px-4 py-3 text-sm text-gray-900">{member.details[0].value}</td>
       <td className="px-4 py-3 text-sm text-gray-900">{member.details[1].value}</td>
       <td className="px-4 py-3 text-right">
-        <a
-          href={member.href}
-          className="text-sm font-medium text-blue-600 hover:underline"
-        >
-          Edit
+        <a href={member.href} className="text-sm font-medium text-blue-600 hover:underline">
+          Editar
         </a>
       </td>
     </tr>
@@ -217,7 +280,7 @@ export default function ItensSection() {
         </div>
       </div>
 
-      {/* Grid View */}
+      {/* Grid or List View */}
       {view === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.map((member) => (
@@ -225,22 +288,21 @@ export default function ItensSection() {
           ))}
         </div>
       ) : (
-        /* List View */
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                  Item
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
+                  Tipo
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last active
+                  Última reposição
                 </th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
+                  Ação
                 </th>
               </tr>
             </thead>
@@ -252,6 +314,17 @@ export default function ItensSection() {
           </table>
         </div>
       )}
+
+      {/* BOTÃO "VER MAIS" - FORA DO CONDICIONAL, DENTRO DO RETURN */}
+      <div className="mt-6 flex justify-end">
+        <Link
+          href="/produtos"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          Ver mais
+          <RiArrowRightUpLine className="ml-1.5 w-4 h-4" />
+        </Link>
+      </div>
     </div>
   );
 }
