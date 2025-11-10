@@ -2,6 +2,8 @@ import Compra from "../models/Compra.js";
 import Orcamento from "../models/Orcamento.js";
 import z from "zod";
 import Pedidos from "../models/Pedidos.js";
+import OrcamentoLog from "../models/OrcamentoLog.js";
+import CompraLog from "../models/CompraLog.js";
 
 class BuyerController {
     static createOrcamentoSchema = z.object({
@@ -84,6 +86,8 @@ class BuyerController {
         try {
             const validatedSchema = BuyerController.createOrcamentoSchema.parse(req.body)
 
+            const oldDataJson = await Compra.findByPk(compraId)
+
             const newOrcamento = {
                 ...validatedSchema,
                 buyerId: buyerId,
@@ -96,6 +100,26 @@ class BuyerController {
                 { status: 'fase_de_orcamento' },
                 { where: { id: compraId, status: 'pendente' } }
             )
+
+            const newDataJson = await Compra.findByPk(compraId)
+
+            await CompraLog.create({
+                gerenteId: oldDataJson.gerenteId,
+                compraId: compraId,
+                actionType: "UPDATE",
+                contextDetails: "Status alterado para fase_de_orcamento após efetuação de proposta de orçamento.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+            })
+
+            await OrcamentoLog.create({
+                buyerId: buyerId,
+                orcamentoId: orcamento.id,
+                actionType: "INSERT",
+                contextDetails: "Proposta de orçamento efetuada e enviada para gerente de produção.",
+                oldData: null,
+                newData: orcamento.toJSON()
+            })
 
             return res.status(201).json({
                 message: `Fase de orçamento iniciada. ID do gerente de compras responsavel pelo orçamento: ${buyerId}`,

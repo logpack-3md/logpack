@@ -10,6 +10,7 @@ import PedidosLog from "../models/PedidosLog.js";
 import Compra from "../models/Compra.js";
 import CompraLog from "../models/CompraLog.js";
 import Orcamento from "../models/Orcamento.js";
+import OrcamentoLog from "../models/OrcamentoLog.js";
 
 Setor.hasOne(Insumos, {
     foreignKey: 'setorName', 
@@ -67,12 +68,12 @@ Compra.belongsTo(User, {
 })
 // -- //
 Compra.belongsTo(User, {
-    foreignKey: 'who_approved_id',
+    foreignKey: 'responsavel_pela_decisao_id',
     targetKey: 'id',
     as: 'aprovadorDetalhes'
 });
 User.hasMany(Compra, {
-    foreignKey: 'who_approved_id',
+    foreignKey: 'responsavel_pela_decisao_id',
     sourceKey: 'id',
     as: 'compraAprovadas'
 });
@@ -109,7 +110,6 @@ InsumosLog.belongsTo(User, {
     targetKey: 'id',
     as: "userResponsavel"
 })
-
 Insumos.hasMany(InsumosLog, {
     foreignKey: 'insumoId',
     sourceKey: 'id',
@@ -120,97 +120,103 @@ InsumosLog.belongsTo(Insumos, {
     targetKey: 'id',
     as: "insumoLogId"
 })
-
 // -- //
-
 User.hasMany(UserLog, {
     foreignKey: 'userId',
     sourceKey: 'id',
     as: 'dadosUser'
 })
-
 UserLog.belongsTo(User, {
     foreignKey: 'userId',
     targetKey: 'id',
     as: 'userLog'
 })
-
 // -- //
-
 User.hasMany(SetorLog, {
     foreignKey: 'gerenteId',
     sourceKey: 'id',
     as: 'acoesGerente'
 })
-
 SetorLog.belongsTo(User, {
     foreignKey: 'gerenteId',
     targetKey: 'id',
     as: 'gerenteResponsavel'
 })
-
 Setor.hasMany(SetorLog, {
     foreignKey: 'setorId',
     sourceKey: 'id',
     as: 'dadosSetor'
 })
-
 SetorLog.belongsTo(Setor, {
     foreignKey: 'setorId',
     targetKey: 'id',
     as: 'setorApontado'
 })
-
 // -- //
-
 User.hasMany(PedidosLog, {
     foreignKey: 'userId',
     sourceKey: 'id',
     as: 'pedidosUser'
 })
-
 PedidosLog.belongsTo(User, {
     foreignKey: 'userId',
     targetKey: 'id',
     as: 'userSolicitante'
 })
-
 Pedidos.hasMany(PedidosLog, {
     foreignKey: 'pedidoId',
     sourceKey: 'id',
     as: 'dadosPedidos'
 })
-
 PedidosLog.belongsTo(Pedidos, {
     foreignKey: 'pedidoId',
     targetKey: 'id',
     as: 'pedidoIniciado'
 })
-
 // -- //
-
 User.hasMany(CompraLog, {
     foreignKey: 'gerenteId',
     sourceKey: 'id',
     as: 'comprasUser'
 })
-
 CompraLog.belongsTo(User, {
     foreignKey: 'gerenteId',
     targetKey: 'id',
     as: 'gerenteSolicitante'
 })
-
 Compra.hasMany(CompraLog, {
     foreignKey: 'compraId',
     sourceKey: 'id',
     as: 'dadosCompras'
 })
-
 CompraLog.belongsTo(Compra, {
     foreignKey: 'compraId',
     targetKey: 'id',
     as: 'compraIniciada'
+})
+// -- //
+User.hasMany(OrcamentoLog, {
+    foreignKey: 'buyerId',
+    sourceKey: 'id',
+    as: 'orcamentosBuyer'
+})
+
+OrcamentoLog.belongsTo(User, {
+    foreignKey: 'buyerId',
+    targetKey: 'id',
+    as: 'buyerOrçador'
+})
+
+Orcamento.hasMany(OrcamentoLog, {
+    foreignKey: 'orcamentoId',
+    sourceKey: 'id',
+    as: 'dadosOrcamento'
+})
+
+OrcamentoLog.belongsTo(Orcamento, {
+    foreignKey: 'orcamentoId',
+    targetKey: 'id',
+    as: 'orcamentoIniciado'
 })
 
 // -- //
