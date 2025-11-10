@@ -4,6 +4,7 @@ import UserLog from "../models/UserLog.js";
 import Insumos from '../models/Insumos.js';
 import InsumosLog from "../models/InsumosLog.js";
 import Setor from "../models/Setor.js";
+import SetorLog from "../models/SetorLog.js";
 import Pedidos from "../models/Pedidos.js";
 import Compra from "../models/Compra.js";
 import Orcamento from "../models/Orcamento.js";
@@ -128,9 +129,37 @@ User.hasMany(UserLog, {
 
 UserLog.belongsTo(User, {
     foreignKey: 'userId',
-    sourceKey: 'id',
+    targetKey: 'id',
     as: 'userLog'
 })
+
+// -- //
+
+User.hasMany(SetorLog, {
+    foreignKey: 'gerenteId',
+    sourceKey: 'id',
+    as: 'acoesGerente'
+})
+
+SetorLog.belongsTo(User, {
+    foreignKey: 'gerenteId',
+    targetKey: 'id',
+    as: 'gerenteResponsavel'
+})
+
+Setor.hasMany(SetorLog, {
+    foreignKey: 'setorId',
+    sourceKey: 'id',
+    as: 'dadosSetor'
+})
+
+SetorLog.belongsTo(Setor, {
+    foreignKey: 'setorId',
+    targetKey: 'id',
+    as: 'setorApontado'
+})
+
+// -- //
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');

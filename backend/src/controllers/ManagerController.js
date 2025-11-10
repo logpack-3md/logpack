@@ -5,6 +5,7 @@ import Orcamento from '../models/Orcamento.js'
 import Pedidos from '../models/Pedidos.js'
 import Setor from '../models/Setor.js'
 import z from 'zod'
+import SetorLog from '../models/SetorLog.js'
 
 class ManagerController {
     static createCompraSchema = z.object({
@@ -157,6 +158,7 @@ class ManagerController {
 
     static async setStatusSetor(req, res) {
         const { id } = req.params
+        const gerenteId = req.user.id;
 
         const statusSchema = z.object({
             status: z.enum(['inativo', 'ativo'], {
@@ -167,6 +169,8 @@ class ManagerController {
         try {
             const { status } = statusSchema.parse(req.body)
 
+            const oldDataJson = await Setor.findByPk(id)
+
             const [rowsAffected] = await Setor.update(
                 { status: status },
                 { where: { id: id } }
@@ -175,6 +179,17 @@ class ManagerController {
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Setor não encontrado." })
             }
+
+            const newDataJson = await Setor.findByPk(id)
+
+            await SetorLog.create({
+                gerenteId: gerenteId,
+                setorId: newDataJson.id,
+                actionType: 'UPDATE',
+                contextDetails: "Atualização de status do setor.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+            })
 
             return res.status(200).json({ message: `Status de setor alterado para ${status}` })
 

@@ -58,6 +58,14 @@ router.post('/setor',
     SetorController.createSetor
 )
 
+// alterar nome de setor
+router.put('/setor/name/:id',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    SetorController.updateSetor
+)
+
 // setiar status de setor (ativo/inativo) por ir
 router.put('/setor/status/:id', 
     AuthMiddleware.verifyToken,
