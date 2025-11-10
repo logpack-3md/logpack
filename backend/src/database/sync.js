@@ -6,9 +6,10 @@ import InsumosLog from "../models/InsumosLog.js";
 import Setor from "../models/Setor.js";
 import SetorLog from "../models/SetorLog.js";
 import Pedidos from "../models/Pedidos.js";
-import Compra from "../models/Compra.js";
-import Orcamento from "../models/Orcamento.js";
 import PedidosLog from "../models/PedidosLog.js";
+import Compra from "../models/Compra.js";
+import CompraLog from "../models/CompraLog.js";
+import Orcamento from "../models/Orcamento.js";
 
 Setor.hasOne(Insumos, {
     foreignKey: 'setorName', 
@@ -184,6 +185,32 @@ PedidosLog.belongsTo(Pedidos, {
     foreignKey: 'pedidoId',
     targetKey: 'id',
     as: 'pedidoIniciado'
+})
+
+// -- //
+
+User.hasMany(CompraLog, {
+    foreignKey: 'gerenteId',
+    sourceKey: 'id',
+    as: 'comprasUser'
+})
+
+CompraLog.belongsTo(User, {
+    foreignKey: 'gerenteId',
+    targetKey: 'id',
+    as: 'gerenteSolicitante'
+})
+
+Compra.hasMany(CompraLog, {
+    foreignKey: 'compraId',
+    sourceKey: 'id',
+    as: 'dadosCompras'
+})
+
+CompraLog.belongsTo(Compra, {
+    foreignKey: 'compraId',
+    targetKey: 'id',
+    as: 'compraIniciada'
 })
 
 // -- //

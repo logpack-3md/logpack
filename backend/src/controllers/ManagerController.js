@@ -7,6 +7,7 @@ import Setor from '../models/Setor.js'
 import z from 'zod'
 import SetorLog from '../models/SetorLog.js'
 import PedidosLog from '../models/PedidosLog.js'
+import CompraLog from '../models/CompraLog.js'
 
 class ManagerController {
     static createCompraSchema = z.object({
@@ -307,18 +308,40 @@ class ManagerController {
         try {
             const validatedSchema = ManagerController.createCompraSchema.parse(req.body)
 
+            const oldDataJson = await Pedidos.findByPk(pedidoId)
+            
             const newCompraData = {
                 ...validatedSchema,
                 gerenteId: gerenteId,
                 pedidoId: pedidoId
             }
-
+            
             const compra = await Compra.create(newCompraData)
-
+            
             await Pedidos.update(
                 { status: "compra_iniciada" },
                 { where: { id: pedidoId, status: 'aprovado' } }
             )
+            
+            const newDataJson = await Pedidos.findByPk(pedidoId)
+
+            await PedidosLog.create({
+                userId: gerenteId,
+                pedidoId: pedidoId,
+                actionType: 'UPDATE',
+                contextDetails: "Status de pedido alterado logo após administrador aceitar pedido.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+            })
+
+            await CompraLog.create({
+                gerenteId: gerenteId,
+                compraId: compra.id,
+                actionType: 'INSERT',
+                contextDetails: "Criação de pedido de compra enviado para gerente de compras.",
+                oldData: null,
+                newData: compra.toJSON()
+            })
 
             return res.status(201).json({
                 message: `Compra iniciada para o pedido de id: ${pedidoId}`,
