@@ -69,6 +69,10 @@ class UserController {
         const userId = req.user.id
 
         try {
+            if (id !== userId) {
+                return res.status(403).json({ message: "Acesso negado: Você só pode atualizar o seu próprio perfil."})
+            }
+
             const validatedUpdate = UserController.updateSchema.parse(req.body)
             if (Object.keys(validatedUpdate).length === 0) {
                 return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização." })
