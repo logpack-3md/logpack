@@ -2,6 +2,7 @@ import { Footer } from "@/components/Blocks/footer";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart, Bell, Cpu, Scan } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 // Dados para os passos do serviço (facilita a manutenção)
 const servicosInformation = [
@@ -36,7 +37,7 @@ const servico = () => {
     <>
       <Header />
 
-      <main className="container mx-auto px-4 py-8 lg:py-6 lg:px-10 flex flex-col gap-20 lg:gap-24">
+      <main className="container mx-auto px-4 py-8 lg:py-10 lg:px-10 flex flex-col gap-20 lg:gap-24">
 
         {/* Cabeçalho Principal */}
         <section className="text-center max-w-3xl mx-auto">
@@ -56,10 +57,10 @@ const servico = () => {
               return (
                 <div key={item.etapa} className="bg-slate-50 dark:bg-card border rounded-2xl p-6 lg:p-8 flex flex-col gap-4 text-center md:text-left">
                   <div className="flex justify-center md:justify-start items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg text-primary">
+                    <div className="p-3 bg-primary/30 rounded-lg text-primary">
                       <IconComponent className="h-7 w-7" />
                     </div>
-                    <span className="text-5xl font-bold text-primary/20">{item.etapa}</span>
+                    <span className="text-5xl font-bold text-primary/50">{item.etapa}</span>
                   </div>
                   <h3 className="text-xl font-semibold mt-2">{item.titulo}</h3>
                   <p className="text-muted-foreground text-sm">{item.descricao}</p>
@@ -81,7 +82,7 @@ const servico = () => {
           </div>
           <div className="space-y-8">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary flex-shrink-0">
+              <div className="p-3 bg-primary/20 rounded-lg text-primary flex-shrink-0">
                 <ArrowRight className="h-6 w-6 transform -rotate-45" />
               </div>
               <div>
@@ -90,7 +91,7 @@ const servico = () => {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary flex-shrink-0">
+              <div className="p-3 bg-primary/20 rounded-lg text-primary flex-shrink-0">
                 <ArrowRight className="h-6 w-6 transform -rotate-45" />
               </div>
               <div>
@@ -99,7 +100,7 @@ const servico = () => {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary flex-shrink-0">
+              <div className="p-3 bg-primary/20 rounded-lg text-primary flex-shrink-0">
                 <ArrowRight className="h-6 w-6 transform -rotate-45" />
               </div>
               <div>
@@ -127,7 +128,7 @@ const servico = () => {
         </section>
 
       </main>
-
+<Separator />
       <Footer />
     </>
   );

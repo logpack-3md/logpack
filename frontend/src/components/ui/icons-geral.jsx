@@ -28,5 +28,5 @@ function IconSiteSobre() {
     )
 }
 
-export {LogoSite, IconSiteSobre};
+export { LogoSite, IconSiteSobre };
  

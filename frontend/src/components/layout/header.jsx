@@ -25,9 +25,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Menu, LogIn } from "lucide-react"; 
+import { Menu, LogIn } from "lucide-react";
 import { SwitchTheme } from "../SwitchThemes";
-import { LogoSite } from "@/components/icons/logo.jsx";
+import { LogoSite } from "@/components/ui/icons-geral";
 
 export default function Header() {
   return (
@@ -38,15 +38,17 @@ export default function Header() {
         <div className="flex items-center gap-4 lg:gap-8">
 
           {/* Logo */}
-          <div className="flex items-center gap-1">
+          <div>
+            <a className="flex items-center gap-1" href="/">
 
-            <LogoSite />
+              <LogoSite />
 
-            {/* px-2 apos isso é o Gradient */}
-            <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
+              {/* px-2 apos isso é o Gradient */}
+              <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
               hover:from-[#8f5f3b] hover:to-[#e0a273]" >
-              LogPack
-            </h2>
+                LogPack
+              </h2>
+            </a>
           </div>
 
           {/* NavBar */}
@@ -64,6 +66,7 @@ export default function Header() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger className={"font-bold"}>Serviços</NavigationMenuTrigger>
                 <NavigationMenuContent>
+                  <NavigationMenuLink href="/servicos" className="px-4 py-2 block">Serviço</NavigationMenuLink>
                   <NavigationMenuLink href="/servicos" className="px-4 py-2 block">Assistência</NavigationMenuLink>
                 </NavigationMenuContent>
               </NavigationMenuItem>
@@ -142,6 +145,7 @@ export default function Header() {
                     <AccordionItem value="item-2">
                       <AccordionTrigger>Serviços</AccordionTrigger>
                       <AccordionContent>
+                        <a href="/servicos" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">serviço</a>
                         <a href="/servicos" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Assistência</a>
                       </AccordionContent>
                     </AccordionItem>

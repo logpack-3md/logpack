@@ -1,4 +1,4 @@
-import { IconSiteSobre } from "@/components/icons/logo";
+import { IconSiteSobre } from "@/components/ui/icons-geral";
 import { Button } from "@/components/ui/button";
 import { Package, Users, Scale, Award, ArrowRight } from "lucide-react";
 
@@ -20,7 +20,7 @@ const About = ({
 } = {}) => {
 
   return (
-    <main className="container mx-auto px-4 py-16 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-30">
+    <main className="container mx-auto px-4 py-8 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-30">
 
       {/* Introdução */}
       <section className="grid gap-10 lg:grid-cols-2 items-center">
@@ -43,7 +43,7 @@ const About = ({
       </section>
 
       {/* Resultados */}
-      <section className="relative overflow-hidden rounded-2xl bg-slate-50 dark:bg-card border px-6 py-12 lg:p-16">
+      <section className="relative overflow-hidden rounded-2xl bg-slate-50 shadow-2xl dark:bg-card border px-6 py-12 lg:p-16">
         <div className="relative flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-4 lg:w-1/3 text-center lg:text-left">
             <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
@@ -82,7 +82,7 @@ const About = ({
       </section>
 
       {/* Plano */}
-      <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 dark:bg-card border px-6 py-16 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
+      <section className="max-w-5xl mx-auto rounded-2xl bg-slate-50 shadow-2xl dark:bg-card border px-6 py-16 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
         <h2 className="text-3xl font-bold tracking-tight lg:text-4xl"> Planos de Negócios </h2>
 
         <p className="text-muted-foreground max-w-2xl">

@@ -1,25 +1,24 @@
-import {LogoSite} from "@/components/icons/logo.jsx";
+import {LogoSite} from "@/components/ui/icons-geral";
 import React from "react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
 
 const defaultSections = [
   {
-    title: "Sobre",
+    title: "Home",
     links: [
       { name: "Sobre o LogPack", href: "/" },
-      { name: "Impacto Real", href: "/" },
-      { name: "Marketplace", href: "/" },
-      { name: "Features", href: "/" },
+      { name: "Impacto Real em Números", href: "/" },
+      { name: "Planos de Negócios", href: "/" },
+      { name: "Logística inteligente", href: "/" },
     ],
   },
   {
     title: "Serviços",
     links: [
-      { name: "About", href: "/" },
-      { name: "Team", href: "/" },
-      { name: "Blog", href: "/" },
-      { name: "Careers", href: "/" },
+      { name: "Sobre o Serviço", href: "/" },
+      { name: "Otimizações", href: "/" },
+      { name: "Demonstração", href: "/" },
     ],
   },
   {

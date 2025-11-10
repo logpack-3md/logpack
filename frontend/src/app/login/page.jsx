@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/ui/login-form"
-import LogoSite from "@/components/icons/logo";
+import {LogoSite} from "@/components/ui/icons-geral";
 
 export default function LoginPage() {
   return (

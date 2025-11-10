@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import Heeader from "@/components/layout/header";
 import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
 import { Footer } from "@/components/Blocks/footer";
-
+import { Separator } from "@/components/ui/separator";
 
 const Contact = () => {
     return (
@@ -118,7 +118,7 @@ const Contact = () => {
 
                 </div>
             </main>
-
+<Separator />
             <Footer />
         </>
     );

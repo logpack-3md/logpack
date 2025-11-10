@@ -1,5 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react"
-import {LogoSite} from "@/components/icons/logo";
+import {LogoSite} from "@/components/ui/icons-geral";
 import { SignupForm } from "@/components/ui/signup-form"
 import { imageOptimizer } from "next/dist/server/image-optimizer";
 import {
@@ -7,7 +7,6 @@ import {
   AvatarFallback,
   AvatarImage
 } from "@/components/ui/avatar";
-import LogoSite from "@/components/icons/logo";
 
 export default function SignupPage() {
   return (
