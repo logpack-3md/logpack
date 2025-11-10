@@ -1,0 +1,4 @@
+@layer tremor {
+    @import '@tremor/react/dist/esm/tremor.css';
+  }
+  

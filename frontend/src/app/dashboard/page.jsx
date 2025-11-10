@@ -1,17 +1,20 @@
+// src/app/dashboard/page.jsx
 "use client";
 
 import React, { useState } from 'react';
 import Sidebar from '@/components/layout/sidebar';
 import DataStats from '@/components/ui/datastats';
 import { Menu } from 'lucide-react';
-import Blog from "../../components/blog";
 import { FloatingActions } from '@/components/ui/floating-actions';
+import ChartCompose from '@/components/Blocks/Graphics/ChartCompose';
+import ItensSection from "@/components/Blocks/Itens/ItensSection";
+import ChartBar from '@/components/Blocks/Graphics/ChartBar';
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-full bg-gray-50"> {/* ← h-full, não h-screen */}
+    <div className="flex h-screen bg-gray-50">
       {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
@@ -23,8 +26,8 @@ export default function DashboardPage() {
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      {/* Main Content - ÚNICO SCROLL */}
-      <div className="flex-1 overflow-y-auto relative"> {/* ← overflow-y-auto */}
+      {/* Main Content - Só uma rolagem */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <FloatingActions />
 
         {/* Mobile menu button */}
@@ -35,18 +38,37 @@ export default function DashboardPage() {
           <Menu className="w-5 h-5 text-gray-700" />
         </button>
 
-        {/* Conteúdo */}
+        {/* Conteúdo principal */}
         <div className="pt-4 lg:pt-2">
-          <div className="max-w-7xl mx-auto">
-            <div className="px-6 mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Hi, welcome back</h1>
-            </div>
+          {/* Cabeçalho */}
+          <div className="px-6 lg:px-0 lg:pl-6 mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Hi, welcome back</h1>
+          </div>
+
+          {/* DataStats: 100% largura */}
+          <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6 mb-8">
             <DataStats />
           </div>
-        </div>
 
-        <div className="mt-8 px-6">
-          <Blog />
+          {/* ChartCompose + ChartBar (lado a lado, mesma altura) */}
+          <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* ChartCompose: 2/3 */}
+              <div className="lg:col-span-2">
+                <ChartCompose />
+              </div>
+
+              {/* ChartBar: 1/3, mesma altura */}
+              <div className="lg:col-span-1">
+                <ChartBar />
+              </div>
+            </div>
+          </div>
+
+          {/* ItensSection: 100% largura */}
+          <div className="mt-8 px-6 lg:px-0 lg:pl-6 lg:pr-6">
+            <ItensSection />
+          </div>
         </div>
       </div>
     </div>

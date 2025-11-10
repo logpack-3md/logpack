@@ -23,7 +23,7 @@ const About = ({
     <main className="container mx-auto px-4 py-8 lg:py-5 lg:px-10 flex flex-col gap-20 lg:gap-30">
 
       {/* Introdução */}
-      <section className="grid gap-10 lg:grid-cols-2 items-center">
+      <section className="grid gap-10 lg:grid-cols-2 items-center ">
 
         <div className="flex flex-col gap-6">
           <div className="space-y-4">
@@ -36,7 +36,7 @@ const About = ({
           </div>
         </div>
 
-        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-xl shadow-lg border bg-muted justify-center flex w-full max-w-md">
+        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[3.6/3] overflow-hidden rounded-xl shadow-lg border bg-[#ffffff8c] justify-center flex w-full max-w-md">
           <IconSiteSobre className="object-cover w-full h-full items-center justify-center" />
         </div>
 
