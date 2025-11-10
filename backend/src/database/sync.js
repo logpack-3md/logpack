@@ -8,6 +8,7 @@ import SetorLog from "../models/SetorLog.js";
 import Pedidos from "../models/Pedidos.js";
 import Compra from "../models/Compra.js";
 import Orcamento from "../models/Orcamento.js";
+import PedidosLog from "../models/PedidosLog.js";
 
 Setor.hasOne(Insumos, {
     foreignKey: 'setorName', 
@@ -157,6 +158,32 @@ SetorLog.belongsTo(Setor, {
     foreignKey: 'setorId',
     targetKey: 'id',
     as: 'setorApontado'
+})
+
+// -- //
+
+User.hasMany(PedidosLog, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    as: 'pedidosUser'
+})
+
+PedidosLog.belongsTo(User, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: 'userSolicitante'
+})
+
+Pedidos.hasMany(PedidosLog, {
+    foreignKey: 'pedidoId',
+    sourceKey: 'id',
+    as: 'dadosPedidos'
+})
+
+PedidosLog.belongsTo(Pedidos, {
+    foreignKey: 'pedidoId',
+    targetKey: 'id',
+    as: 'pedidoIniciado'
 })
 
 // -- //

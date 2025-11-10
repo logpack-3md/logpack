@@ -6,6 +6,7 @@ import Pedidos from '../models/Pedidos.js'
 import Setor from '../models/Setor.js'
 import z from 'zod'
 import SetorLog from '../models/SetorLog.js'
+import PedidosLog from '../models/PedidosLog.js'
 
 class ManagerController {
     static createCompraSchema = z.object({
@@ -256,21 +257,35 @@ class ManagerController {
 
     static async approvePedido(req, res) {
         const { id } = req.params
+        const userId = req.user.id
         const approveSchema = z.object({
-            status: z.enum(['rejeitado', 'aprovado'], { error: "O gerente so pode determinar se o pedido foi aprovado ou rejeitado." })
+            status: z.enum(['rejeitado', 'aprovado'], { error: "O gerente só pode determinar se o pedido foi aprovado ou rejeitado." })
         })
 
         try {
             const { status } = approveSchema.parse(req.body)
 
+            const oldDataJson = await Pedidos.findByPk(id)
+            
             const [rowsAffected] = await Pedidos.update(
                 { status: status },
                 { where: { id: id } }
             )
-
+            
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Pedido não encontrado." })
             };
+
+            const newDataJson = await Pedidos.findByPk(id)
+
+            await PedidosLog.create({
+                userId: userId,
+                pedidoId: newDataJson.id,
+                actionType: 'UPDATE',
+                contextDetails: "Status de pedido alterado por gerente de produção.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+            })
 
             return res.status(200).json({ message: `Status de pedido alterado para ${status}.` })
         } catch (error) {
