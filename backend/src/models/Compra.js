@@ -41,7 +41,7 @@ Compra.init({
         allowNull: true
     },
 
-    approval_date: {
+    data_de_decisao: {
         type: DataTypes.DATE,
         allowNull: true
     },

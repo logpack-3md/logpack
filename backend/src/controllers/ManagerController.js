@@ -8,6 +8,7 @@ import z from 'zod'
 import SetorLog from '../models/SetorLog.js'
 import PedidosLog from '../models/PedidosLog.js'
 import CompraLog from '../models/CompraLog.js'
+import OrcamentoLog from '../models/OrcamentoLog.js'
 
 class ManagerController {
     static createCompraSchema = z.object({
@@ -329,7 +330,7 @@ class ManagerController {
                 userId: gerenteId,
                 pedidoId: pedidoId,
                 actionType: 'UPDATE',
-                contextDetails: "Status de pedido alterado logo após administrador aceitar pedido.",
+                contextDetails: "Status de pedido alterado logo após gerente de compras aceitar pedido.",
                 oldData: oldDataJson.toJSON(),
                 newData: newDataJson.toJSON()
             })
@@ -373,37 +374,45 @@ class ManagerController {
             const { status } = approveSchema.parse(req.body)
 
             const oldDataOrcamento = await Orcamento.findByPk(orcamentoId)
+            const oldDataOrcamentoJson = oldDataOrcamento ? oldDataOrcamento.toJSON() : null
+
+            const compraId = oldDataOrcamento.compraId
+            const oldDataCompra = await Compra.findByPk(compraId)
+            const oldDataCompraJson = oldDataCompra ? oldDataCompra.toJSON() : null
+
+            const pedidoId = oldDataCompra.pedidoId
+            const oldDataPedido = await Pedidos.findByPk(pedidoId)
+            const oldDataPedidoJson = oldDataPedido ? oldDataPedido.toJSON() : null
+
+            if (!oldDataOrcamento) {
+                return res.status(404).json({ message: "Orçamento não encontrado" })
+            }
 
             const [rowsAffected] = await Orcamento.update(
                 { status: status },
                 { where: { id: orcamentoId } },
             )
 
+            if (rowsAffected === 0 && oldDataOrcamento.status === status) {
+                return res.status(200).json({ message: `Status de orçamento já era: ${status}`})
+            }
+            
+            const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId)
+            const newDataOrcamentoJson = orcamentoAtualizado.toJSON()
+
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: 'Orçamento não encontrado.' })
             }
 
-            const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId)
-
-            const newDataOrcamento = orcamentoAtualizado.toJSON()
-
-            const compraId = orcamentoAtualizado.compraId
-
-            const oldDataCompra = await Compra.findByPk(compraId)
-            const oldDataPedido = await Pedidos.findByPk(oldDataCompra.pedidoId)
 
             const compraInfo = await Compra.findOne({
                 where: { id: compraId },
-                attributes: ['pedidoId', 'status', 'approval_date', 'responsavel_pela_decisao_id']
+                attributes: ['pedidoId', 'status', 'data_de_decisao', 'responsavel_pela_decisao_id']
             });
 
             switch (status) {
                 case 'aprovado':
-
-                    if (!compraInfo || !compraInfo.pedidoId) {
-                        console.warn(`Compra ${compraId} não tem Pedido associado.`);
-                    } else {
-                        const pedidoId = compraInfo.pedidoId;
+                    if (pedidoId) {
 
                         await Pedidos.update(
                             { status: 'compra_efetuada' },
@@ -417,14 +426,14 @@ class ManagerController {
                             pedidoId: pedidoId,
                             actionType: 'UPDATE',
                             contextDetails: "Compra feita por gerente de produção.",
-                            oldData: oldDataPedido.toJSON(),
+                            oldData: oldDataPedidoJson,
                             newData: newDataPedido.toJSON()
                         })
                     }
 
                     await Compra.update(
                         {
-                            approval_date: new Date(),
+                            data_de_decisao: new Date(),
                             status: 'concluído',
                             responsavel_pela_decisao_id: gerenteId
                         },
@@ -435,10 +444,10 @@ class ManagerController {
 
                     await CompraLog.create({
                         gerenteId: gerenteId,
-                        compraId: newDataJson.id,
+                        compraId: compraId,
                         actionType: 'UPDATE',
                         contextDetails: "Orçamento aceito por gerente de produção.",
-                        oldData: oldDataCompra.toJSON(),
+                        oldData: oldDataCompraJson,
                         newData: newDataCompra.toJSON()
                     })
 
@@ -455,19 +464,21 @@ class ManagerController {
                             { where: { id: pedidoId } }
                         );
 
+                        const newDataPedido = await Pedidos.findByPk(pedidoId)
+
                         await PedidosLog.create({
                             userId: gerenteId,
                             pedidoId: pedidoId,
                             actionType: 'UPDATE',
                             contextDetails: "Compra negada por gerente de produção.",
-                            oldData: oldDataJson.toJSON(),
-                            newData: newDataJson.toJSON()
+                            oldData: oldDataPedidoJson,
+                            newData: newDataPedido.toJSON()
                         })
                     }
 
                     await Compra.update(
                         {
-                            approval_date: new Date(),
+                            data_de_decisao: new Date(),
                             status: 'negado',
                             responsavel_pela_decisao_id: gerenteId
                         },
@@ -476,32 +487,46 @@ class ManagerController {
 
                     await CompraLog.create({
                         gerenteId: gerenteId,
-                        compraId: newDataJson.id,
+                        compraId: compraId,
                         actionType: 'UPDATE',
                         contextDetails: "Orçamento negado por gerente de produção.",
-                        oldData: oldDataJson.toJSON(),
-                        newData: newDataJson.toJSON()
+                        oldData: oldDataCompraJson,
+                        newData: newDataCompra.toJSON()
                     })
 
                     break;
 
                 case 'renegociacao':
-                    await Compra.update(
-                        {
-                            approval_date: new Date(),
-                            status: 'renegociacao_solicitada',
-                            responsavel_pela_decisao_id: gerenteId
-                        },
+                    await Compra.update({
+                        data_de_decisao: new Date(),
+                        status: 'renegociacao_solicitada',
+                        responsavel_pela_decisao_id: gerenteId
+                    },
                         { where: { id: compraId } }
                     )
 
                     await CompraLog.create({
                         gerenteId: gerenteId,
-                        compraId: newDataJson.id,
+                        compraId: compraId,
                         actionType: 'UPDATE',
                         contextDetails: "Renegociação de orçamento solicitada por gerente de produção.",
-                        oldData: oldDataJson.toJSON(),
-                        newData: newDataJson.toJSON()
+                        oldData: oldDataCompraJson,
+                        newData: newDataCompra.toJSON()
+                    })
+
+                    await Orcamento.update({
+                        status: 'renegociacao'
+                    },
+                        { where: { id: orcamentoId } }
+                    )
+
+                    await OrcamentoLog.create({
+                        buyerId: oldDataOrcamento.buyerId,
+                        orcamentoId: orcamentoId,
+                        actionType: 'UPDATE',
+                        contextDetails: "Renegociação de orçamento solicitada por gerente de produção.",
+                        oldData: oldDataOrcamentoJson,
+                        newData: newDataOrcamentoJson
                     })
 
                     break;
