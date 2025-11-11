@@ -205,14 +205,14 @@ class BuyerController {
                 buyerId: orcamentoAtualizado.buyerId,
                 orcamentoId: id,
                 actionType: "UPDATE",
-                contextDetails: "Atualização de valor de orçamento.",
+                contextDetails: "Atualização de descrição de orçamento.",
                 oldData: oldDataJson.toJSON(),
                 newData: orcamentoAtualizado.toJSON()
             })
 
             return res.status(200).json(
                 {
-                    message: "Valor atualizado com sucesso.",
+                    message: "Descrição atualizada com sucesso.",
                     orcamento: orcamentoAtualizado
                 }
             )
