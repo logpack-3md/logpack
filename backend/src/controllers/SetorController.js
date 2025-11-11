@@ -88,10 +88,19 @@ class SetorController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
 
         try {
             const result = await Setor.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['name', 'ASC']],
@@ -107,23 +116,28 @@ class SetorController {
             const totalItems = result.count
             const totalPages = Math.ceil(totalItems / limit)
 
-            res.status(200).json({
-                data: setores,
-                meta: {
-                    totalItems: totalItems,
-                    totalPages: totalPages,
-                    currentPage: page,
-                    itemsPerPage: limit
-                }
-            })
 
             if (setores.length === 0 && page > 1) {
                 return res.status(404).json({ message: "Página não encontrada ou vazia" })
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum setor cadastrado." })
+                const msg = statusFilter
+                    ? `Nenhum setor com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum setor disponível."
+                return res.status(404).json({ message: msg })
             }
+
+            res.status(200).json({
+                data: setores,
+                meta: {
+                    totalItems: totalItems,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null
+                }
+            })
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar setores." })
             console.error("Erro ao listar setores: ", error)
@@ -131,27 +145,27 @@ class SetorController {
     }
 
     static async getSector(req, res) {
-    try {
-        const { id } = req.params;
+        try {
+            const { id } = req.params;
 
-        const setor = await Setor.findByPk(id, {
-            attributes: [
-                'id',
-                'name',
-                'status'
-            ]
-        })
-        
-        if (!setor) {
-            return res.status(404).json({ message: "Setor não encontrado." })
-        };
-        
-        res.status(200).json(setor)
-    } catch (error) {
-        console.error("Erro ao encontrar setor: ", error)
-        return res.status(500).json({ error: "Erro ao encontrar setor." })
+            const setor = await Setor.findByPk(id, {
+                attributes: [
+                    'id',
+                    'name',
+                    'status'
+                ]
+            })
+
+            if (!setor) {
+                return res.status(404).json({ message: "Setor não encontrado." })
+            };
+
+            res.status(200).json(setor)
+        } catch (error) {
+            console.error("Erro ao encontrar setor: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar setor." })
+        }
     }
-}
 }
 
 export default SetorController

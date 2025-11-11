@@ -33,10 +33,19 @@ class BuyerController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
 
         try {
             const result = await Compra.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['amount', 'ASC']],
@@ -60,7 +69,10 @@ class BuyerController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+                const msg = statusFilter
+                    ? `Nenhuma compra com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum compra solicitado."
+                return res.status(404).json({ message: msg })
             }
 
             res.status(200).json({
@@ -69,7 +81,8 @@ class BuyerController {
                     totalItems: totalItems,
                     totalPages: totalPages,
                     currentPage: page,
-                    itemsPerPage: limit
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null
                 }
             });
 
