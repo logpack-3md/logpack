@@ -20,10 +20,9 @@ Compra.init({
         allowNull: false
     },
 
-
     status: {
         type: DataTypes.ENUM,
-        values: ['pendente', 'fase_de_orcamento', 'concluído', 'cancelado'],
+        values: ['pendente', 'fase_de_orcamento', 'renegociacao_solicitada', 'concluído', 'cancelado', 'negado'],
         defaultValue: 'pendente'
     },
 
@@ -37,12 +36,12 @@ Compra.init({
         allowNull: false
     },
 
-    who_approved_id: {
+    responsavel_pela_decisao_id: {
         type: DataTypes.UUID,
         allowNull: true
     },
 
-    approval_date: {
+    data_de_decisao: {
         type: DataTypes.DATE,
         allowNull: true
     },

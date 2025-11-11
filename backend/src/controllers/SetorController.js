@@ -1,5 +1,6 @@
 import z from "zod";
 import Setor from "../models/Setor.js";
+import SetorLog from "../models/SetorLog.js";
 
 class SetorController {
     static createUpdateSchema = z.object({
@@ -8,13 +9,24 @@ class SetorController {
     });
 
     static async createSetor(req, res) {
+        const gerenteId = req.user.id;
+
         try {
             const validatedSchema = SetorController.createUpdateSchema.parse(req.body)
             const setor = await Setor.create(validatedSchema)
 
+            await SetorLog.create({
+                gerenteId: gerenteId,
+                setorId: setor.id,
+                actionType: 'INSERT',
+                contextDetails: "Criação de novo setor.",
+                oldData: null,
+                newData: setor.toJSON()
+            })
+
             return res.status(200).json(setor)
         } catch (error) {
-            if(error instanceof z.ZodError) {
+            if (error instanceof z.ZodError) {
                 return res.status(400).json({
                     message: "Dados de entrada inválidos",
                     issues: error.issues
@@ -22,6 +34,53 @@ class SetorController {
             }
             res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
             console.error("Erro ao criar usuário", error);
+        }
+    }
+
+    static async updateSetor(req, res) {
+        const { id } = req.params;
+        const gerenteId = req.user.id
+
+        const nameSchema = z.object({
+            name: z.string().max(6, { error: "O nome do setor deve conter no máximo 6 caracteres." }),
+        })
+        try {
+            const { name } = nameSchema.parse(req.body)
+
+            const oldDataJson = await Setor.findByPk(id)
+
+            const [rowsAffected] = await Setor.update(
+                { name: name },
+                { where: { id: id } }
+            )
+
+            if (rowsAffected === 0) {
+                res.status(404).json({ message: "Setor não encontrado." })
+            }
+
+            const updatedSetor = await Setor.findByPk(id)
+
+            const newDataJson = updatedSetor.toJSON()
+
+            await SetorLog.create({
+                gerenteId: gerenteId,
+                setorId: updatedSetor.id,
+                actionType: 'UPDATE',
+                contextDetails: "Atualização de nome do setor.",
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson
+            })
+
+            return res.status(200).json({ message: `Nome de setor alterado para: ${name}` })
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                res.status(400).json({
+                    message: "Dados de entrada inválidos",
+                    issues: error.issues
+                })
+            }
+            console.error("Erro interno no servidor ao atualizar setor: ", error)
+            return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao atualizar setor." })
         }
     }
 
@@ -59,11 +118,11 @@ class SetorController {
             })
 
             if (setores.length === 0 && page > 1) {
-                return res.status(404).json({ message: "Página não encontrada ou vazia"})
+                return res.status(404).json({ message: "Página não encontrada ou vazia" })
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum setor cadastrado."})
+                return res.status(404).json({ message: "Nenhum setor cadastrado." })
             }
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar setores." })
