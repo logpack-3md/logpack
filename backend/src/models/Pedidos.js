@@ -22,7 +22,7 @@ Pedidos.init({
 
     status: {
         type: DataTypes.ENUM,
-        values: ['solicitado', 'aprovado', 'rejeitado', 'compra_iniciada'],
+        values: ['solicitado', 'aprovado', 'negado', 'compra_iniciada', 'compra_efetuada'],
         defaultValue: 'solicitado'
     }
 
