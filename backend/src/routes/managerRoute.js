@@ -78,8 +78,32 @@ router.put('/setor/status/:id',
 router.get('/pedido', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
-    AuthMiddleware.isManager,
+    AuthMiddleware.canSeePedidos,
     ManagerController.getPedidos
+)
+
+// buscar um pedido
+router.get('/pedido/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.canSeePedidos,
+    ManagerController.getPedido
+)
+
+// paginação de orçamentos
+router.get('/orcamentos', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.getOrcamentos
+)
+
+// buscar um orçamento
+router.get('/orcamentos/:orcamentoId', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    ManagerController.getOrcamento
 )
 
 // aprovar pedido por id
@@ -100,7 +124,7 @@ router.post('/compra/:pedidoId',
 )
 
 // contestar orçamento ( aprovado / negado / renegociacao ) por id de orçamento
-router.put('/orcamento/:orcamentoId',
+router.put('/orcamentos/contestar/:orcamentoId',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,

@@ -65,6 +65,109 @@ class ManagerController {
         }
     }
 
+    static async getPedido(req, res) {
+        try {
+            const { id } = req.params;
+
+            const pedido = await Pedidos.findByPk(id, {
+                attributes: [
+                    'id',
+                    'userId',
+                    'insumoSKU',
+                    'status'
+                ]
+            })
+
+            if (!pedido) {
+                return res.status(404).json({ message: "Pedido não encontrado." })
+            };
+
+            res.status(200).json(pedido)
+        } catch (error) {
+            console.error("Erro ao encontrar pedido: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar pedido." })
+        }
+    }
+
+    static async getOrcamentos(req, res) {
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+
+        const offset = (page - 1) * limit
+
+        try {
+            const result = await Orcamento.findAndCountAll({
+                limit: limit,
+                offset: offset,
+                order: [['createdAt', 'DESC']],
+
+                attributes: [
+                    'id',
+                    'compraId',
+                    'buyerId',
+                    'description',
+                    'amount',
+                    'valor_total',
+                    'status'
+                ]
+            })
+
+            const orcamentos = result.rows;
+            const totalItems = result.count
+            const totalPages = Math.ceil(totalItems / limit)
+
+            if (orcamentos.length === 0 && page > 1) {
+                return res.status(404).json({ message: "Página não encontrada ou vazia" })
+            }
+
+            if (totalItems === 0) {
+                return res.status(404).json({ message: "Nenhum orçamento encontrado" })
+            }
+
+            res.status(200).json({
+                data: orcamentos,
+                meta: {
+                    totalItems: totalItems,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    itemsPerPage: limit
+                }
+            });
+
+        } catch (error) {
+            console.error("Erro ao listar orçamentos: ", error)
+            res.status(500).json({ error: "Erro ao listar orçamentos." })
+        }
+    }
+
+    static async getOrcamento(req, res) {
+        try {
+            const { orcamentoId } = req.params;
+
+            const orcamento = await Orcamento.findByPk(orcamentoId, {
+                attributes: [
+                    'id',
+                    'compraId',
+                    'buyerId',
+                    'description',
+                    'amount',
+                    'valor_total',
+                    'status',
+                    'createdAt'
+                ]
+            })
+
+            if (!orcamento) {
+                return res.status(404).json({ message: "Orçamento não encontrado." })
+            };
+
+            res.status(200).json(orcamento)
+        } catch (error) {
+            console.error("Erro ao encontrar orçamento: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar orçamento." })
+        }
+    }
+
     static async setStatusInsumo(req, res) {
         const { id } = req.params
         const userId = req.user.id
@@ -394,9 +497,9 @@ class ManagerController {
             )
 
             if (rowsAffected === 0 && oldDataOrcamento.status === status) {
-                return res.status(200).json({ message: `Status de orçamento já era: ${status}`})
+                return res.status(200).json({ message: `Status de orçamento já era: ${status}` })
             }
-            
+
             const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId)
             const newDataOrcamentoJson = orcamentoAtualizado.toJSON()
 

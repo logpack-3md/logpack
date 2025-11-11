@@ -82,6 +82,40 @@ class InsumosController {
         }
     }
 
+    static async getInsumo(req, res) {
+        try {
+            const { id } = req.params;
+
+            const insumo = await Insumos.findByPk(id, {
+                attributes: [
+                    'id',
+                    'name',
+                    'sku',
+                    'setorName',
+                    'measure',
+                    'image',
+                    'description',
+                    'current_storage',
+                    'max_storage',
+                    'current_weight_carga',
+                    'max_weight_carga',
+                    'status_solicitacao',
+                    'status',
+                    'last_check'
+                ]
+            })
+
+            if (!insumo) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            };
+
+            res.status(200).json(insumo)
+        } catch (error) {
+            console.error("Erro ao encontrar insumo: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar insumo." })
+        }
+    }
+
     static async createItem(req, res) {
         const file = req.file;
         const userId = req.user.id;
@@ -251,7 +285,7 @@ class InsumosController {
                 oldData: oldDataJson,
                 newData: newDataJson
             });
-            
+
             res.status(200).json({
                 message: "Insumo atualizado com sucesso.",
                 insumo: updatedInsumo

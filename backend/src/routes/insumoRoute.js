@@ -11,4 +11,11 @@ router.get('/',
     InsumosController.getItems
 )
 
+// buscar um insumo
+router.get('/:id', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    InsumosController.getInsumo
+)
+
 export default router;
