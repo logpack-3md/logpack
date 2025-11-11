@@ -63,10 +63,24 @@ class AdminController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+        const roleFilter = req.query.role
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
+
+        if (roleFilter) {
+            whereClause.role = roleFilter
+        }
 
         try {
             const result = await User.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['name', 'ASC']],
@@ -89,7 +103,10 @@ class AdminController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+                const msg = statusFilter
+                    ? `Nenhum usuário com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum usuário encontrado."
+                return res.status(404).json({ message: msg })
             }
 
             res.status(200).json({
@@ -98,7 +115,9 @@ class AdminController {
                     totalItems: totalItems,
                     totalPages: totalPages,
                     currentPage: page,
-                    itemsPerPage: limit
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null,
+                    roleFilter: roleFilter || null
                 }
             });
 
