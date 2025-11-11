@@ -21,10 +21,19 @@ class ManagerController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
 
         try {
             const result = await Pedidos.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['insumoSKU', 'ASC']],
@@ -46,8 +55,12 @@ class ManagerController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum pedido solicitado" })
+                const msg = statusFilter
+                    ? `Nenhum pedido com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum pedido solicitado."
+                return res.status(404).json({ message: msg })
             }
+
 
             res.status(200).json({
                 data: pedidos,
@@ -55,7 +68,8 @@ class ManagerController {
                     totalItems: totalItems,
                     totalPages: totalPages,
                     currentPage: page,
-                    itemsPerPage: limit
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null
                 }
             });
 
@@ -93,10 +107,19 @@ class ManagerController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
 
         try {
             const result = await Orcamento.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['createdAt', 'DESC']],
@@ -121,7 +144,10 @@ class ManagerController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum orçamento encontrado" })
+                const msg = statusFilter
+                    ? `Nenhum orçamento com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum orçamento disponível."
+                return res.status(404).json({ message: msg })
             }
 
             res.status(200).json({
@@ -130,7 +156,8 @@ class ManagerController {
                     totalItems: totalItems,
                     totalPages: totalPages,
                     currentPage: page,
-                    itemsPerPage: limit
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null
                 }
             });
 

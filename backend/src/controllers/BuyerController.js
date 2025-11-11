@@ -4,6 +4,7 @@ import z from "zod";
 import Pedidos from "../models/Pedidos.js";
 import OrcamentoLog from "../models/OrcamentoLog.js";
 import CompraLog from "../models/CompraLog.js";
+import PedidosLog from "../models/PedidosLog.js";
 
 class BuyerController {
     static createOrcamentoSchema = z.object({
@@ -33,10 +34,19 @@ class BuyerController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
 
         try {
             const result = await Compra.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['amount', 'ASC']],
@@ -60,7 +70,10 @@ class BuyerController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+                const msg = statusFilter
+                    ? `Nenhuma compra com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum compra solicitado."
+                return res.status(404).json({ message: msg })
             }
 
             res.status(200).json({
@@ -69,7 +82,8 @@ class BuyerController {
                     totalItems: totalItems,
                     totalPages: totalPages,
                     currentPage: page,
-                    itemsPerPage: limit
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null
                 }
             });
 
@@ -170,6 +184,8 @@ class BuyerController {
         try {
             const validatedSchema = BuyerController.updateOrcamentoSchema.parse(req.body)
 
+            const oldDataJson = await Orcamento.findByPk(id)
+
             const [rowsAffected] = await Orcamento.update(validatedSchema,
                 { where: { id: id } }
             )
@@ -185,9 +201,18 @@ class BuyerController {
                 { where: { id: orcamentoAtualizado.compraId } }
             )
 
+            await OrcamentoLog.create({
+                buyerId: orcamentoAtualizado.buyerId,
+                orcamentoId: id,
+                actionType: "UPDATE",
+                contextDetails: "Atualização de descrição de orçamento.",
+                oldData: oldDataJson.toJSON(),
+                newData: orcamentoAtualizado.toJSON()
+            })
+
             return res.status(200).json(
                 {
-                    message: "Valor atualizado com sucesso.",
+                    message: "Descrição atualizada com sucesso.",
                     orcamento: orcamentoAtualizado
                 }
             )
@@ -210,6 +235,8 @@ class BuyerController {
         try {
             const validatedSchema = BuyerController.renegociarSchema.parse(req.body);
 
+            const oldDataJson = await Orcamento.findByPk(id)
+
             const [rowsAffected] = await Orcamento.update(validatedSchema, {
                 where: { id: id }
             })
@@ -220,45 +247,109 @@ class BuyerController {
 
             const orcamentoAtualizado = await Orcamento.findByPk(id)
 
+            await OrcamentoLog.create({
+                buyerId: orcamentoAtualizado.buyerId,
+                orcamentoId: id,
+                actionType: "UPDATE",
+                contextDetails: "Renegociação de orçamento efetuada e enviada para gerente de produção.",
+                oldData: oldDataJson.toJSON(),
+                newData: orcamentoAtualizado.toJSON()
+            })
+
             return res.status(200).json({
                 message: `Renegociação efetuada. Novo valor: ${orcamentoAtualizado.valor_total}`,
                 orcamento: orcamentoAtualizado
             })
+
         } catch (error) {
 
         }
     }
 
     static async cancelarOrcamento(req, res) {
-        const { id } = req.params;
+        const userId = req.user.id
+        const { id: orcamentoId } = req.params;
 
         try {
+            const oldDataOrcamentoObj = await Orcamento.findByPk(orcamentoId)
+
+            if (!oldDataOrcamentoObj) {
+                return res.status(404).json({ message: "Orçamento não encontrado." })
+            };
+            const oldDataOrcamentoJson = oldDataOrcamentoObj.toJSON();
+
+            const compraId = oldDataOrcamentoObj.compraId;
+
+            const oldDataCompraObj = await Compra.findByPk(compraId);
+            const oldDataCompraJson = oldDataCompraObj ? oldDataCompraObj.toJSON() : null;
+
+            const pedidoId = oldDataCompraObj ? oldDataCompraObj.pedidoId : null;
+
+            const oldDataPedidoObj = pedidoId ? await Pedidos.findByPk(pedidoId) : null;
+            const oldDataPedidoJson = oldDataPedidoObj ? oldDataPedidoObj.toJSON() : null;
+
             const [rowsAffected] = await Orcamento.update(
                 { status: 'cancelado' },
-                { where: { id: id } }
+                { where: { id: orcamentoId } }
             )
 
             if (rowsAffected === 0) {
-                res.status(404).json({ message: "Orçamento não encontrado" })
+                return res.status(404).json({ message: "Orçamento não encontrado" });
             };
 
-            const orcamentoCancelado = await Orcamento.findByPk(id)
-            const compra = await Compra.findOne({
-                where: { id: orcamentoCancelado.compraId }
-            })
+            const orcamentoCancelado = await Orcamento.findByPk(orcamentoId)
+            const newDataOrcamentoJson = orcamentoCancelado.toJSON();
+
 
             await Compra.update(
                 { status: 'cancelado' },
-                { where: { id: orcamentoCancelado.compraId } }
+                { where: { id: compraId } }
             )
 
-            await Pedidos.update(
-                { status: 'solicitado' },
-                { where: { id: compra.pedidoId } }
-            )
+            const compraAtualizada = await Compra.findByPk(compraId);
+            const newDataCompraJson = compraAtualizada ? compraAtualizada.toJSON() : null;
+
+
+            if (pedidoId) {
+                await Pedidos.update(
+                    { status: 'solicitado' },
+                    { where: { id: pedidoId } }
+                )
+
+                const pedidoAtualizado = await Pedidos.findByPk(pedidoId);
+                const newDataPedidoJson = pedidoAtualizado ? pedidoAtualizado.toJSON() : null;
+
+
+                await PedidosLog.create({
+                    userId: userId,
+                    pedidoId: pedidoId,
+                    actionType: 'UPDATE',
+                    contextDetails: "Cancelamento do orçamento relacionado, pedido retornado para 'solicitado'.",
+                    oldData: oldDataPedidoJson,
+                    newData: newDataPedidoJson
+                });
+            }
+
+            await CompraLog.create({
+                gerenteId: userId,
+                compraId: compraId,
+                actionType: 'UPDATE',
+                contextDetails: "Orçamento relacionado cancelado. Compra cancelada.",
+                oldData: oldDataCompraJson,
+                newData: newDataCompraJson
+            })
+
+            await OrcamentoLog.create({
+                buyerId: orcamentoCancelado.buyerId,
+                orcamentoId: orcamentoId,
+                actionType: "UPDATE",
+                contextDetails: "Orçamento cancelado.",
+                oldData: oldDataOrcamentoJson,
+                newData: newDataOrcamentoJson
+            })
 
             return res.status(200).json({
-                message: "Orçamento cancelado com sucesso.",
+                message: "Orçamento cancelado com sucesso. Compra e Pedido relacionados atualizados.",
                 orcamento: orcamentoCancelado,
             })
 
