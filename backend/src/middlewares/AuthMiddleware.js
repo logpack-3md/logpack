@@ -43,6 +43,13 @@ class AuthMiddleware {
         next()
     }
 
+    async canSeePedidos(req, res, next) {
+        if (!req.user || (req.user.role !== 'manager' && req.user.role !== 'employee')) {
+            res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente de produção." })
+        }
+        next()
+    }
+
     async isManager(req, res, next) {
         if (!req.user || req.user.role !== 'manager') {
             res.status(403).json({ message: "Acesso proibido: Esta ação é exclusiva do gerente de produção." })
@@ -119,8 +126,8 @@ class AuthMiddleware {
                 where: {
                     insumoSKU: insumoSKU,
                     status: {
-                      [Op.in]: ['solicitado', 'aprovado', 'compra_iniciada']  
-                    } 
+                        [Op.in]: ['solicitado', 'aprovado', 'compra_iniciada']
+                    }
                 }
             })
 

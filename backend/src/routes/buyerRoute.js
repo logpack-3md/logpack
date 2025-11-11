@@ -12,6 +12,14 @@ router.get('/compras',
     BuyerController.getCompras
 )
 
+// buscar uma compra
+router.get('/compras/:id',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isBuyer,
+    BuyerController.getCompra
+)
+
 // criar orçamento a partir de id de compra
 router.post('/orcamento/:compraId',
     AuthMiddleware.verifyToken,

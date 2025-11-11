@@ -129,6 +129,29 @@ class SetorController {
             console.error("Erro ao listar setores: ", error)
         }
     }
+
+    static async getSector(req, res) {
+    try {
+        const { id } = req.params;
+
+        const setor = await Setor.findByPk(id, {
+            attributes: [
+                'id',
+                'name',
+                'status'
+            ]
+        })
+        
+        if (!setor) {
+            return res.status(404).json({ message: "Setor não encontrado." })
+        };
+        
+        res.status(200).json(setor)
+    } catch (error) {
+        console.error("Erro ao encontrar setor: ", error)
+        return res.status(500).json({ error: "Erro ao encontrar setor." })
+    }
+}
 }
 
 export default SetorController

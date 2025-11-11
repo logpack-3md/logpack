@@ -79,6 +79,32 @@ class BuyerController {
         }
     }
 
+    static async getCompra(req, res) {
+        try {
+            const { id } = req.params;
+
+            const compra = await Compra.findByPk(id, {
+                attributes: [
+                    'id',
+                    'gerenteId',
+                    'pedidoId',
+                    'status',
+                    'description',
+                    'amount',
+                    'responsavel_pela_decisao_id',
+                    'data_de_decisao'
+                ]
+            })
+            if (!compra) {
+                return res.status(404).json({ message: "Compra não encontrada." })
+            };
+            res.status(200).json(compra)
+        } catch (error) {
+            console.error("Erro ao encontrar compra: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar compra." })
+        }
+    }
+
     static async createOrcamento(req, res) {
         const buyerId = req.user.id
         const { compraId } = req.params
@@ -142,29 +168,29 @@ class BuyerController {
         const { id } = req.params
 
         try {
-                const validatedSchema = BuyerController.updateOrcamentoSchema.parse(req.body)
+            const validatedSchema = BuyerController.updateOrcamentoSchema.parse(req.body)
 
-                const [rowsAffected] = await Orcamento.update(validatedSchema,
-                    { where: { id: id } }
-                )
+            const [rowsAffected] = await Orcamento.update(validatedSchema,
+                { where: { id: id } }
+            )
 
-                if (rowsAffected === 0) {
-                    return res.status(404).json({ message: "Orçamento não encontrado" })
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Orçamento não encontrado" })
+            }
+
+            const orcamentoAtualizado = await Orcamento.findByPk(id);
+
+            await Compra.update(
+                { status: 'fase_de_orçamento' },
+                { where: { id: orcamentoAtualizado.compraId } }
+            )
+
+            return res.status(200).json(
+                {
+                    message: "Valor atualizado com sucesso.",
+                    orcamento: orcamentoAtualizado
                 }
-
-                const orcamentoAtualizado = await Orcamento.findByPk(id);
-
-                await Compra.update(
-                    { status: 'fase_de_orçamento' },
-                    { where: { id: orcamentoAtualizado.compraId } }
-                )
-
-                return res.status(200).json(
-                    {
-                        message: "Valor atualizado com sucesso.",
-                        orcamento: orcamentoAtualizado
-                    }
-                )
+            )
 
         } catch (error) {
             if (error instanceof z.ZodError) {
