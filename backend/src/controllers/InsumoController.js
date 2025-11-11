@@ -1,4 +1,5 @@
 import Insumos from '../models/Insumos.js'
+import InsumosLog from '../models/InsumosLog.js';
 import z from 'zod'
 import { put, del } from '@vercel/blob'
 import Setor from '../models/Setor.js';
@@ -27,10 +28,19 @@ class InsumosController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
 
         try {
             const result = await Insumos.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['name', 'ASC']],
@@ -57,23 +67,28 @@ class InsumosController {
             const totalItems = result.count
             const totalPages = Math.ceil(totalItems / limit)
 
-            res.status(200).json({
-                data: insumos,
-                meta: {
-                    totalItems: totalItems,
-                    totalPages: totalPages,
-                    currentPage: page,
-                    itemsPerPage: limit
-                }
-            });
 
             if (insumos.length === 0 && page > 1) {
                 return res.status(404).json({ message: "Página não encontrada ou vazia" })
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum insumo cadastrado" })
+                const msg = statusFilter
+                    ? `Nenhum Insumo com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum Insumo disponível."
+                return res.status(404).json({ message: msg })
             }
+
+            res.status(200).json({
+                data: insumos,
+                meta: {
+                    totalItems: totalItems,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null
+                }
+            });
 
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar insumos." })
@@ -81,8 +96,43 @@ class InsumosController {
         }
     }
 
+    static async getInsumo(req, res) {
+        try {
+            const { id } = req.params;
+
+            const insumo = await Insumos.findByPk(id, {
+                attributes: [
+                    'id',
+                    'name',
+                    'sku',
+                    'setorName',
+                    'measure',
+                    'image',
+                    'description',
+                    'current_storage',
+                    'max_storage',
+                    'current_weight_carga',
+                    'max_weight_carga',
+                    'status_solicitacao',
+                    'status',
+                    'last_check'
+                ]
+            })
+
+            if (!insumo) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            };
+
+            res.status(200).json(insumo)
+        } catch (error) {
+            console.error("Erro ao encontrar insumo: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar insumo." })
+        }
+    }
+
     static async createItem(req, res) {
         const file = req.file;
+        const userId = req.user.id;
         let imageUrl = null;
 
         try {
@@ -101,6 +151,17 @@ class InsumosController {
 
             if (!setor) {
                 return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
+            }
+
+            const insumoExistenteNoSetor = await Insumos.findOne({
+                where: { setorName: setorName },
+                attributes: ['SKU']
+            });
+
+            if (insumoExistenteNoSetor) {
+                return res.status(409).json({
+                    message: `O Setor '${setorName}' já está sendo utilizado pelo Insumo SKU: ${insumoExistenteNoSetor.SKU}. Um setor só pode ser associado a um único item (Insumo).`
+                });
             }
 
             if (codigo) {
@@ -129,6 +190,16 @@ class InsumosController {
                 SKU: SKU
             })
 
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: insumo.id,
+                actionType: 'INSERT',
+                contextDetails: "Criação inicial de Insumo.",
+                oldData: null,
+                newData: insumo.toJSON()
+
+            })
+
             return res.status(201).json(insumo)
 
         } catch (error) {
@@ -146,6 +217,7 @@ class InsumosController {
 
     static async updateItem(req, res) {
         const file = req.file;
+        const userId = req.user.id
         let imageUrl = null;
         const { id } = req.params
 
@@ -215,6 +287,19 @@ class InsumosController {
             }
 
             const updatedInsumo = await Insumos.findByPk(id);
+
+            const oldDataJson = existingInsumo.toJSON()
+            const newDataJson = updatedInsumo.toJSON()
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: updatedInsumo.id,
+                actionType: 'UPDATE',
+                contextDetails: "Atualização de dados de Insumo.",
+                oldData: oldDataJson,
+                newData: newDataJson
+            });
+
             res.status(200).json({
                 message: "Insumo atualizado com sucesso.",
                 insumo: updatedInsumo

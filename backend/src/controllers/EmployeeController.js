@@ -1,5 +1,6 @@
 // import z from "zod";
 import Pedidos from "../models/Pedidos.js";
+import PedidosLog from "../models/PedidosLog.js";
 
 class EmployeeController {
     static async sendRequest(req, res) {
@@ -11,6 +12,15 @@ class EmployeeController {
             const pedido = await Pedidos.create({
                 insumoSKU: insumoSKU,
                 userId: userId
+            })
+
+            await PedidosLog.create({
+                userId: userId,
+                pedidoId: pedido.id,
+                actionType: 'INSERT',
+                contextDetails: "Pedido de insumo criado.",
+                oldData: null,
+                newData: pedido.toJSON()
             })
 
             return res.status(201).json({

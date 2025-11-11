@@ -1,4 +1,5 @@
 import User from "../models/User.js"
+import UserLog from "../models/UserLog.js";
 import z from "zod"
 
 class AdminController {
@@ -9,6 +10,7 @@ class AdminController {
 
     static async setStatusUser(req, res) {
         const { id } = req.params
+        const userId = req.user.id
 
         const statusSchema = z.object({
             status: z.enum(['ativo', 'inativo'], {
@@ -18,6 +20,8 @@ class AdminController {
 
         try {
             const { status } = statusSchema.parse(req.body)
+
+            const oldDataJson = await User.findByPk(id)
 
             const [rowsAffected] = await User.update({ status: status }, {
                 where: { id: id }
@@ -30,7 +34,17 @@ class AdminController {
                 }
             }
 
-            res.status(200).json({ message: `Status alterado para ${status}` })
+            const newDataJson = await User.findByPk(id)
+
+            await UserLog.create({
+                userId: userId,
+                contextDetails: "Status de usuário alterado por admnistrador.",
+                actionType: 'UPDATE',
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+            })
+
+            return res.status(200).json({ message: `Status alterado para ${status}` })
         } catch (error) {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({
@@ -39,8 +53,8 @@ class AdminController {
                 })
             }
 
-            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
             console.error("Erro ao atualizar status", error);
+            return res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
         }
     }
 
@@ -49,10 +63,24 @@ class AdminController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
+        const statusFilter = req.query.status
+        const roleFilter = req.query.role
+
         const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
+
+        if (roleFilter) {
+            whereClause.role = roleFilter
+        }
 
         try {
             const result = await User.findAndCountAll({
+                where: whereClause,
                 limit: limit,
                 offset: offset,
                 order: [['name', 'ASC']],
@@ -75,7 +103,10 @@ class AdminController {
             }
 
             if (totalItems === 0) {
-                return res.status(404).json({ message: "Nenhum usuário cadastrado" })
+                const msg = statusFilter
+                    ? `Nenhum usuário com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum usuário encontrado."
+                return res.status(404).json({ message: msg })
             }
 
             res.status(200).json({
@@ -84,7 +115,9 @@ class AdminController {
                     totalItems: totalItems,
                     totalPages: totalPages,
                     currentPage: page,
-                    itemsPerPage: limit
+                    itemsPerPage: limit,
+                    filterApplied: statusFilter || null,
+                    roleFilter: roleFilter || null
                 }
             });
 
@@ -119,6 +152,7 @@ class AdminController {
 
     static async updateUser(req, res) {
         const { id } = req.params;
+        const userId = req.user.id;
 
         try {
             const validatedUpdate = AdminController.updateSchema.parse(req.body)
@@ -126,6 +160,8 @@ class AdminController {
             if (Object.keys(validatedUpdate).length === 0) {
                 return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização" })
             }
+
+            const oldDataJson = await User.findByPk(id)
 
             const [rowsAffected] = await User.update(validatedUpdate, {
                 where: { id: id }
@@ -135,6 +171,16 @@ class AdminController {
                 return res.status(404).json({ message: "Usuário não encontrado." })
             }
 
+            const newDataJson = await User.findByPk(id)
+
+            await UserLog.create({
+                userId: userId,
+                contextDetails: "Edição de usuário feita por administrador.",
+                actionType: 'UPDATE',
+                oldData: oldDataJson.toJSON(),
+                newData: newDataJson.toJSON()
+            })
+
             return res.status(200).json({ message: "Usuário atualizado com sucesso." })
         } catch (error) {
             if (error instanceof z.ZodError) {
@@ -143,8 +189,8 @@ class AdminController {
                     issues: error.issues
                 })
             }
-            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
             console.error("Erro ao atualizar usuário", error);
+            return res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
         }
     }
 }
