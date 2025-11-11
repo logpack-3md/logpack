@@ -30,8 +30,8 @@ const menuItems = [
     label: 'Painel Geral',
     icon: BarChart2,
     subItems: [
-      { id: 'estoque', label: 'Produtos', icon: Box, href: '/dashboard/produtos' },
-      { id: 'estoque', label: 'Estoque', icon: PackageOpen, href: '/dashboard/estoque' },
+      { id: 'produtos', label: 'Produtos', icon: Box, href: '/dashboard/produtos' }, // ← CORRIGIDO
+      { id: 'estoque', label: 'Estoque', icon: PackageOpen, href: '/dashboard/estoque' }, // ← MANTIDO
       { id: 'relatorios', label: 'Relatórios', icon: FileCheck2, href: '/dashboard/relatorios' },
     ],
   },
@@ -56,7 +56,6 @@ const menuItems = [
     ],
   },
 ];
-
 export default function Sidebar({ isOpen, onToggle }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [openSubmenus, setOpenSubmenus] = useState({});
@@ -76,7 +75,7 @@ export default function Sidebar({ isOpen, onToggle }) {
       )}
     >
       <div className="flex items-center justify-between p-5 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-800">MStore</h1>
+        <h1 className="text-xl font-bold text-gray-800">LogPack</h1>
         <button
           onClick={onToggle}
           className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"

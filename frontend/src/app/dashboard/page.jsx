@@ -7,9 +7,10 @@ import DataStats from '@/components/ui/datastats';
 import { Menu } from 'lucide-react';
 import { FloatingActions } from '@/components/ui/floating-actions';
 import ChartCompose from '@/components/Blocks/Graphics/ChartCompose';
-import ItensSection from "@/components/Blocks/Itens/ItensSection";
 import ChartBar from '@/components/Blocks/Graphics/ChartBar';
-import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection'; // ← ADICIONADO
+import ItensSection from "@/components/Blocks/Itens/ItensSection";
+import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection';
+import AssetAllocationDonut from '@/components/Blocks/Graphics/DonutChart'; 
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -27,7 +28,7 @@ export default function DashboardPage() {
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      {/* Main Content - Só uma rolagem */}
+      {/* Main Content */}
       <div className="flex-1">
         <FloatingActions />
 
@@ -43,36 +44,38 @@ export default function DashboardPage() {
         <div className="pt-4 lg:pt-2">
           {/* Cabeçalho */}
           <div className="px-6 lg:px-0 lg:pl-6 mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Olá, bem vindo a LogPack</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Olá, bem vindo!</h1>
           </div>
 
-          {/* DataStats: 100% largura */}
+          {/* DataStats */}
           <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6 mb-8">
             <DataStats />
           </div>
 
-          {/* ChartCompose + ChartBar (lado a lado, mesma altura) */}
-          <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6">
+          {/* Gráficos: ChartCompose + ChartBar */}
+          <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6"> {/* Reduzido de mb-8 para mb-4 */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* ChartCompose: 2/3 */}
               <div className="lg:col-span-2">
                 <ChartCompose />
               </div>
-
-              {/* ChartBar: 1/3, mesma altura */}
               <div className="lg:col-span-1">
                 <ChartBar />
               </div>
             </div>
           </div>
 
-          {/* ItensSection: 100% largura */}
-          <div className="mt-8 px-6 lg:px-0 lg:pl-6 lg:pr-6">
+          {/* DONUT CHART: ENTRE GRÁFICOS E ITENS */}
+          <div className="mb-8"> {/* Reduzido de mb-8 para mb-4 */}
+            <AssetAllocationDonut />
+          </div>
+
+          {/* ItensSection */}
+          <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6 mb-12">
             <ItensSection />
           </div>
 
-          {/* NOVA SEÇÃO: ESTOQUE POR ÁREA */}
-          <div className="mt-12 px-6 lg:px-0 lg:pl-6 lg:pr-6">
+          {/* Estoque por Área */}
+          <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6">
             <EstoqueSection />
           </div>
         </div>

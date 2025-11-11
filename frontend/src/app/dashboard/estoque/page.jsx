@@ -3,16 +3,26 @@
 
 import { useState } from 'react';
 import { Box } from '@mui/material';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection';
 import { CreateButton } from '@/components/ui/create-button';
+import { FloatingActions } from '@/components/ui/floating-actions';
 
 export default function EstoquePage() {
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleCreateArea = () => {
-    alert('Nova área criada: Área 10 - Depósito Externo\nProduto: Bobina de Plástico\nCapacidade: 800 unidades');
-    // Futuro: POST /api/estoque/areas
+  const handleCreateArea = async (data) => {
+    setLoading(true);
+    console.log('Criando área:', data);
+    setTimeout(() => {
+      alert(`Área criada!\nNome: ${data.nome}\nProduto: ${data.produto}\nCapacidade: ${data.capacidade}`);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const openModal = () => {
+    document.dispatchEvent(new CustomEvent('open-create-modal'));
   };
 
   return (
@@ -22,8 +32,8 @@ export default function EstoquePage() {
         <p className="text-sm text-gray-600 mt-1">Monitoramento de todas as áreas</p>
       </Box>
 
-      <Box sx={{ mb: 6 }}>
-        <Box sx={{ position: 'relative', maxWidth: '400px' }}>
+      <Box sx={{ mb: 6, maxWidth: '400px' }}>
+        <Box sx={{ position: 'relative' }}>
           <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
           <input
             type="text"
@@ -37,48 +47,64 @@ export default function EstoquePage() {
 
       <EstoqueSection />
 
-      {/* BOTÃO + NOVA ÁREA */}
-      <CreateButton title="Criar Nova Área">
-        <form onSubmit={(e) => { e.preventDefault(); handleCreateArea(); }}>
+      {/* BOTÃO + (APENAS NESSA PÁGINA) */}
+      <button
+        onClick={openModal}
+        className="fixed top-4 right-36 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 duration-200 z-[999]"
+        aria-label="Criar nova área"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
+
+      {/* SININHO + AVATAR (COMPONENTE ORIGINAL) */}
+      <FloatingActions />
+
+      {/* MODAL DE CRIAÇÃO */}
+      <CreateButton
+        title="Criar Nova Área"
+        onSubmit={handleCreateArea}
+        isLoading={loading}
+      >
+        {({ formData, handleChange }) => (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Área</label>
               <input
                 type="text"
-                defaultValue="Área 10 - Depósito Externo"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                readOnly
+                name="nome"
+                value={formData.nome || ''}
+                onChange={handleChange}
+                placeholder="Ex: Área 10 - Depósito Externo"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Produto</label>
               <input
                 type="text"
-                defaultValue="Bobina de Plástico"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                readOnly
+                name="produto"
+                value={formData.produto || ''}
+                onChange={handleChange}
+                placeholder="Ex: Bobina de Plástico"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Capacidade (unidades)</label>
               <input
-                type="text"
-                defaultValue="800"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                readOnly
+                type="number"
+                name="capacidade"
+                value={formData.capacidade || ''}
+                onChange={handleChange}
+                placeholder="800"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => handleCreateArea()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Criar Área
-              </button>
-            </div>
           </div>
-        </form>
+        )}
       </CreateButton>
     </Box>
   );

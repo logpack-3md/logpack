@@ -1,164 +1,88 @@
-// src/components/Blocks/Graphics/ChartBar.jsx
-import {
-    BarChart,
-    Card,
-    List,
-    ListItem,
-    Tab,
-    TabGroup,
-    TabList,
-    TabPanel,
-    TabPanels,
-  } from '@tremor/react';
-  
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(' ');
-  }
-  
-  const dataEurope = [
-    { date: 'Jan 23', Successful: 12, Refunded: 0, 'Early fraud warning': 1 },
-    { date: 'Feb 23', Successful: 24, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Mar 23', Successful: 48, Refunded: 4, 'Early fraud warning': 4 },
-    { date: 'Apr 23', Successful: 24, Refunded: 2, 'Early fraud warning': 3 },
-    { date: 'May 23', Successful: 34, Refunded: 0, 'Early fraud warning': 0 },
-    { date: 'Jun 23', Successful: 26, Refunded: 0, 'Early fraud warning': 0 },
-    { date: 'Jul 23', Successful: 12, Refunded: 0, 'Early fraud warning': 0 },
-    { date: 'Aug 23', Successful: 38, Refunded: 2, 'Early fraud warning': 0 },
-    { date: 'Sep 23', Successful: 23, Refunded: 1, 'Early fraud warning': 0 },
-    { date: 'Oct 23', Successful: 20, Refunded: 0, 'Early fraud warning': 0 },
-    { date: 'Nov 23', Successful: 24, Refunded: 0, 'Early fraud warning': 0 },
-    { date: 'Dec 23', Successful: 21, Refunded: 8, 'Early fraud warning': 1 },
-  ];
-  
-  const dataNorthAmerica = [
-    { date: 'Jan 23', Successful: 65, Refunded: 2, 'Early fraud warning': 1 },
-    { date: 'Feb 23', Successful: 78, Refunded: 3, 'Early fraud warning': 2 },
-    { date: 'Mar 23', Successful: 55, Refunded: 5, 'Early fraud warning': 6 },
-    { date: 'Apr 23', Successful: 79, Refunded: 4, 'Early fraud warning': 3 },
-    { date: 'May 23', Successful: 41, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Jun 23', Successful: 32, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Jul 23', Successful: 54, Refunded: 0, 'Early fraud warning': 0 },
-    { date: 'Aug 23', Successful: 45, Refunded: 3, 'Early fraud warning': 1 },
-    { date: 'Sep 23', Successful: 75, Refunded: 2, 'Early fraud warning': 0 },
-    { date: 'Oct 23', Successful: 62, Refunded: 1, 'Early fraud warning': 0 },
-    { date: 'Nov 23', Successful: 55, Refunded: 1, 'Early fraud warning': 0 },
-    { date: 'Dec 23', Successful: 58, Refunded: 6, 'Early fraud warning': 2 },
-  ];
-  
-  const dataAsia = [
-    { date: 'Jan 23', Successful: 31, Refunded: 1, 'Early fraud warning': 2 },
-    { date: 'Feb 23', Successful: 32, Refunded: 2, 'Early fraud warning': 1 },
-    { date: 'Mar 23', Successful: 44, Refunded: 3, 'Early fraud warning': 3 },
-    { date: 'Apr 23', Successful: 23, Refunded: 2, 'Early fraud warning': 4 },
-    { date: 'May 23', Successful: 35, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Jun 23', Successful: 48, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Jul 23', Successful: 33, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Aug 23', Successful: 38, Refunded: 3, 'Early fraud warning': 0 },
-    { date: 'Sep 23', Successful: 41, Refunded: 2, 'Early fraud warning': 0 },
-    { date: 'Oct 23', Successful: 39, Refunded: 1, 'Early fraud warning': 0 },
-    { date: 'Nov 23', Successful: 32, Refunded: 1, 'Early fraud warning': 1 },
-    { date: 'Dec 23', Successful: 19, Refunded: 5, 'Early fraud warning': 1 },
-  ];
-  
-  const summary = [
-    {
-      name: 'Europe',
-      data: dataEurope,
-      details: [
-        { name: 'Successful', value: 263 },
-        { name: 'Refunded', value: 18 },
-        { name: 'Fraud', value: 10 },
-      ],
-    },
-    {
-      name: 'North America',
-      data: dataNorthAmerica,
-      details: [
-        { name: 'Successful', value: 652 },
-        { name: 'Refunded', value: 29 },
-        { name: 'Fraud', value: 17 },
-      ],
-    },
-    {
-      name: 'Asia',
-      data: dataAsia,
-      details: [
-        { name: 'Successful', value: 405 },
-        { name: 'Refunded', value: 21 },
-        { name: 'Fraud', value: 15 },
-      ],
-    },
-  ];
-  
-  const valueFormatter = (number) =>
-    `${Intl.NumberFormat('us').format(number).toString()}`;
-  
-  // CORES MARROM CLARO (suave e elegante)
-  const statusColor = {
-    Successful: 'bg-amber-600',     // marrom claro quente
-    Refunded: 'bg-amber-500',
-    Fraud: 'bg-amber-400',
-  };
-  
-  export default function ChartBar() {
-    return (
-      <Card className="h-full border border-gray-200 shadow-sm">
-        <h3 className="text-sm font-medium text-gray-900">
-          Online payments
-        </h3>
-  
-        <TabGroup className="mt-3">
-          <TabList className="flex space-x-1" variant="solid">
-            {summary.map((tab) => (
-              <Tab
-                key={tab.name}
-                className="text-xs font-medium px-3 py-1.5 rounded-md data-[selected]:bg-amber-100 data-[selected]:text-amber-900"
-              >
-                {tab.name}
-              </Tab>
-            ))}
-          </TabList>
-  
-          <TabPanels>
-            {summary.map((region) => (
-              <TabPanel key={region.name} className="pt-4">
-                <BarChart
-                  data={region.data}
-                  index="date"
-                  categories={['Successful', 'Refunded', 'Early fraud warning']}
-                  colors={['amber-600', 'amber-500', 'amber-400']} // marrom claro
-                  valueFormatter={valueFormatter}
-                  stack={true}
-                  showLegend={false}
-                  showYAxis={false}
-                  showXAxis={true}
-                  startEndOnly={true}
-                  className="h-40"
-                />
-  
-                <List className="mt-3 space-y-1">
-                  {region.details.map((item) => (
-                    <ListItem key={item.name} className="py-1.5">
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={classNames(
-                            statusColor[item.name],
-                            'h-1 w-3 rounded-full'
-                          )}
-                          aria-hidden="true"
-                        />
-                        <span className="text-xs text-gray-600">{item.name}</span>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-900">
-                        {valueFormatter(item.value)}
-                      </span>
-                    </ListItem>
-                  ))}
-                </List>
-              </TabPanel>
-            ))}
-          </TabPanels>
-        </TabGroup>
-      </Card>
-    );
-  }
+// 'use client';
+
+import { AreaChart, BarChart, CategoryBar } from '@tremor/react';
+
+const chartdata = [
+  { date: 'Jan 23', SolarPanels: 2890, Inverters: 2338 },
+  { date: 'Feb 23', SolarPanels: 2756, Inverters: 2103 },
+  { date: 'Mar 23', SolarPanels: 3322, Inverters: 2194 },
+  { date: 'Apr 23', SolarPanels: 3470, Inverters: 2108 },
+  { date: 'May 23', SolarPanels: 3475, Inverters: 1812 },
+  { date: 'Jun 23', SolarPanels: 3129, Inverters: 1726 },
+  { date: 'Jul 23', SolarPanels: 3490, Inverters: 1982 },
+  { date: 'Aug 23', SolarPanels: 2903, Inverters: 2012 },
+  { date: 'Sep 23', SolarPanels: 2643, Inverters: 2342 },
+  { date: 'Oct 23', SolarPanels: 2837, Inverters: 2473 },
+  { date: 'Nov 23', SolarPanels: 2954, Inverters: 3848 },
+  { date: 'Dec 23', SolarPanels: 3239, Inverters: 3736 },
+];
+
+export default function Example() {
+  return (
+    <>
+      <div className="mx-auto w-full max-w-4xl px-3 py-20 sm:text-center">
+        <span className="block bg-gradient-to-b from-gray-700 to-gray-400 bg-clip-text text-lg font-semibold text-transparent dark:from-blue-200 dark:to-blue-400 sm:text-xl">
+          Análise de dados
+        </span>
+        <h2
+          id="features-title"
+          className="mt-2 inline-block bg-gradient-to-br from-gray-900 to-gray-800 bg-clip-text py-2 text-4xl font-bold tracking-tighter text-transparent dark:from-gray-50 dark:to-gray-300 sm:text-6xl"
+        >
+          Insumos em tempo real
+        </h2>
+        <div className="group relative mt-12 h-[30rem] transition">
+          {/* CAMADA 1: AreaChart (fundo) */}
+          <div className="absolute top-12 h-80 w-full scale-90 transform-gpu rounded-lg bg-white shadow-md shadow-black/5 ring-1 ring-black/5 transition-all delay-75 duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:top-52 group-hover:rotate-6">
+            <div className="relative flex size-full items-center">
+              <div className="absolute left-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute bottom-2.5 left-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <AreaChart
+                className="mx-auto h-60 px-3 sm:px-10"
+                data={chartdata}
+                index="date"
+                categories={['SolarPanels', 'Inverters']}
+                colors={['emerald', 'amber']} // ADICIONADO (v3+)
+              />
+            </div>
+          </div>
+
+          {/* CAMADA 2: CategoryBar (meio) */}
+          <div className="delay-50 absolute top-6 h-80 w-full scale-95 transform-gpu rounded-lg bg-white shadow-md shadow-black/5 ring-1 ring-black/5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:top-16 group-hover:-rotate-3">
+            <div className="relative flex size-full items-end">
+              <div className="absolute left-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute bottom-2.5 left-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <CategoryBar
+                values={[10, 10, 20]}
+                marker={{ value: 17, tooltip: '68' }} // REMOVIDO showAnimation
+                colors={['pink', 'amber', 'emerald']}
+                className="mb-12 w-full px-3 sm:px-10"
+              />
+            </div>
+          </div>
+
+          {/* CAMADA 3: BarChart (principal) */}
+          <div className="absolute top-0 flex h-80 w-full transform-gpu items-center rounded-lg bg-white shadow-xl shadow-black/5 ring-1 ring-black/5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-top-6 group-hover:rotate-3 group-hover:scale-95">
+            <div className="relative flex size-full items-center">
+              <div className="absolute left-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute bottom-2.5 left-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <div className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
+              <BarChart
+                className="mx-auto h-60 px-3 sm:px-10"
+                data={chartdata}
+                index="date"
+                categories={['SolarPanels', 'Inverters']}
+                colors={['indigo', 'cyan']} // ADICIONADO (opcional, mas recomendado)
+                // REMOVIDO showTooltip={false}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
