@@ -8,7 +8,7 @@ import { Menu } from 'lucide-react';
 import { FloatingActions } from '@/components/ui/floating-actions';
 import ChartCompose from '@/components/Blocks/Graphics/ChartCompose';
 import ChartBar from '@/components/Blocks/Graphics/ChartBar';
-import ItensSection from "@/components/Blocks/Itens/ItensSection";
+import InsumosSection from "@/components/Blocks/Insumos/InsumosSection";
 import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection';
 import AssetAllocationDonut from '@/components/Blocks/Graphics/DonutChart'; 
 
@@ -16,11 +16,11 @@ export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-white-500">
       {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
+          className="fixed inset-0 bg-[#0000005d] z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -69,9 +69,9 @@ export default function DashboardPage() {
             <AssetAllocationDonut />
           </div>
 
-          {/* ItensSection */}
+          {/* InsumosSection */}
           <div className="px-6 lg:px-0 lg:pl-6 lg:pr-6 mb-12">
-            <ItensSection />
+            <InsumosSection />
           </div>
 
           {/* Estoque por Área */}

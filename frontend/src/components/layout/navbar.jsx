@@ -64,7 +64,7 @@ export function DashboardNavbar() {
               <Badge
                 content={notifications.length}
                 placement="top-end"
-                className="bg-red-500 text-white text-xs"
+                className="bg-gray-500 text-white text-xs"
                 invisible={notifications.length === 0}
               >
                 <BellIcon className="h-5 w-5" />
@@ -73,7 +73,7 @@ export function DashboardNavbar() {
           </MenuHandler>
 
           <MenuList className="max-h-96 w-80 p-0 overflow-auto border border-gray-200 rounded-lg shadow-lg">
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <div className="px-4 py-3 border-b border-gray-100 bg-gray-500">
               <Typography variant="h6" className="font-semibold text-gray-900">
                 Notificações
               </Typography>
@@ -88,7 +88,7 @@ export function DashboardNavbar() {
                 return (
                   <MenuItem
                     key={index}
-                    className="flex items-start gap-3 p-3 hover:bg-gray-50 border-b border-gray-50 last:border-0"
+                    className="flex items-start gap-3 p-3 hover:bg-gray-500 border-b border-gray-50 last:border-0"
                   >
                     <div className={`mt-0.5 ${color}`}>
                       <Icon className="h-5 w-5" />
@@ -134,7 +134,7 @@ export function DashboardNavbar() {
               <MenuItem
                 key={label}
                 className={`flex items-center gap-2 rounded p-2 ${
-                  danger ? "text-red-600 hover:bg-red-50" : "hover:bg-gray-100"
+                  danger ? "text-red-600 hover:bg-gray-50" : "hover:bg-gray-100"
                 }`}
                 onClick={() => setProfileOpen(false)}
               >

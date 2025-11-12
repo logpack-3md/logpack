@@ -1,7 +1,7 @@
-// src/components/Blocks/Itens/ItensSection.jsx
+// src/components/Blocks/Insumos/InsumosSection.jsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   RiArrowRightUpLine,
   RiLayoutGridLine,
@@ -10,103 +10,19 @@ import {
 import { Package, Droplets, Box, FileText, Shield, Clock } from 'lucide-react';
 import Link from 'next/link';
 
-const data = [
-  {
-    name: 'Água Mineral',
-    initial: 'AM',
-    bgColor: 'bg-cyan-100',
-    email: 'agua@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'insumo' }, { type: 'Última reposição', value: '2h ago' }],
-  },
-  {
-    name: 'Óleo Lubrificante',
-    initial: 'OL',
-    bgColor: 'bg-amber-100',
-    email: 'oleo@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'insumo' }, { type: 'Última reposição', value: '1d ago' }],
-  },
-  {
-    name: 'Caixa de Papelão',
-    initial: 'CP',
-    bgColor: 'bg-orange-100',
-    email: 'caixa@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '30min ago' }],
-  },
-  {
-    name: 'Papelão Ondulado',
-    initial: 'PO',
-    bgColor: 'bg-yellow-100',
-    email: 'papelao@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '3h ago' }],
-  },
-  {
-    name: 'Fita Adesiva',
-    initial: 'FA',
-    bgColor: 'bg-purple-100',
-    email: 'fita@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'acessório' }, { type: 'Última reposição', value: '5h ago' }],
-  },
-  {
-    name: 'Saco Plástico',
-    initial: 'SP',
-    bgColor: 'bg-teal-100',
-    email: 'saco@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '1d ago' }],
-  },
-  {
-    name: 'Etiqueta Adesiva',
-    initial: 'EA',
-    bgColor: 'bg-pink-100',
-    email: 'etiqueta@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'acessório' }, { type: 'Última reposição', value: '4h ago' }],
-  },
-  {
-    name: 'Palete de Madeira',
-    initial: 'PM',
-    bgColor: 'bg-emerald-100',
-    email: 'palete@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'suporte' }, { type: 'Última reposição', value: '2d ago' }],
-  },
-  {
-    name: 'Filme Stretch',
-    initial: 'FS',
-    bgColor: 'bg-blue-100',
-    email: 'stretch@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '6h ago' }],
-  },
-  {
-    name: 'Caixa Plástica',
-    initial: 'CP',
-    bgColor: 'bg-indigo-100',
-    email: 'caixa-plastica@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'embalagem' }, { type: 'Última reposição', value: '1d ago' }],
-  },
-  {
-    name: 'Bobina de Plástico',
-    initial: 'BP',
-    bgColor: 'bg-fuchsia-100',
-    email: 'bobina@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'insumo' }, { type: 'Última reposição', value: '3d ago' }],
-  },
-  {
-    name: 'Espuma Protetora',
-    initial: 'EP',
-    bgColor: 'bg-gray-100',
-    email: 'espuma@estoque.com',
-    href: '#',
-    details: [{ type: 'Tipo', value: 'proteção' }, { type: 'Última reposição', value: '2h ago' }],
-  },
+const colorOptions = [
+  'bg-cyan-100',
+  'bg-amber-100',
+  'bg-orange-100',
+  'bg-yellow-100',
+  'bg-purple-100',
+  'bg-teal-100',
+  'bg-pink-100',
+  'bg-emerald-100',
+  'bg-blue-100',
+  'bg-indigo-100',
+  'bg-fuchsia-100',
+  'bg-gray-100',
 ];
 
 /* ------------------------------------------------- */
@@ -151,7 +67,7 @@ const MemberCard = ({ member }) => {
               <h3 className="text-sm font-medium text-gray-900 truncate max-w-[130px]">
                 {member.name}
               </h3>
-              <p className="text-xs text-gray-500 truncate max-w-[150px]">{member.email}</p>
+              <p className="text-xs text-gray-500 truncate max-w-[150px]">{member.description}</p>
             </div>
           </div>
         </div>
@@ -213,7 +129,7 @@ const MemberRow = ({ member }) => {
   const Icon = iconMap[member.details[0].value] || Package;
 
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
+    <tr className="hover:bg-gray-500 transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
           <div className={`p-1.5 rounded-lg ${iconColor} bg-opacity-10`}>
@@ -221,7 +137,7 @@ const MemberRow = ({ member }) => {
           </div>
           <div>
             <p className="font-medium text-gray-900">{member.name}</p>
-            <p className="text-sm text-gray-500">{member.email}</p>
+            <p className="text-sm text-gray-500">{member.description}</p>
           </div>
         </div>
       </td>
@@ -237,17 +153,75 @@ const MemberRow = ({ member }) => {
 };
 
 /* ------------------------------------------------- */
+/* UTIL: CALCULAR TIME AGO */
+/* ------------------------------------------------- */
+const timeAgo = (date) => {
+  const now = new Date();
+  const diff = now - new Date(date);
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (minutes > 0) return `${minutes}min ago`;
+  return 'agora';
+};
+
+/* ------------------------------------------------- */
 /* MAIN COMPONENT */
 /* ------------------------------------------------- */
-export default function ItensSection() {
+export default function InsumosSection() {
   const [view, setView] = useState('grid');
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInsumos = async () => {
+      try {
+        // Assumindo que a API está em /api/insumos (ajuste conforme necessário, e inclua auth token se preciso)
+        // Ex: headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        const response = await fetch('http://localhost:3001/insumos'); // Ajuste a URL da API aqui
+        const insumos = await response.json();
+
+        // Ordenar por createdAt descending para últimos adicionados
+        const sortedInsumos = insumos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Mapear para o formato esperado pelo componente
+        const mappedData = sortedInsumos.map((insumo, index) => ({
+          name: insumo.name,
+          initial: insumo.name.split(' ').map(word => word[0]).join('').slice(0, 2).toUpperCase(),
+          bgColor: colorOptions[index % colorOptions.length],
+          description: insumo.description, // Substituindo 'email' por description
+          href: `/insumos/${insumo.id}`,
+          details: [
+            { type: 'Tipo', value: 'insumo' }, // Assumindo tipo fixo como 'insumo', ajuste se houver campo real
+            { type: 'Última reposição', value: timeAgo(insumo.last_check || insumo.updatedAt) },
+          ],
+        }));
+
+        setData(mappedData);
+      } catch (error) {
+        console.error('Erro ao fetch insumos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInsumos();
+  }, []);
+
+  if (loading) {
+    return <div>Carregando insumos...</div>;
+  }
 
   return (
-    <div className="bg-gray-50 -mx-6 px-6 py-6">
+    <div className="bg-white-500 -mx-6 px-6 py-6">
       {/* Header + Tabs */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-gray-900">Itens</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Insumos</h3>
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-700">
             {data.length}
           </span>
@@ -290,10 +264,10 @@ export default function ItensSection() {
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-500">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Item
+                  Insumo
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
@@ -318,7 +292,7 @@ export default function ItensSection() {
       {/* BOTÃO "VER MAIS" - FORA DO CONDICIONAL, DENTRO DO RETURN */}
       <div className="mt-6 flex justify-end">
         <Link
-          href="/produtos"
+          href="/insumos"
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         >
           Ver mais

@@ -56,7 +56,7 @@ export default function PedidoDetalhe() {
   const hasMore = order.history.length > 5;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-white-500 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

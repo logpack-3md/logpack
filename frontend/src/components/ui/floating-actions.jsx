@@ -14,7 +14,7 @@ export function FloatingActions() {
         <DropdownMenuTrigger asChild>
           <button className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 border border-gray-200">
             <Bell className="w-5 h-5 text-gray-700" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white border-2 border-white rounded-full">
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-gray-500 text-white border-2 border-white rounded-full">
               3
             </Badge>
           </button>

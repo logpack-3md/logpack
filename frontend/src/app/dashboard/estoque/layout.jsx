@@ -17,7 +17,7 @@ export default function EstoqueLayout({ children }) {
       {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
+          className="fixed inset-0 bg-[#0000005d] z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}

@@ -137,7 +137,7 @@ export default function PedidosSection() {
               {category.orders.map((order) => (
                 <div
                   key={order.id}
-                  className="p-5 rounded-xl bg-white/95 border border-gray-100 hover:bg-gray-50/50 transition-colors duration-200"
+                  className="p-5 rounded-xl bg-white/95 border border-gray-100 hover:bg-white-500/50 transition-colors duration-200"
                 >
                   {/* Título + Status */}
                   <div className="flex justify-between items-start mb-4">
@@ -208,7 +208,7 @@ export default function PedidosSection() {
 </Link>
                     <button
                       onClick={() => handleDelete(order.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-600 hover:bg-gray-50 rounded-lg transition-colors"
                       title="Excluir pedido"
                     >
                       <Trash2 className="w-4 h-4" />

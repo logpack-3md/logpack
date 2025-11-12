@@ -53,7 +53,7 @@ export function CreateButton({ children, title, onSubmit, initialData = {}, isLo
         <form onSubmit={handleSubmit} className="space-y-4">
           {typeof children === 'function' ? children({ formData, handleChange }) : children}
           <div className="flex gap-3 pt-3">
-            <button type="button" onClick={closeModal} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+            <button type="button" onClick={closeModal} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-500 transition">
               Cancelar
             </button>
             <button

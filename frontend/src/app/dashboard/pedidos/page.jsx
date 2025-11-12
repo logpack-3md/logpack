@@ -8,6 +8,7 @@ import { RiTruckLine } from '@remixicon/react'; // ← IMPORT FALTANDO
 import PedidosSection from '@/components/Blocks/Pedidos/PedidosSection';
 import { CreateButton } from '@/components/ui/create-button';
 import { FloatingActions } from '@/components/ui/floating-actions';
+import Sidebar from '@/components/layout/sidebar';
 
 export default function PedidosPage() {
   const [search, setSearch] = useState('');
@@ -25,9 +26,21 @@ export default function PedidosPage() {
   const openModal = () => {
     document.dispatchEvent(new CustomEvent('open-create-modal'));
   };
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   return (
     <Box sx={{ maxWidth: '1400px', mx: 'auto', p: { xs: 2, lg: 3 } }}>
+
+  {/* Overlay mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-[#0000005d] z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+      
       {/* Cabeçalho */}
       <Box sx={{ mb: 6 }}>
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
