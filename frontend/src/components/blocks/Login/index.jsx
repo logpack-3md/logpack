@@ -18,10 +18,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Cookies from 'js-cookie'
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z.string().min(6, "Password must be at least 8 characters long"),
 });
 
 const Login = () => {
@@ -35,34 +38,31 @@ const Login = () => {
     resolver: zodResolver(formSchema),
   });
 
+  const { loginSuccess } = useAuth()
+
   const onSubmit = async (data) => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "users/login", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
+            const res = await api.post("users/login", data); 
 
-      const res = await response.json()
-      if (!response.ok) {
-        throw new Error(res.error || "Erro ao fazer login.")
-      }
+            if (!res || res.error) {
+                 throw new Error(res?.message || 'Erro ao comunicar com o servidor.');
+            }
 
-      if (res.token) {
-        Cookies.set('token', res.token, {
-          expires: 1,
-          secure: true,
-          sameSite: 'strict'
-        })
+            if (res.token) {
+                Cookies.set('token', res.token, {
+                    expires: 1,
+                    secure: true,
+                    sameSite: 'strict',
+                    path: '/' 
+                });
 
-        alert(res.message || "Login realizado.")
-        router.push('/dashboard')
-      }
-    } catch (error) {
-      alert(error.message || 'Erro no login')
-    }
+                loginSuccess(res.token);
+                toast.success(res.message || "Login realizado."); 
+                router.push('/dashboard');
+            }
+        } catch (error) {
+            toast.error(error.message || 'Erro inesperado no login.');
+        }
   }
 
 
