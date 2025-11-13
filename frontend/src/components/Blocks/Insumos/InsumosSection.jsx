@@ -186,7 +186,7 @@ export default function InsumosSection() {
         const insumos = await response.json();
 
         // Ordenar por createdAt descending para últimos adicionados
-        const sortedInsumos = insumos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // const sortedInsumos = insumos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Mapear para o formato esperado pelo componente
         const mappedData = sortedInsumos.map((insumo, index) => ({
