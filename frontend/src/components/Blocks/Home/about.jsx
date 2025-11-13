@@ -60,11 +60,11 @@ const About = ({
               const IconComponent = item.icon;
               return (
                 <div className="flex flex-col items-center lg:items-start gap-2" key={item.label + idx} >
-                  <div className="flex items-center lg:items-start gap-2">
+                  <div className="flex items-center gap-2">
                     <div className="p-2 bg-primary/10 rounded-lg text-primary mb-2" >
                       <IconComponent className="h-7 w-7" />
                     </div>
-                    <span className="text-3xl font-bold lg:text-4xl text-foreground">
+                    <span className="text-3xl font-bold md:text-2xl lg:text-3xl text-foreground">
                       {item.value}
                     </span>
                   </div>
