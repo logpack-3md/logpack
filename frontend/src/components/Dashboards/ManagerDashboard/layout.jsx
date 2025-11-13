@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from './theme';
+import theme from '../../components/Dashboards/theme';
 import Sidebar from '../../components/layout/sidebar';
 
 export default function DashboardLayout({ children }) {

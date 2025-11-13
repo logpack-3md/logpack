@@ -12,7 +12,7 @@ import InsumosSection from "@/components/Blocks/Insumos/InsumosSection";
 import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection';
 import AssetAllocationDonut from '@/components/Blocks/Graphics/DonutChart'; 
 
-export default function DashboardPage() {
+export default function ManagerDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
