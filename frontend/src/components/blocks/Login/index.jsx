@@ -42,27 +42,27 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-            const res = await api.post("users/login", data); 
+      const res = await api.post("users/login", data);
 
-            if (!res || res.error) {
-                 throw new Error(res?.message || 'Erro ao comunicar com o servidor.');
-            }
+      if (!res || res.error) {
+        throw new Error(res?.message || 'Erro ao comunicar com o servidor.');
+      }
 
-            if (res.token) {
-                Cookies.set('token', res.token, {
-                    expires: 1,
-                    secure: true,
-                    sameSite: 'strict',
-                    path: '/' 
-                });
+      if (res.token) {
+        Cookies.set('token', res.token, {
+          expires: 1,
+          secure: true,
+          sameSite: 'strict',
+          path: '/'
+        });
 
-                loginSuccess(res.token);
-                toast.success(res.message || "Login realizado."); 
-                router.push('/dashboard');
-            }
-        } catch (error) {
-            toast.error(error.message || 'Erro inesperado no login.');
-        }
+        loginSuccess(res.token);
+        toast.success(res.message || "Login realizado.");
+        router.push('/dashboard');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Erro inesperado no login.');
+    }
   }
 
 
