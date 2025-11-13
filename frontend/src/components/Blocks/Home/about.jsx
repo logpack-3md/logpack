@@ -36,7 +36,7 @@ const About = ({
           </div>
         </div>
 
-        <div className="order-2 lg:order-1 relative aspect-square lg:aspect-[3.6/3] overflow-hidden rounded-xl shadow-lg border bg-[#ffffff8c] justify-center flex w-full max-w-md">
+        <div className="relative aspect-square lg:aspect-[3.6/3] overflow-hidden rounded-xl shadow-lg border bg-[#ffffff2d] flex justify-center items-center w-full max-w-md lg:justify-self-end">
           <IconSiteSobre className="object-cover w-full h-full items-center justify-center" />
         </div>
 

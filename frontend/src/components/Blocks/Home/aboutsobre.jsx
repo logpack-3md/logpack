@@ -68,13 +68,13 @@ const AboutSobre = () => {
                 whileHover={{ scale: 1.02 }}
                 className="group block overflow-hidden rounded-xl cursor-pointer"
               >
-                <Card className="relative aspect-[3/4] overflow-hidden p-0">
+                <Card className="relative aspect-3/4 overflow-hidden p-0">
                   <img
                     src={service.image}
                     alt={service.title}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
                   <CardContent className="absolute inset-0 flex flex-col justify-end p-6">
                     <div className="font-semibold text-lg text-white">
                       {service.title}
@@ -93,13 +93,13 @@ const AboutSobre = () => {
                   whileHover={{ scale: 1.02 }}
                   className="group block overflow-hidden rounded-xl cursor-pointer"
                 >
-                  <Card className="relative aspect-[4/3] overflow-hidden p-0">
+                  <Card className="relative aspect-4/3 overflow-hidden p-0">
                     <img
                       src={service.image}
                       alt={service.title}
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
                     <CardContent className="absolute inset-0 flex flex-col justify-end p-4">
                       <div className="text-sm font-semibold text-white">
                         {service.title}
@@ -160,7 +160,7 @@ const Popup = ({ service, onClose }) => {
         </div>
         <div className="w-full md:w-1/2 p-8 flex flex-col">
           <h3 className="text-2xl font-bold mb-4 text-foreground">{service.title}</h3>
-          <p className="text-muted-foreground flex-grow">{service.description}</p>
+          <p className="text-muted-foreground">{service.description}</p>
         </div>
       </motion.div>
       <button

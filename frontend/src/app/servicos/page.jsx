@@ -82,7 +82,7 @@ const servico = () => {
           </div>
           <div className="space-y-8">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg text-primary flex-shrink-0">
+              <div className="p-3 bg-primary/20 rounded-lg text-primary shrink-0">
                 <ArrowRight className="h-6 w-6 transform -rotate-45" />
               </div>
               <div>
@@ -91,7 +91,7 @@ const servico = () => {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg text-primary flex-shrink-0">
+              <div className="p-3 bg-primary/20 rounded-lg text-primary shrink-0">
                 <ArrowRight className="h-6 w-6 transform -rotate-45" />
               </div>
               <div>
@@ -100,7 +100,7 @@ const servico = () => {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg text-primary flex-shrink-0">
+              <div className="p-3 bg-primary/20 rounded-lg text-primary shrink-0">
                 <ArrowRight className="h-6 w-6 transform -rotate-45" />
               </div>
               <div>
