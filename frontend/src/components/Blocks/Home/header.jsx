@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Menu, LogIn } from "lucide-react";
-import { SwitchTheme } from "../SwitchThemes";
+import { SwitchTheme } from "@/components/SwitchThemes";
 import { LogoSite } from "@/components/ui/icons-geral";
 
 export default function Header() {
@@ -44,7 +44,7 @@ export default function Header() {
               <LogoSite />
 
               {/* px-2 apos isso é o Gradient */}
-              <h2 className="font-bold text-xl bg-gradient-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
+              <h2 className="font-bold text-xl bg-linear-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
               hover:from-[#8f5f3b] hover:to-[#e0a273]" >
                 LogPack
               </h2>

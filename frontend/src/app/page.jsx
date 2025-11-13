@@ -1,7 +1,7 @@
-import { About } from "@/components/Blocks/about";
-import { AboutSobre } from "@/components/Blocks/AboutSobre";
-import { Footer } from "@/components/Blocks/footer";
-import Header from "@/components/layout/header.jsx";
+import { About } from "@/components/Blocks/Home/about";
+import { AboutSobre } from "@/components/Blocks/Home/aboutsobre";
+import { Footer } from "@/components/Blocks/Home/footer";
+import Header from "@/components/Blocks/Home/header";
 import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
@@ -11,13 +11,13 @@ export default function Home() {
 
         <Header />
 
-        <div className="flex-grow py-10">
+        <div className="py-10">
 
           <About />
 
         </div>
         
-        <div className="flex-grow py-10">
+        <div className="py-10">
 
         <AboutSobre />
 
