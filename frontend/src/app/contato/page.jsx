@@ -1,16 +1,63 @@
+'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import Heeader from "@/components/layout/header";
-import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
-import { Footer } from "@/components/Blocks/footer";
+import Header from "@/components/Blocks/Home/header";
+import { Mail, Phone, MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { Footer } from "@/components/Blocks/Home/footer";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
+import { toast } from "sonner"; // Importar o toast
+import { api } from '@/lib/api'; // Importar o client da API
 
 const Contact = () => {
+     // Estados para os campos do formulário e para o carregamento
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        message: '',
+    });
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Função para atualizar o estado do formulário
+    const handleChange = (e) => {
+        const { id, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [id]: value,
+        }));
+    };
+
+    // Função para lidar com o envio do formulário
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Previne o recarregamento da página
+        setIsLoading(true);
+
+        try {
+            // Usa o client da API para fazer a requisição
+            const response = await api.post('contato/send', formData);
+
+            if (response && response.error) {
+                // Se a API retornar um erro, exibe no toast
+                toast.error(response.message || 'Ocorreu um erro ao enviar a mensagem.');
+            } else {
+                // Se for sucesso, exibe mensagem e limpa o formulário
+                toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+                setFormData({ name: '', email: '', phone: '', message: '' });
+            }
+        } catch (error) {
+            // Erro de rede ou outro erro inesperado
+            toast.error('Falha na comunicação com o servidor. Tente novamente mais tarde.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
     return (
         <>
-            < Heeader />
+            < Header />
 
             <main className="container mx-auto px-4 py-8 lg:py-5 lg:px-10">
                 {/* Cabeçalho da Seção */}
@@ -29,35 +76,38 @@ const Contact = () => {
                     {/* Coluna do Formulário */}
                     <div className="bg-slate-50 dark:bg-card border border-[#0101017c] rounded-2xl p-8 lg:p-10 shadow-sm">
                         <h2 className="text-2xl font-bold mb-6">Envie sua mensagem</h2>
-                        <form className="space-y-6">
-                            {/* Campo Nome */}
+                        
+                        {/* Formulário agora usa o estado e o handleSubmit */}
+                        <form className="space-y-6" onSubmit={handleSubmit}>
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nome Completo</Label>
-                                <Input id="name" placeholder="Seu nome completo" type="text" className={"border border-[#0101017c]"} />
+                                <Input id="name" placeholder="Seu nome completo" type="text" value={formData.name} onChange={handleChange} required className={"border border-[#0101017c]"} />
                             </div>
-
-                            {/* Campo E-mail */}
                             <div className="space-y-2">
                                 <Label htmlFor="email">E-mail</Label>
-                                <Input id="email" placeholder="seuemail@email.com" type="email" className={"border border-[#0101017c]"} />
+                                <Input id="email" placeholder="seuemail@email.com" type="email" value={formData.email} onChange={handleChange} required className={"border border-[#0101017c]"} />
                             </div>
-
-                            {/* Campo Telefone */}
                             <div className="space-y-2">
-                                <Label htmlFor="phone">Telefone</Label>
-                                <Input id="phone" placeholder="(00) 00000-0000" type="tel" className={"border border-[#0101017c]"} />
+                                <Label htmlFor="phone">Telefone (Opcional)</Label>
+                                <Input id="phone" placeholder="(00) 00000-0000" type="tel" value={formData.phone} onChange={handleChange} className={"border border-[#0101017c]"} />
                             </div>
-
-                            {/* Campo Mensagem */}
                             <div className="space-y-2">
                                 <Label htmlFor="message">Mensagem</Label>
-                                <Textarea id="message" placeholder="Digite sua dúvida ou solicitação aqui..." className="min-h-[120px] border border-[#0101017c]" />
+                                <Textarea id="message" placeholder="Digite sua dúvida ou solicitação aqui..." value={formData.message} onChange={handleChange} required minLength={10} className="min-h-[120px] border border-[#0101017c]" />
                             </div>
-
-                            {/* Botão de Envio */}
-                            <Button type="submit" className="w-full gap-2">
-                                Enviar Mensagem
-                                <ArrowRight className="h-4 w-4" />
+                            
+                            <Button type="submit" className="w-full gap-2" disabled={isLoading}>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Enviando...
+                                    </>
+                                ) : (
+                                    <>
+                                        Enviar Mensagem
+                                        <ArrowRight className="h-4 w-4" />
+                                    </>
+                                )}
                             </Button>
                         </form>
                     </div>
