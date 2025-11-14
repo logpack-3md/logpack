@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../[role]/components/ManagerDashboard/theme'; // ← MESMO TEMA DO DASHBOARD
+import theme from '../components/ManagerDashboard/theme';// ← MESMO TEMA DO DASHBOARD
 import Sidebar from '@/components/layout/sidebar';
 
 export default function ProdutosLayout({ children }) {

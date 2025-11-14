@@ -38,22 +38,40 @@ function getRoleFromToken(req) {
 
 export function middleware(req) {
     const { pathname } = req.nextUrl;
-    const targetPath = '/dashboard';
+    const targetBase = '/dashboard';
 
-    if (pathname === targetPath) {
+    // 1. Só atua se a rota começar com /dashboard
+    if (pathname.startsWith(targetBase)) {
         const userRole = getRoleFromToken(req);
-
+        
         if (!userRole) {
+            // Não autenticado: Redireciona para login
             return NextResponse.redirect(new URL('/login', req.url));
         }
 
-        const newPath = `${targetPath}/${userRole}`; 
+        // 2. Extrai a role na URL se houver (ex: 'admin' em /dashboard/admin/insumos)
+        // [role] será o 2º segmento (índice 2) se for /dashboard/[role]/...
+        const segments = pathname.split('/').filter(s => s);
+        const urlRole = segments[1]; 
+        
+        // 3. Ação de Proteção/Redirecionamento
+        if (urlRole && urlRole !== userRole) {
+            // Usuário 'admin' acessando /dashboard/manager/insumos
+            
+            // Substitui a role incorreta na URL pela role correta
+            segments[1] = userRole; 
+            const newPath = '/' + segments.join('/');
 
-        return NextResponse.redirect(new URL(newPath, req.url));
-    }
+            console.log(`MIDDLEWARE: Usuário ${userRole} redirecionado de ${pathname} para ${newPath}`);
+            return NextResponse.redirect(new URL(newPath, req.url));
+            
+        } else if (!urlRole && pathname === targetBase) {
+            // Usuário acessando a rota base /dashboard
+            const newPath = `${targetBase}/${userRole}`;
+            return NextResponse.redirect(new URL(newPath, req.url));
+        }
 
-    if (pathname.startsWith(targetPath)) {
-
+        // Continua se a rota estiver correta (ex: /dashboard/admin/insumos, sendo admin)
         return NextResponse.next();
     }
 
