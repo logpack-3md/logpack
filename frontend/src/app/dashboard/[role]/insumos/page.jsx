@@ -1,11 +1,11 @@
-// src/app/insumos/page.jsx
+// src/app/dashboard/[role]/insumos/page.jsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { Search, Droplets, Package, Box as BoxIcon, FileText, Shield, Clock, Plus, Upload } from 'lucide-react';
 import { RiArrowRightUpLine } from '@remixicon/react';
-import { CreateButton } from '@/components/ui/create-button';
+import CreateButton from '@/components/ui/create-button';
 import { FloatingActions } from '@/components/ui/floating-actions';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -20,133 +20,196 @@ const iconMap = {
 
 export default function InsumosPage() {
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filtro, setFiltro] = useState('todos');
   const [statusFiltro, setStatusFiltro] = useState('todos');
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [insumos, setInsumos] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [insumos, setInsumos] = useState([]);           // exibidos
+  const [allInsumos, setAllInsumos] = useState([]);     // todos (base)
   const [setores, setSetores] = useState([]);
 
-  const limit = 12;
+  // === DEBOUNCE: 300ms ===
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  // Carregar setores
+  // === CARREGAR SETORES ===
   useEffect(() => {
     const fetchSetores = async () => {
       try {
-        const data = await api.get('/setores');
-        if (data && Array.isArray(data)) {
-          setSetores(data);
+        const response = await api.get('setor');
+        let setoresArray = [];
+        if (Array.isArray(response)) {
+          setoresArray = response;
+        } else if (response?.data && Array.isArray(response.data)) {
+          setoresArray = response.data;
+        } else if (response?.setores && Array.isArray(response.setores)) {
+          setoresArray = response.setores;
         }
+
+        if (setoresArray.length === 0) {
+          toast.warning('Nenhum setor encontrado');
+          return;
+        }
+
+        const formatted = setoresArray
+          .filter(s => s && (s.name || s.nome))
+          .map(s => ({
+            id: s.id || s._id,
+            name: s.name || s.nome || 'Sem nome'
+          }));
+
+        setSetores(formatted);
+        toast.success(`Carregados ${formatted.length} setores`);
       } catch (err) {
         console.error('Erro ao carregar setores:', err);
+        toast.error('Falha ao carregar setores');
       }
     };
     fetchSetores();
   }, []);
 
-  // Carregar insumos
-  const loadInsumos = useCallback(async (reset = false) => {
-    if (loading || loadingMore || !hasMore) return;
-
-    const currentPage = reset ? 1 : page;
-    if (reset) setPage(1);
-
-    if (currentPage === 1) setLoading(true);
-    else setLoadingMore(true);
-
-    try {
-      const params = new URLSearchParams({
-        page: currentPage,
-        limit,
-        ...(search && { search }),
-        ...(filtro !== 'todos' && { setor: filtro }),
-        ...(statusFiltro !== 'todos' && { status: statusFiltro }),
-      });
-
-      const response = await api.get(`/insumos?${params}`);
-      if (!response || response.error) {
-        toast.error(response?.message || 'Erro ao carregar insumos');
-        return;
-      }
-
-      const formatted = response.data.map(insumo => ({
-        id: insumo.id,
-        name: insumo.name,
-        email: insumo.SKU,
-        bgColor: getRandomColor(),
-        tipo: insumo.setorName?.toLowerCase() || 'insumo',
-        ultima: formatLastCheck(insumo.last_check),
-        image: insumo.image,
-      }));
-
-      if (reset) {
-        setInsumos(formatted);
-      } else {
-        setInsumos(prev => [...prev, ...formatted]);
-      }
-
-      setPage(currentPage + 1);
-      setHasMore(response.meta.currentPage < response.meta.totalPages);
-    } catch (err) {
-      toast.error('Falha ao carregar insumos');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [page, search, filtro, statusFiltro, loading, loadingMore, hasMore]);
-
+  // === CARREGAR TODOS OS INSUMOS (SÓ UMA VEZ) ===
   useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    loadInsumos(true);
-  }, [search, filtro, statusFiltro]);
+    const fetchAllInsumos = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('insumos?limit=1000');
 
-  // Criar insumo com upload
+        if (response?.error) {
+          toast.error(response.message || 'Erro ao carregar insumos');
+          return;
+        }
+
+        const formatted = (response.data || []).map(insumo => ({
+          id: insumo.id || insumo._id,
+          name: insumo.name,
+          SKU: insumo.SKU,
+          setorName: insumo.setorName,
+          status: insumo.status || 'ativo',
+          image: insumo.image,
+          last_check: insumo.last_check || insumo.updatedAt,
+          bgColor: getRandomColor(),
+          tipo: insumo.setorName?.toLowerCase() || 'insumo',
+          ultima: formatLastCheck(insumo.last_check || insumo.updatedAt),
+        }));
+
+        setAllInsumos(formatted);
+        setInsumos(formatted);
+        toast.success(`Carregados ${formatted.length} insumos`);
+      } catch (err) {
+        console.error('Erro ao carregar insumos:', err);
+        toast.error('Falha ao carregar insumos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllInsumos();
+  }, []);
+
+  // === FILTRAR NO FRONT-END ===
+  useEffect(() => {
+    let filtered = [...allInsumos];
+
+    // Busca por nome ou SKU
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.name?.toLowerCase().includes(query) ||
+        item.SKU?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filtro por setor
+    if (filtro !== 'todos') {
+      filtered = filtered.filter(item => item.setorName === filtro);
+    }
+
+    // Filtro por status
+    if (statusFiltro !== 'todos') {
+      filtered = filtered.filter(item => item.status === statusFiltro);
+    }
+
+    setInsumos(filtered);
+  }, [debouncedSearch, filtro, statusFiltro, allInsumos]);
+
+  // === CRIAR INSUMO ===
   const handleCreateInsumo = async (formData, file) => {
-    const form = new FormData();
-    form.append('name', formData.nome);
-    form.append('SKU', formData.sku);
-    form.append('setorName', formData.setor);
-    form.append('description', formData.descricao || '');
-    form.append('measure', formData.medida);
-    if (formData.max_storage) form.append('max_storage', formData.max_storage);
-    if (formData.status) form.append('status', formData.status);
-    if (file) form.append('file', file);
+    const payload = {
+      name: formData.nome?.trim(),
+      SKU: formData.sku?.trim(),
+      setorName: formData.setor,
+      description: formData.descricao?.trim() || '',
+      measure: formData.medida,
+      max_storage: formData.max_storage ? Number(formData.max_storage) : undefined,
+      status: formData.status || 'ativo',
+    };
+
+    if (!payload.name || !payload.SKU || !payload.setorName || !payload.measure) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return false;
+    }
 
     try {
-      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/insumos`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${getTokenFromCookie()}`,
-        },
-        body: form,
-      });
+      let result;
 
-      const data = await result.json();
+      if (file) {
+        const form = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) form.append(key, value);
+        });
+        form.append('file', file);
 
-      if (!result.ok) {
-        if (data.issues) {
-          data.issues.forEach(issue => toast.error(issue.message || issue.path.join('.') + ' inválido'));
-        } else {
-          toast.error(data.message || 'Erro ao criar insumo');
+        const token = getTokenFromCookie();
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}manager/insumos`, {
+          method: 'POST',
+          headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+          body: form,
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          toast.error(data.message || `Erro ${response.status}`);
+          return false;
         }
-        return false;
+        result = data;
+      } else {
+        result = await api.post('manager/insumos', payload);
+        if (result?.error) {
+          toast.error(result.message);
+          return false;
+        }
       }
 
       toast.success('Insumo criado com sucesso!');
-      setPage(1);
-      loadInsumos(true);
+
+      // RECARREGA TODOS OS INSUMOS
+      const response = await api.get('insumos?limit=1000');
+      const formatted = (response.data || []).map(insumo => ({
+        id: insumo.id || insumo._id,
+        name: insumo.name,
+        SKU: insumo.SKU,
+        setorName: insumo.setorName,
+        status: insumo.status || 'ativo',
+        image: insumo.image,
+        last_check: insumo.last_check || insumo.updatedAt,
+        bgColor: getRandomColor(),
+        tipo: insumo.setorName?.toLowerCase() || 'insumo',
+        ultima: formatLastCheck(insumo.last_check || insumo.updatedAt),
+      }));
+      setAllInsumos(formatted);
+      setInsumos(formatted);
+
       return true;
     } catch (err) {
+      console.error('Erro ao criar insumo:', err);
       toast.error('Erro inesperado');
       return false;
     }
-  };
-
-  const openModal = () => {
-    document.dispatchEvent(new CustomEvent('open-create-modal'));
   };
 
   return (
@@ -191,6 +254,11 @@ export default function InsumosPage() {
         </select>
       </Box>
 
+      {/* CONTADOR DE RESULTADOS */}
+      <div className="mb-4 text-sm text-gray-600">
+        Mostrando <strong>{insumos.length}</strong> de <strong>{allInsumos.length}</strong> insumos
+      </div>
+
       {/* LOADING */}
       {loading && insumos.length === 0 && (
         <div className="text-center py-12">
@@ -223,7 +291,7 @@ export default function InsumosPage() {
                   </Box>
                   <Box>
                     <h3 className="font-semibold text-gray-900">{insumo.name}</h3>
-                    <p className="text-xs text-gray-500">{insumo.email}</p>
+                    <p className="text-xs text-gray-500">{insumo.SKU}</p>
                   </Box>
                 </Box>
                 <RiArrowRightUpLine className="w-5 h-5 text-gray-400 opacity-0 group-hover:opacity-100 transition" />
@@ -250,32 +318,9 @@ export default function InsumosPage() {
         })}
       </Box>
 
-      {/* VER MAIS */}
-      {hasMore && !loading && (
-        <div className="flex justify-center mb-12">
-          <button
-            onClick={() => loadInsumos()}
-            disabled={loadingMore}
-            className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-3 font-medium shadow-lg hover:shadow-xl"
-          >
-            {loadingMore ? (
-              <>
-                <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Carregando...
-              </>
-            ) : (
-              'Carregar mais insumos'
-            )}
-          </button>
-        </div>
-      )}
-
       {/* BOTÃO + */}
       <button
-        onClick={openModal}
+        onClick={() => document.dispatchEvent(new CustomEvent('open-create-modal'))}
         className="fixed bottom-6 right-6 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all hover:scale-110 duration-200 z-50 border-4 border-white"
       >
         <Plus className="w-7 h-7" />
@@ -309,7 +354,7 @@ export default function InsumosPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Descrição *</label>
-              <textarea name="descricao" value={formData.descricao || ''} onChange={handleChange} rows={3} placeholder="Descreva o insumo com pelo menos 10 caracteres..." className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none" required />
+              <textarea name="descricao" value={formData.descricao || ''} onChange={handleChange} rows={3} placeholder="Descreva o insumo..." className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none" required />
             </div>
 
             <div>
@@ -375,5 +420,5 @@ const formatLastCheck = (date) => {
 
 const getTokenFromCookie = () => {
   const match = document.cookie.match(/(^|;)\s*token=([^;]*)/);
-  return match ? match[2] : null;
+  return match ? decodeURIComponent(match[2]) : null;
 };

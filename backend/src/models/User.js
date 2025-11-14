@@ -63,7 +63,11 @@ User.init({
         type: DataTypes.ENUM('ativo', 'inativo', 'pendente'),
         defaultValue: 'pendente',
         allowNull: false
-    }
+    },
+
+    image: {
+        type: DataTypes.STRING,
+    },
 }, {
     sequelize,
     modelName: 'User',

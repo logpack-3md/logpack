@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
 import Cookies from 'js-cookie'
 import { jwtDecode } from 'jwt-decode'

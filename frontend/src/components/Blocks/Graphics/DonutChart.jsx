@@ -1,95 +1,43 @@
-// src/components/Blocks/Graphics/DonutChart.jsx
+// src/components/Blocks/WelcomeCard/WelcomeCard.jsx
 'use client';
 
-import { DonutChart } from '@tremor/react';
+import { RiArrowRightLine } from '@remixicon/react';
 
-const data = [
-  {
-    name: 'Imóveis',
-    value: 2095920,
-  },
-  {
-    name: 'Ações & ETFs',
-    value: 250120,
-  },
-  {
-    name: 'Metais',
-    value: 160720,
-  },
-];
-
-const totalValue = data.reduce((sum, item) => sum + item.value, 0);
-
-const currencyFormatter = (number) =>
-  Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 0,
-  }).format(number);
-
-export default function AssetAllocationDonut() {
+export default function WelcomeCard() {
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-0">
-      <h3 className="text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-        Alocação de Ativos
-      </h3>
-
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
-        {/* Donut + Total */}
-        <div className="flex items-end gap-4">
-          <DonutChart
-            data={data}
-            category="value"
-            index="name"
-            valueFormatter={currencyFormatter}
-            colors={['blue', 'violet', 'fuchsia']}
-            className="h-24 w-24"
-            showLabel={false}
-            variant="donut"
-          />
-          <div>
-            <p className="text-tremor-title font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              {currencyFormatter(totalValue)}
-            </p>
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-              Valor total
-            </p>
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+      <div className="flex items-start gap-5">
+        {/* Ícone */}
+        <div className="shrink-0">
+          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+            <RiArrowRightLine className="w-7 h-7 rotate-[-45deg]" />
           </div>
         </div>
 
-        {/* Legenda */}
-        <div className="lg:col-span-2">
-          <ul className="space-y-3">
-            {data.map((item) => {
-              const percentage = ((item.value / totalValue) * 100).toFixed(1);
-              return (
-                <li key={item.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`w-3 h-3 rounded-full ${
-                        item.name === 'Imóveis'
-                          ? 'bg-blue-500'
-                          : item.name === 'Ações & ETFs'
-                          ? 'bg-violet-500'
-                          : 'bg-fuchsia-500'
-                      }`}
-                    />
-                    <span className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-                      {item.name}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                      {currencyFormatter(item.value)}
-                    </p>
-                    <p className="text-tremor-label text-tremor-content dark:text-dark-tremor-content">
-                      {percentage}%
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+        {/* Conteúdo */}
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Acessar últimos pedidos
+            </h3>
+            <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+              Agora
+            </span>
+          </div>
+
+          <p className="text-sm text-gray-600 leading-relaxed mb-5">
+            Caso queira acessar os últimos pedidos e suas atualizações, clique no botão abaixo.
+          </p>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="/dashboard/admin/pedidos"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow"
+            >
+              Pedidos
+              <RiArrowRightLine className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </div>
     </div>
