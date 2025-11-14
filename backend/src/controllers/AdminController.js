@@ -88,6 +88,7 @@ class AdminController {
                 attributes: [
                     'id',
                     'name',
+                    'cpf',
                     'email',
                     'role',
                     'status'
