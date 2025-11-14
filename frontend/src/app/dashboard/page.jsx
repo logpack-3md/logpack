@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 // import EmployeeDashboard from '@/components/dashboards/EmployeeDashboard';
 // import BuyerDashboard from '@/components/dashboards/BuyerDashboard';
 
-export default function DashboardTeste() {
+export default function Dashboard() {
     const { userRole, isAuthenticated } = useAuth();
     const router = useRouter();
 

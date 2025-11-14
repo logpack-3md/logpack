@@ -58,7 +58,7 @@ const Login = () => {
 
                 loginSuccess(res.token);
                 toast.success(res.message || "Login realizado."); 
-                router.push('/dashboardteste');
+                router.push('/dashboard');
             }
         } catch (error) {
             toast.error(error.message || 'Erro inesperado no login.');

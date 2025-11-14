@@ -18,15 +18,6 @@ const iconMap = {
   proteção: Shield,
 };
 
-// === SETORES FIXOS (SEM DEPENDER DO BACKEND) ===
-const SETORES_FIXOS = [
-  { id: 1, name: 'Insumos' },
-  { id: 2, name: 'Embalagens' },
-  { id: 3, name: 'Acessórios' },
-  { id: 4, name: 'Suporte' },
-  { id: 5, name: 'Proteção' },
-];
-
 export default function InsumosPage() {
   const [search, setSearch] = useState('');
   const [filtro, setFiltro] = useState('todos');
@@ -36,8 +27,24 @@ export default function InsumosPage() {
   const [insumos, setInsumos] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [setores, setSetores] = useState([]);
 
   const limit = 12;
+
+  // Carregar setores
+  useEffect(() => {
+    const fetchSetores = async () => {
+      try {
+        const data = await api.get('/setores');
+        if (data && Array.isArray(data)) {
+          setSetores(data);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar setores:', err);
+      }
+    };
+    fetchSetores();
+  }, []);
 
   // Carregar insumos
   const loadInsumos = useCallback(async (reset = false) => {
@@ -84,7 +91,6 @@ export default function InsumosPage() {
       setHasMore(response.meta.currentPage < response.meta.totalPages);
     } catch (err) {
       toast.error('Falha ao carregar insumos');
-      console.error(err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -122,7 +128,7 @@ export default function InsumosPage() {
 
       if (!result.ok) {
         if (data.issues) {
-          data.issues.forEach(issue => toast.error(issue.message || `${issue.path.join('.')} inválido`));
+          data.issues.forEach(issue => toast.error(issue.message || issue.path.join('.') + ' inválido'));
         } else {
           toast.error(data.message || 'Erro ao criar insumo');
         }
@@ -135,7 +141,6 @@ export default function InsumosPage() {
       return true;
     } catch (err) {
       toast.error('Erro inesperado');
-      console.error(err);
       return false;
     }
   };
@@ -170,7 +175,7 @@ export default function InsumosPage() {
           className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
         >
           <option value="todos">Todos os setores</option>
-          {SETORES_FIXOS.map(s => (
+          {setores.map(s => (
             <option key={s.id} value={s.name}>{s.name}</option>
           ))}
         </select>
@@ -251,7 +256,7 @@ export default function InsumosPage() {
           <button
             onClick={() => loadInsumos()}
             disabled={loadingMore}
-            className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition flex items-center gap-3 font-medium shadow-lg hover:shadow-xl"
+            className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-3 font-medium shadow-lg hover:shadow-xl"
           >
             {loadingMore ? (
               <>
@@ -296,7 +301,7 @@ export default function InsumosPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Setor *</label>
               <select name="setor" value={formData.setor || ''} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
                 <option value="">Selecione o setor</option>
-                {SETORES_FIXOS.map(s => (
+                {setores.map(s => (
                   <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
               </select>
