@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { RiArrowRightUpLine, RiLayoutGridLine, RiListCheck } from '@remixicon/react';
 import { Package, Droplets, Box, FileText, Shield, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '@/lib/api'; // ← USANDO A LIB
+import { api } from '@/lib/api';
 
 const colorOptions = [
   'bg-cyan-100', 'bg-amber-100', 'bg-orange-100', 'bg-yellow-100',
@@ -41,29 +41,44 @@ export default function InsumosSection() {
   useEffect(() => {
     const fetchInsumos = async () => {
       try {
-        const response = await api.get('/insumos?limit=6&page=1');
-        
+        // TENTA COM LIMIT E PAGE
+        let response;
+        try {
+          response = await api.get('insumos?limit=6&page=1');
+        } catch (err) {
+          // SE FALHAR, PEGA TODOS E FILTRA NO FRONT
+          response = await api.get('insumos');
+        }
+
         if (!response || response.error) {
           console.error('Erro ao carregar insumos:', response?.message);
+          setData([]);
           return;
         }
 
-        const insumos = response.data || [];
+        let insumos = response.data || [];
+
+        // SE NÃO TEM PAGINAÇÃO, PEGA OS ÚLTIMOS 6
+        if (!response.meta) {
+          insumos = insumos.slice(-6); // últimos 6 criados
+        }
 
         const mappedData = insumos.map((insumo, index) => ({
+          id: insumo.id || insumo._id,
           name: insumo.name,
           description: insumo.SKU,
           bgColor: colorOptions[index % colorOptions.length],
-          href: `/insumos/${insumo.id}`,
+          href: `/dashboard/admin/insumos`, // ou `/insumos/${insumo.id}`
           details: [
             { type: 'Tipo', value: insumo.setorName?.toLowerCase() || 'insumo' },
-            { type: 'Última reposição', value: timeAgo(insumo.last_check) },
+            { type: 'Última reposição', value: timeAgo(insumo.last_check || insumo.updatedAt) },
           ],
         }));
 
         setData(mappedData);
       } catch (error) {
         console.error('Erro ao fetch insumos:', error);
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -81,7 +96,7 @@ export default function InsumosSection() {
   }
 
   return (
-    <div className="bg-white -mx-6 px-6 py-6">
+    <div className="-mx-6 px-6 py-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <h3 className="text-lg font-semibold text-gray-900">Insumos</h3>
@@ -102,7 +117,7 @@ export default function InsumosSection() {
 
       {view === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.map((member) => <MemberCard key={member.name} member={member} />)}
+          {data.map((member) => <MemberCard key={member.id} member={member} />)}
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -116,14 +131,14 @@ export default function InsumosSection() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data.map((member) => <MemberRow key={member.name} member={member} />)}
+              {data.map((member) => <MemberRow key={member.id} member={member} />)}
             </tbody>
           </table>
         </div>
       )}
 
       <div className="mt-6 flex justify-end">
-        <Link href="/insumos" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+        <Link href="/dashboard/admin/insumos" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
           Ver mais
           <RiArrowRightUpLine className="ml-1.5 w-4 h-4" />
         </Link>
@@ -132,7 +147,6 @@ export default function InsumosSection() {
   );
 }
 
-// === CARD E ROW (mantidos iguais) ===
 const MemberCard = ({ member }) => {
   const key = member.bgColor.match(/bg-([a-z]+)-100/)?.[1] || 'blue';
   const iconColor = `text-${key}-500`;
