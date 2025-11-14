@@ -38,14 +38,14 @@ const AboutSobre = () => {
 
   return (
     <>
-      <section className="flex justify-center items-center lg:text-left text-center px-4 lg:px-10">
-        <div className="container grid grid-cols-1 gap-10 lg:grid-cols-3">
+      <section className="flex justify-center items-center lg:text-left text-center px-4 md:px-8 lg:px-10">
+        <div className="container grid grid-cols-1 gap-12 lg:grid-cols-3">
           <div className="flex flex-col justify-between lg:col-span-1">
             <div>
-              <h2 className="text-foreground mb-4 text-4xl font-medium md:text-4xl">
+              <h2 className="text-foreground mb-4 text-3xl font-medium md:text-4xl">
                 Logística Inteligente para seu Negócio
               </h2>
-              <p className="text-muted-foreground w-90 text-center lg:text-justify lg:w-110 text-base tracking-tight">
+              <p className="text-muted-foreground mx-auto max-w-lg lg:mx-0 text-center lg:text-justify text-base tracking-tight">
                 Oferecemos uma plataforma completa para otimizar sua cadeia de
                 suprimentos. Da gestão de estoque ao rastreamento em tempo real,
                 garantimos eficiência e visibilidade total. Nossa missão é
@@ -68,13 +68,13 @@ const AboutSobre = () => {
                 whileHover={{ scale: 1.02 }}
                 className="group block overflow-hidden rounded-xl cursor-pointer"
               >
-                <Card className="relative aspect-3/4 overflow-hidden p-0">
+                <Card className="relative aspect-square md:aspect-3/4 overflow-hidden p-0">
                   <img
                     src={service.image}
                     alt={service.title}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent"></div>
                   <CardContent className="absolute inset-0 flex flex-col justify-end p-6">
                     <div className="font-semibold text-lg text-white">
                       {service.title}
@@ -99,7 +99,7 @@ const AboutSobre = () => {
                       alt={service.title}
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent"></div>
                     <CardContent className="absolute inset-0 flex flex-col justify-end p-4">
                       <div className="text-sm font-semibold text-white">
                         {service.title}
