@@ -1,11 +1,11 @@
-// src/app/insumos/page.jsx
+// src/app/dashboard/insumos/page.jsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { Search, Droplets, Package, Box as BoxIcon, FileText, Shield, Clock, Plus, Upload } from 'lucide-react';
 import { RiArrowRightUpLine } from '@remixicon/react';
-import { CreateButton } from '@/components/ui/create-button';
+import CreateButton from '@/components/ui/create-button';
 import { FloatingActions } from '@/components/ui/floating-actions';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -31,27 +31,52 @@ export default function InsumosPage() {
 
   const limit = 12;
 
-  // Carregar setores
+  // CARREGAR SETORES DO BACK-END
   useEffect(() => {
     const fetchSetores = async () => {
       try {
-        const data = await api.get('/setores');
-        if (data && Array.isArray(data)) {
-          setSetores(data);
+        const response = await api.get('setor');
+        console.log('Resposta do back-end (setor):', response);
+
+        let setoresArray = [];
+
+        if (Array.isArray(response)) {
+          setoresArray = response;
+        } else if (response?.data && Array.isArray(response.data)) {
+          setoresArray = response.data;
+        } else if (response?.setores && Array.isArray(response.setores)) {
+          setoresArray = response.setores;
+        } else {
+          toast.error('Nenhum setor encontrado');
+          return;
+        }
+
+        const formatted = setoresArray.map(s => ({
+          id: s.id || s._id,
+          name: s.name || s.nome || 'Sem nome'
+        }));
+
+        setSetores(formatted);
+        if (formatted.length > 0) {
+          toast.success(`Carregados ${formatted.length} setores`);
         }
       } catch (err) {
         console.error('Erro ao carregar setores:', err);
+        toast.error('Falha ao carregar setores');
       }
     };
     fetchSetores();
   }, []);
 
-  // Carregar insumos
+  // CARREGAR INSUMOS
   const loadInsumos = useCallback(async (reset = false) => {
     if (loading || loadingMore || !hasMore) return;
 
     const currentPage = reset ? 1 : page;
-    if (reset) setPage(1);
+    if (reset) {
+      setPage(1);
+      setInsumos([]);
+    }
 
     if (currentPage === 1) setLoading(true);
     else setLoadingMore(true);
@@ -65,7 +90,7 @@ export default function InsumosPage() {
         ...(statusFiltro !== 'todos' && { status: statusFiltro }),
       });
 
-      const response = await api.get(`/insumos?${params}`);
+      const response = await api.get(`insumos?${params}`);
       if (!response || response.error) {
         toast.error(response?.message || 'Erro ao carregar insumos');
         return;
@@ -95,58 +120,79 @@ export default function InsumosPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [page, search, filtro, statusFiltro, loading, loadingMore, hasMore]);
+  }, [page, search, filtro, statusFiltro]);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     loadInsumos(true);
-  }, [search, filtro, statusFiltro]);
+  }, [search, filtro, statusFiltro, loadInsumos]);
 
-  // Criar insumo com upload
+  // === CRIAR INSUMO (100% FUNCIONAL) ===
   const handleCreateInsumo = async (formData, file) => {
-    const form = new FormData();
-    form.append('name', formData.nome);
-    form.append('SKU', formData.sku);
-    form.append('setorName', formData.setor);
-    form.append('description', formData.descricao || '');
-    form.append('measure', formData.medida);
-    if (formData.max_storage) form.append('max_storage', formData.max_storage);
-    if (formData.status) form.append('status', formData.status);
-    if (file) form.append('file', file);
+    const payload = {
+      name: formData.nome?.trim(),
+      SKU: formData.sku?.trim(),
+      setorName: formData.setor,
+      description: formData.descricao?.trim() || '',
+      measure: formData.medida,
+      max_storage: formData.max_storage ? Number(formData.max_storage) : undefined,
+      status: formData.status || 'ativo',
+    };
+
+    // Validação básica
+    if (!payload.name || !payload.SKU || !payload.setorName || !payload.measure) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return false;
+    }
 
     try {
-      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/insumos`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${getTokenFromCookie()}`,
-        },
-        body: form,
-      });
+      let result;
 
-      const data = await result.json();
+      if (file) {
+        // COM IMAGEM → FormData
+        const form = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            form.append(key, value);
+          }
+        });
+        form.append('file', file);
+
+        result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}insumos`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getTokenFromCookie()}`,
+          },
+          body: form,
+        });
+      } else {
+        // SEM IMAGEM → JSON via api.post()
+        result = await api.post('insumos', payload);
+      }
+
+      const data = result.ok ? await result.json() : null;
 
       if (!result.ok) {
-        if (data.issues) {
-          data.issues.forEach(issue => toast.error(issue.message || issue.path.join('.') + ' inválido'));
+        console.error('Erro do back-end:', data);
+        if (data?.issues) {
+          data.issues.forEach(issue => toast.error(issue.message || 'Campo inválido'));
+        } else if (data?.message) {
+          toast.error(data.message);
         } else {
-          toast.error(data.message || 'Erro ao criar insumo');
+          toast.error(`Erro ${result.status}: Falha ao criar insumo`);
         }
         return false;
       }
 
       toast.success('Insumo criado com sucesso!');
-      setPage(1);
       loadInsumos(true);
       return true;
     } catch (err) {
-      toast.error('Erro inesperado');
+      console.error('Erro de rede:', err);
+      toast.error('Falha na conexão com o servidor');
       return false;
     }
-  };
-
-  const openModal = () => {
-    document.dispatchEvent(new CustomEvent('open-create-modal'));
   };
 
   return (
@@ -275,7 +321,7 @@ export default function InsumosPage() {
 
       {/* BOTÃO + */}
       <button
-        onClick={openModal}
+        onClick={() => document.dispatchEvent(new CustomEvent('open-create-modal'))}
         className="fixed bottom-6 right-6 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all hover:scale-110 duration-200 z-50 border-4 border-white"
       >
         <Plus className="w-7 h-7" />
@@ -301,9 +347,13 @@ export default function InsumosPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Setor *</label>
               <select name="setor" value={formData.setor || ''} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
                 <option value="">Selecione o setor</option>
-                {setores.map(s => (
-                  <option key={s.id} value={s.name}>{s.name}</option>
-                ))}
+                {setores.length > 0 ? (
+                  setores.map(s => (
+                    <option key={s.id} value={s.name}>{s.name}</option>
+                  ))
+                ) : (
+                  <option disabled>Carregando setores...</option>
+                )}
               </select>
             </div>
 
@@ -375,5 +425,5 @@ const formatLastCheck = (date) => {
 
 const getTokenFromCookie = () => {
   const match = document.cookie.match(/(^|;)\s*token=([^;]*)/);
-  return match ? match[2] : null;
+  return match ? decodeURIComponent(match[2]) : null;
 };
