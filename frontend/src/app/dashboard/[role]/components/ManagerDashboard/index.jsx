@@ -8,7 +8,7 @@ import { FloatingActions } from '@/components/ui/floating-actions';
 import ChartCompose from '@/components/Blocks/Graphics/ChartCompose';
 import ChartBar from '@/components/Blocks/Graphics/ChartBar';
 import InsumosSection from "@/components/Blocks/Insumos/InsumosSection";
-import EstoqueSection from '@/components/Blocks/Estoque/EstoqueSection';
+import EstoqueSection from '@/components/Blocks/Estoque/SetoresSection';
 import AssetAllocationDonut from '@/components/Blocks/Graphics/DonutChart'; 
 
 export default function ManagerDashboard() {
