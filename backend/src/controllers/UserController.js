@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import UserLog from "../models/UserLog.js";
 import validarCpf from "validar-cpf";
 import z from "zod";
-
+import { put } from "@vercel/blob";
 
 class UserController {
     static createSchema = z.object({
@@ -20,10 +20,32 @@ class UserController {
     }).partial();
 
     static async createUser(req, res) {
+        const file = req.file;
+        let imageUrl = null;
+
         try {
             const validatedSchema = UserController.createSchema.parse(req.body);
+            const { ...userData } = validatedSchema
 
-            const user = await User.create(validatedSchema);
+            if (file) {
+                const filename = `${Date.now()}_${file.originalname}`
+
+                const blob = await put(
+                    filename,
+                    file.buffer,
+                    {
+                        access: 'public',
+                        contentType: file.mimetype,
+                    }
+                )
+
+                imageUrl = blob.url
+            }
+
+            const user = await User.create({
+                ...userData,
+                image: imageUrl
+            });
 
             await UserLog.create({
                 userId: user.id,
@@ -70,7 +92,7 @@ class UserController {
 
         try {
             if (id !== userId) {
-                return res.status(403).json({ message: "Acesso negado: Você só pode atualizar o seu próprio perfil."})
+                return res.status(403).json({ message: "Acesso negado: Você só pode atualizar o seu próprio perfil." })
             }
 
             const validatedUpdate = UserController.updateSchema.parse(req.body)

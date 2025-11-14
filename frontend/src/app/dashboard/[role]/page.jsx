@@ -2,9 +2,10 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import ManagerDashboard from './components/ManagerDashboard';
+import AdminDashboard from './components/AdminDashboard/page';
 
 const RoleComponentMap = {
-    'admin': () => <div>Admin Dashboard (Temporário)</div>,
+    'admin': () => <AdminDashboard />,
     'manager': ManagerDashboard,
     'employee': () => <div>Employee Dashboard</div>,
     'buyer': () => <div>Buyer Dashboard</div>,
@@ -12,7 +13,7 @@ const RoleComponentMap = {
 
 export default function DynamicDashboard({ params }) {
     const unwrappedParams = React.use(params);
-    const { role } = unwrappedParams; 
+    const { role } = unwrappedParams;
 
     const { isAuthenticated, router } = useAuth();
 

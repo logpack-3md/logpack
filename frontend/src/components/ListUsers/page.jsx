@@ -1,8 +1,9 @@
-"use client";
+// Importando o hook useUsers (ajustado o caminho relativo)
+import React from 'react';
 
-import React from "react";
-// Importa o hook que criamos
-import { useUsers } from "@/hooks/useUsers"; // <-- Ajuste este caminho para onde seu hook está
+// Importações do Shadcn/ui
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -20,241 +21,210 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useUsers } from '@/hooks/useUsers';
 
-export function ListUser({ 
-  initialUsers = [], 
-  initialTotalItems = 0, 
-  initialPageIndex = 0, 
-  initialPageSize = 10 
-}) {
-  
- 
+// Função auxiliar para gerar os links de página
+const generatePaginationLinks = (currentPage, totalPages, setPage) => {
+  const links = [];
+  const maxPagesToShow = 5;
+  const startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
+  const endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+
+  for (let i = startPage; i <= endPage; i++) {
+    links.push(
+      <PaginationItem key={i}>
+        <PaginationLink
+          onClick={() => setPage(i)}
+          isActive={i === currentPage}
+        >
+          {i + 1}
+        </PaginationLink>
+      </PaginationItem>
+    );
+  }
+
+  // Adicionar reticências se necessário
+  if (startPage > 0) {
+    links.unshift(
+      <PaginationItem key="start-ellipsis">
+        <PaginationEllipsis />
+      </PaginationItem>
+    );
+  }
+  if (endPage < totalPages - 1) {
+    links.push(
+      <PaginationItem key="end-ellipsis">
+        <PaginationEllipsis />
+      </PaginationItem>
+    );
+  }
+
+  return links;
+};
+
+
+export function ListUsers() {
+  // Chamando o hook e obtendo as funções e estados
   const {
     users,
     loading,
     error,
-    totalItems: hookTotalItems, // total de itens vindo do hook
-    currentPage, // 0-based (índice da página)
+    isUpdating, // Novo estado
+    totalItems,
+    currentPage, 
     pageSize,
-    setPage,     // (pageIndex: number) => void
-    setLimit,    // (limit: number) => void
-  } = useUsers(
-    initialUsers, 
-    initialPageIndex, 
-    initialPageSize
-  );
+    setPage,
+    setLimit,
+    setStatus, // Nova função
+  } = useUsers(); 
 
-  // 2. Lógica para total de itens
-  // O hook pode começar com totalItems = 0 se os dados iniciais forem passados.
-  // Usamos o valor do server prop até que o hook atualize (após um fetch).
-  const totalItems = hookTotalItems > 0 ? hookTotalItems : initialTotalItems;
-
-  // 3. Calcula o total de páginas com base nos dados do hook/API
   const totalPages = Math.ceil(totalItems / pageSize);
+  const isActionDisabled = loading || isUpdating;
 
-  // 4. Removemos toda a lógica de state local (useState) e .slice()
-  // 'users' já é a lista correta para a página atual.
-
-  // 5. Funções de handler agora chamam o hook
-  // O hook 'setPage' espera um índice 0-based
-  const handlePageChange = (pageIndex) => {
-    setPage(pageIndex);
-  };
-
-  const handleItemsPerPageChange = (value) => {
-    setLimit(Number(value));
-    // setLimit já reseta a página para 0 dentro do hook
-  };
-
-  // 6. Atualiza a geração de paginação para usar o estado do hook (0-based)
-  const generatePaginationItems = () => {
-    const items = [];
-    const displayPage = currentPage + 1; // Página 1-based para exibição
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              isActive={displayPage === i}
-              onClick={() => handlePageChange(i - 1)} // Passa índice 0-based
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
-    } else {
-      if (displayPage <= 4) {
-        for (let i = 1; i <= 5; i++) {
-          items.push(
-            <PaginationItem key={i}>
-              <PaginationLink
-                isActive={displayPage === i}
-                onClick={() => handlePageChange(i - 1)}
-              >
-                {i}
-              </PaginationLink>
-            </PaginationItem>
-          );
-        }
-        items.push(<PaginationEllipsis key="ellipsis-start" />);
-        items.push(
-          <PaginationItem key={totalPages}>
-            <PaginationLink onClick={() => handlePageChange(totalPages - 1)}>
-              {totalPages}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      } else if (displayPage > totalPages - 4) {
-        items.push(
-          <PaginationItem key={1}>
-            <PaginationLink onClick={() => handlePageChange(0)}>1</PaginationLink>
-          </PaginationItem>
-        );
-        items.push(<PaginationEllipsis key="ellipsis-end" />);
-        for (let i = totalPages - 4; i <= totalPages; i++) {
-          items.push(
-            <PaginationItem key={i}>
-              <PaginationLink
-                isActive={displayPage === i}
-                onClick={() => handlePageChange(i - 1)}
-              >
-                {i}
-              </PaginationLink>
-            </PaginationItem>
-          );
-        }
-      } else {
-        items.push(
-          <PaginationItem key={1}>
-            <PaginationLink onClick={() => handlePageChange(0)}>1</PaginationLink>
-          </PaginationItem>
-        );
-        items.push(<PaginationEllipsis key="ellipsis-start" />);
-        for (let i = displayPage - 1; i <= displayPage + 1; i++) {
-          items.push(
-            <PaginationItem key={i}>
-              <PaginationLink
-                isActive={displayPage === i}
-                onClick={() => handlePageChange(i - 1)}
-              >
-                {i}
-              </PaginationLink>
-            </PaginationItem>
-          );
-        }
-        items.push(<PaginationEllipsis key="ellipsis-end" />);
-        items.push(
-          <PaginationItem key={totalPages}>
-            <PaginationLink onClick={() => handlePageChange(totalPages - 1)}>
-              {totalPages}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
+  // Funções de Navegação
+  const handlePrevious = () => {
+    if (currentPage > 0) {
+      setPage(currentPage - 1);
     }
-    return items;
   };
+
+  const handleNext = () => {
+    if (currentPage < totalPages - 1) {
+      setPage(currentPage + 1);
+    }
+  };
+
+  // Função para setar o status do usuário
+  const handleSetStatus = (user) => {
+    const newStatus = user.status === 'ativo' ? 'inativo' : 'ativo';
+    const userId = user.id || user._id; // Garantindo que pegamos o ID correto
+
+    // Nota: Como não usamos window.confirm, a ação é imediata. 
+    // Em produção, você DEVE usar um modal de confirmação.
+    console.log(`Tentando mudar o status do usuário ${userId} para ${newStatus}`);
+    setStatus(userId, newStatus);
+  };
+  
+  // Renderização condicional para estado de carregamento/erro
+  if (loading && users.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 inline-block"></div>
+        <p className="mt-2 text-sm text-gray-600">Carregando usuários...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-600">
+        <p>Erro ao carregar a lista: {error}</p>
+      </div>
+    );
+  }
+
+  if (users.length === 0 && !loading) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <p>Nenhum usuário encontrado.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Função</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {/* 7. Adiciona estados de loading, error e vazio */}
-            {loading && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  Carregando...
+    <div className="border rounded-lg shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">ID</TableHead>
+            <TableHead>Nome</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Função</TableHead>
+            <TableHead>Status</TableHead> {/* Nova Coluna */}
+            <TableHead className="text-right">Ações</TableHead> {/* Nova Coluna */}
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {users.map((user) => {
+            const userId = user.id || user._id;
+            const isUserActive = user.status === 'ativo';
+            const statusVariant = isUserActive ? "default" : "secondary";
+            const buttonText = isUserActive ? "Inativar" : "Ativar";
+            const buttonVariant = isUserActive ? "destructive" : "default";
+
+            return (
+              <TableRow key={userId}>
+                <TableCell className="font-medium">{userId.substring(0, 8)}...</TableCell>
+                <TableCell>{user.name || 'N/A'}</TableCell>
+                <TableCell>{user.email || 'N/A'}</TableCell>
+                <TableCell>{user.role || 'N/A'}</TableCell>
+                
+                {/* Coluna Status */}
+                <TableCell>
+                  <Badge variant={statusVariant}>{user.status || 'N/D'}</Badge>
+                </TableCell>
+
+                {/* Coluna Ações (Botão de Status) */}
+                <TableCell className="text-right">
+                  <Button 
+                    variant={buttonVariant} 
+                    size="sm"
+                    onClick={() => handleSetStatus(user)}
+                    disabled={isActionDisabled}
+                  >
+                    {buttonText}
+                  </Button>
                 </TableCell>
               </TableRow>
-            )}
-            {error && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-red-500">
-                  {error}
-                </TableCell>
-              </TableRow>
-            )}
-            {!loading && !error && users.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  Nenhum usuário encontrado.
-                </TableCell>
-              </TableRow>
-            )}
-            {/* 8. Renderiza 'users' diretamente do hook */}
-            {!loading && !error && users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.id.substring(0, 8)}...</TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-between space-x-2 py-4">
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Linhas por página</p>
-          {/* 9. Conecta o Select ao 'pageSize' e 'setLimit' do hook */}
-          <Select
-            value={String(pageSize)}
-            onValueChange={handleItemsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={pageSize} />
-            </SelectTrigger>
-            <SelectContent side="top">
-              {[5, 10, 20, 30, 40, 50].map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            );
+          })}
+        </TableBody>
+      </Table>
+
+      {/* Paginação e Controle de Limite */}
+      <div className="p-4 border-t flex justify-between items-center">
+        <div className="text-sm text-gray-600">
+          Mostrando {users.length} de {totalItems} itens. (Página {currentPage + 1} de {totalPages})
         </div>
-        
-        {/* 10. Conecta os botões de Paginação ao hook */}
+
         <Pagination>
           <PaginationContent>
+            {/* Botão Anterior */}
             <PaginationItem>
-              <PaginationPrevious
-                onClick={() => handlePageChange(currentPage - 1)}
-                // Desabilita se estiver na página 0
-                className={currentPage === 0 ? "pointer-events-none opacity-50" : ""}
+              <PaginationPrevious 
+                onClick={handlePrevious}
+                className={currentPage === 0 || isActionDisabled ? "pointer-events-none opacity-50" : undefined}
+                aria-disabled={currentPage === 0 || isActionDisabled}
               />
             </PaginationItem>
-            {generatePaginationItems()}
+            
+            {/* Links das Páginas */}
+            {generatePaginationLinks(currentPage, totalPages, setPage)}
+
+            {/* Botão Próximo */}
             <PaginationItem>
-              <PaginationNext
-                onClick={() => handlePageChange(currentPage + 1)}
-                // Desabilita se a próxima página for >= totalPages
-                className={currentPage + 1 >= totalPages ? "pointer-events-none opacity-50" : ""}
+              <PaginationNext 
+                onClick={handleNext} 
+                className={currentPage >= totalPages - 1 || isActionDisabled ? "pointer-events-none opacity-50" : undefined}
+                aria-disabled={currentPage >= totalPages - 1 || isActionDisabled}
               />
             </PaginationItem>
           </PaginationContent>
         </Pagination>
+
+        {/* Seletor de Limite/PageSize */}
+        <select
+          value={pageSize}
+          onChange={(e) => setLimit(Number(e.target.value))}
+          className="px-2 py-1 border rounded text-sm"
+          disabled={isActionDisabled}
+        >
+          <option value={10}>10 por pág.</option>
+          <option value={20}>20 por pág.</option>
+          <option value={50}>50 por pág.</option>
+        </select>
       </div>
     </div>
-  );
+  )
 }
