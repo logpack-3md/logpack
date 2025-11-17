@@ -20,35 +20,59 @@ export async function apiFetch(path, options = {}) {
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
-  
+
   try {
     console.log(`${process.env.NEXT_PUBLIC_API_URL}${path}`);
-    
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
       ...options,
       headers,
+      credentials: "include",
     });
 
     const contentType = response.headers.get("content-type");
     const isJson = contentType && contentType.includes("application/json");
     const data = isJson ? await response.json() : null;
 
+    // CASOS QUE NÃO SÃO ERRO DE VERDADE (só lista vazia)
+    const mensagensNormais = [
+      "Nenhum pedido solicitado",
+      "Nenhum pedido encontrado",
+      "Nenhum insumo encontrado",
+      "Lista vazia",
+      "Não há registros",
+      "Sem resultados",
+    ];
+
+    const mensagem = data?.message || "";
+    const ehMensagemNormal = mensagensNormais.some(m => mensagem.includes(m));
+
     if (response.status === 401) {
       toast.error("Sessão expirada. Faça login novamente.");
       document.cookie = "token=; Max-Age=0; path=/";
       return null;
     }
+     
+    if (response.status === 400) {
+      toast.error("Erro encontrado.");
+      return response.body
+      // return null;
+    }
+    // SE FOR UMA MENSAGEM "NORMAL" DE LISTA VAZIA → NÃO TRATA COMO ERRO!
+    if (!response.ok && ehMensagemNormal) {
+      return data || { message: "Nenhum item encontrado" };
+    }
 
     if (!response.ok) {
       if (data?.message) {
-        console.error(data.message);
+        console.error("Erro da API:", data.message);
         throw new Error(data.message);
       } else if (data?.errors) {
-        console.error(data.errors);
+        console.error("Erros da API:", data.errors);
         throw new Error(data.errors);
       } else {
-        console.error(`Erro ${response.status}`);
-        throw new Error(response.status);
+        console.error(`Erro HTTP ${response.status}`);
+        throw new Error(`Erro ${response.status}`);
       }
     }
 
