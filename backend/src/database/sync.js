@@ -11,6 +11,7 @@ import Compra from "../models/Compra.js";
 import CompraLog from "../models/CompraLog.js";
 import Orcamento from "../models/Orcamento.js";
 import OrcamentoLog from "../models/OrcamentoLog.js";
+import Contato from "../models/Contato.js";
 
 Setor.hasOne(Insumos, {
     foreignKey: 'setorName', 
