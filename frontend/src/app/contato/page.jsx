@@ -8,11 +8,11 @@ import { Mail, Phone, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Blocks/Home/footer";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { toast } from "sonner"; // Importar o toast
-import { api } from '@/lib/api'; // Importar o client da API
+import { toast } from "sonner";
+import { api } from '@/lib/api';
 
 const Contact = () => {
-     // Estados para os campos do formulário e para o carregamento
+    // Estados para os campos do formulário e para o carregamento
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -32,7 +32,7 @@ const Contact = () => {
 
     // Função para lidar com o envio do formulário
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Previne o recarregamento da página
+        e.preventDefault();
         setIsLoading(true);
 
         try {
@@ -40,7 +40,6 @@ const Contact = () => {
             const response = await api.post('contato/send', formData);
 
             if (response && response.error) {
-                // Se a API retornar um erro, exibe no toast
                 toast.error(response.message || 'Ocorreu um erro ao enviar a mensagem.');
             } else {
                 // Se for sucesso, exibe mensagem e limpa o formulário
@@ -48,13 +47,12 @@ const Contact = () => {
                 setFormData({ name: '', email: '', phone: '', message: '' });
             }
         } catch (error) {
-            // Erro de rede ou outro erro inesperado
             toast.error('Falha na comunicação com o servidor. Tente novamente mais tarde.');
         } finally {
             setIsLoading(false);
         }
     };
-    
+
     return (
         <>
             < Header />
@@ -76,7 +74,7 @@ const Contact = () => {
                     {/* Coluna do Formulário */}
                     <div className="bg-slate-50 dark:bg-card border border-[#0101017c] rounded-2xl p-8 lg:p-10 shadow-sm">
                         <h2 className="text-2xl font-bold mb-6">Envie sua mensagem</h2>
-                        
+
                         {/* Formulário agora usa o estado e o handleSubmit */}
                         <form className="space-y-6" onSubmit={handleSubmit}>
                             <div className="space-y-2">
@@ -95,7 +93,7 @@ const Contact = () => {
                                 <Label htmlFor="message">Mensagem</Label>
                                 <Textarea id="message" placeholder="Digite sua dúvida ou solicitação aqui..." value={formData.message} onChange={handleChange} required minLength={10} className="min-h-[120px] border border-[#0101017c]" />
                             </div>
-                            
+
                             <Button type="submit" className="w-full gap-2" disabled={isLoading}>
                                 {isLoading ? (
                                     <>
@@ -168,7 +166,7 @@ const Contact = () => {
 
                 </div>
             </main>
-<Separator />
+            <Separator />
             <Footer />
         </>
     );
