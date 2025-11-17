@@ -386,51 +386,36 @@ class ManagerController {
             return res.status(500).json({ error: "Erro ao alterar estoque máximo." })
         }
     }
-
+// Alterado por victor (a função tava forçando sempre o "aprovado", dificultando o sistema entender "negado")
     static async approvePedido(req, res) {
-        const { id } = req.params
-        const userId = req.user.id
-        const approveSchema = z.object({
-            status: z.enum(['rejeitado', 'aprovado'], { error: "O gerente só pode determinar se o pedido foi aprovado ou rejeitado." })
-        })
-
         try {
-            const { status } = approveSchema.parse(req.body)
-
-            const oldDataJson = await Pedidos.findByPk(id)
-
-            const [rowsAffected] = await Pedidos.update(
-                { status: status },
-                { where: { id: id } }
-            )
-
-            if (rowsAffected === 0) {
-                return res.status(404).json({ message: "Pedido não encontrado." })
-            };
-
-            const newDataJson = await Pedidos.findByPk(id)
-
-            await PedidosLog.create({
-                userId: userId,
-                pedidoId: newDataJson.id,
-                actionType: 'UPDATE',
-                contextDetails: "Status de pedido alterado por gerente de produção.",
-                oldData: oldDataJson.toJSON(),
-                newData: newDataJson.toJSON()
-            })
-
-            return res.status(200).json({ message: `Status de pedido alterado para ${status}.` })
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrado inválidos",
-                    issues: error.issues
-                })
-            }
-            console.error("Erro ao determinar status de pedido", error);
-            return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao determinar status de pedido." })
+          const { id } = req.params;
+          const managerId = req.user.id;
+      
+          const pedido = await Pedidos.findByPk(id);
+          if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
+      
+          const oldStatus = pedido.status;
+          const novoStatus = req.body.status === 'negado' ? 'negado' : 'aprovado';
+      
+          pedido.status = novoStatus;
+          await pedido.save();
+      
+          await PedidosLog.create({
+            userId: managerId,
+            pedidoId: pedido.id,
+            contextDetails: novoStatus === 'negado' ? 'Pedido negado pelo gerente' : 'Pedido aprovado pelo gerente',
+            actionType: 'STATUS_CHANGE',
+            oldData: { status: oldStatus },
+            newData: { status: novoStatus }
+          });
+      
+          res.json({ message: 'Status atualizado com sucesso', pedido });
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ error: 'Erro interno' });
         }
-    }
+      }
 
     static async createCompra(req, res) {
         const gerenteId = req.user.id

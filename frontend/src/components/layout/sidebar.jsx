@@ -40,7 +40,7 @@ const menuItems = [
     label: 'Operações',
     icon: Wallet,
     subItems: [
-      { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/pedidos' },
+      { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
       { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/orcamentos' },
       { id: 'notificacoes', label: 'Notificações', icon: Bell, href: '/dashboard/notificacoes' },
     ],
