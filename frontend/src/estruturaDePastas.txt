@@ -1,0 +1,31 @@
+ / (Raiz do Projeto)
+├── .env                  # Arquivo para informações protegidas da API (URLs, chaves, etc.)
+├── public/               # Imagens em geral
+│   ├── imagens/          # Aglomerado de Imagens
+│   │   ├── banner/       # exemplo 1
+│   │   ├── logo/         # exemplo 2
+│   │   └── fotos/        # exemplo 3
+│   └── favicon.ico       # icons fica do lado de fora
+|
+└── src/                  # Código-fonte da aplicação 
+    ├── app/              # todas a paginas vem aqui dentro
+    │   ├── page.jsx      # Página Inicial (Home) - Rota: /
+    │   ├── layout.jsx    # Layout Principal (Global)
+    │   └── [nome-da-rota]/ (Ex: /login, /produtos)
+    │       └── page.jsx  # Páginas específicas 
+    |
+    ├── components/       # Componentes Reutilizáveis
+    │   ├── ui/           # **(UI - Atômico/Genérico/ShadCn-COMPONENTS)**
+    │   │   └── ...       # Componentes pequenos, como botões, inputs, blocos Shadcn
+    │   ├── blocks/       # **(Blocos - Seções, ShadCn-BLOCKS)**
+    │   │   └── ...       # Componentes maiores, como seções de Hero, Cards complexos
+    │   └── layouts/      # **(Layouts - Estrutura)**
+    │       └── ...       # Componentes estruturais (Header, Footer, Sidebar, Nav)
+    |
+    ├── hooks/            # Hooks Customizados (Principalmente lógica de dados)
+    │   ├── useUser.js    # Hook para todas as operações de Fetch/Mutação de Usuários
+    │   └── useItens.js   # Hook para todas as operações de Fetch/Mutação de Itens
+    |
+    └── lib/              # Bibliotecas e Configurações de Utilidade
+        └── api.js        # Configuração de acesso à API (instância Axios, Fetch wrapper)
+        └── api-server.js # Configuração de acesso à API no servidor NEXT(instância Axios, Fetch wrapper)
