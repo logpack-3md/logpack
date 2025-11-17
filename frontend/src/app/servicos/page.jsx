@@ -1,5 +1,5 @@
-import { Footer } from "@/components/Blocks/footer";
-import Header from "@/components/layout/header";
+import { Footer } from "@/components/Blocks/Home/footer";
+import Header from "@/components/Blocks/Home/header";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart, Bell, Cpu, Scan } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
