@@ -12,9 +12,10 @@ import { toast } from "sonner"; // Importar o toast
 import { api } from '@/lib/api'; // Importar o client da API
 
 const Contact = () => {
-     // Estados para os campos do formulário e para o carregamento
+    // Estados para os campos do formulário e para o carregamento
     const [formData, setFormData] = useState({
         name: '',
+        title: '',
         email: '',
         phone: '',
         message: '',
@@ -45,7 +46,7 @@ const Contact = () => {
             } else {
                 // Se for sucesso, exibe mensagem e limpa o formulário
                 toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-                setFormData({ name: '', email: '', phone: '', message: '' });
+                setFormData({ name: '', title: '', email: '', phone: '', message: '' });
             }
         } catch (error) {
             // Erro de rede ou outro erro inesperado
@@ -54,7 +55,7 @@ const Contact = () => {
             setIsLoading(false);
         }
     };
-    
+
     return (
         <>
             < Header />
@@ -76,9 +77,13 @@ const Contact = () => {
                     {/* Coluna do Formulário */}
                     <div className="bg-slate-50 dark:bg-card border border-[#0101017c] rounded-2xl p-8 lg:p-10 shadow-sm">
                         <h2 className="text-2xl font-bold mb-6">Envie sua mensagem</h2>
-                        
+
                         {/* Formulário agora usa o estado e o handleSubmit */}
                         <form className="space-y-6" onSubmit={handleSubmit}>
+                            <div className="space-y-2">
+                                <Label htmlFor="title">Motivo do contato</Label>
+                                <Input id="title" placeholder="Quero o Logpack na minha empresa" type="text" value={formData.title} onChange={handleChange} required className={"border border-[#0101017c]"} />
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nome Completo</Label>
                                 <Input id="name" placeholder="Seu nome completo" type="text" value={formData.name} onChange={handleChange} required className={"border border-[#0101017c]"} />
@@ -95,7 +100,7 @@ const Contact = () => {
                                 <Label htmlFor="message">Mensagem</Label>
                                 <Textarea id="message" placeholder="Digite sua dúvida ou solicitação aqui..." value={formData.message} onChange={handleChange} required minLength={10} className="min-h-[120px] border border-[#0101017c]" />
                             </div>
-                            
+
                             <Button type="submit" className="w-full gap-2" disabled={isLoading}>
                                 {isLoading ? (
                                     <>
@@ -168,7 +173,7 @@ const Contact = () => {
 
                 </div>
             </main>
-<Separator />
+            <Separator />
             <Footer />
         </>
     );

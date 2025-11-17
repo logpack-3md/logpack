@@ -6,7 +6,7 @@ export const Logo = ({
 }) => {
   return (
     <img
-      src="/images/android-chrome-192x192.png"
+      src="/public/ "
       alt="logo"
       className={cn("size-7", className)}
       {...props} />

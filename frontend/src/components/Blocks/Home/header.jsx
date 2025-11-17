@@ -44,8 +44,8 @@ export default function Header() {
               <LogoSite />
 
               {/* px-2 apos isso é o Gradient */}
-              <h2 className="font-bold text-xl bg-linear-to-r from-[#75543d] to-[#946949] bg-clip-text text-transparent 
-              hover:from-[#8f5f3b] hover:to-[#e0a273]" >
+              <h2 className="font-bold text-xl bg-linear-to-r from-[#bd4f00] to-[#ff9b4f] bg-clip-text text-transparent 
+              hover:from-[#d45c00] hover:to-[#ffa45e]" >
                 LogPack
               </h2>
             </a>

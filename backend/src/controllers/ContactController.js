@@ -22,6 +22,7 @@ class ContactController {
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">
             <h2>Nova Mensagem do Formulário de Contato</h2>
+            <p><strong>Motivo do Contato:</strong> ${title}</p>
             <p><strong>Nome:</strong> ${name}</p>
             <p><strong>E-mail:</strong> ${email}</p>
             ${phone ? `<p><strong>Telefone:</strong> ${phone}</p>` : ''}
