@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../[role]/components/ManagerDashboard/theme';
+import theme from '../components/ManagerDashboard/theme';
 import Sidebar from '@/components/layout/sidebar';
 
 export default function EstoqueLayout({ children }) {

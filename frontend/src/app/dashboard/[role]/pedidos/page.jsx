@@ -20,37 +20,43 @@ export default function PedidosManagerPage() {
   }, []);
 
   const handleCreatePedido = async (data) => {
-    try {
-      // ROTA CORRETA DO FUNCIONÁRIO/COMPRADOR
-      const resposta = await api.post('employee/request', { insumoSKU: data.sku });
-  
-      // AQUI VOCÊ VÊ TUDO QUE A API RETORNOU
-      console.log('Resposta completa da API:', resposta);
-  
-      // Exemplos do que pode vir no retorno:
-      // { success: true, pedidoId: "123", message: "Pedido criado com sucesso" }
-      // { pedido: { id: "123", insumoSKU: "INS-001", status: "solicitado" } }
-  
-      // Se quiser mostrar algo específico na tela:
-      if (resposta?.message) {
-        toast.success(resposta.message);
-      } else if (resposta?.pedido?.id) {
-        toast.success(`Pedido #${resposta.pedido.id} criado com sucesso!`);
-      } else {
-        toast.success('Solicitação enviada com sucesso!');
-      }
-  
-      return true;
-    } catch (err) {
-      // AQUI VOCÊ VÊ O ERRO EXATO QUE A API DEU
-      console.error('Erro completo da API:', err);
-      console.error('Mensagem do erro:', err.message);
-  
-      // Mostra a mensagem real do back-end (se tiver)
-      toast.error(err.message || 'Erro ao enviar solicitação');
-      return false;
-    }
-  };
+        try {
+          // ROTA CORRETA DO FUNCIONÁRIO/COMPRADOR
+          const resposta = await api.post('employee/request', { insumoSKU: data.sku });
+      
+          // AQUI VOCÊ VÊ TUDO QUE A API RETORNOU
+          console.log('Resposta completa da API:', resposta);
+      
+          // VERIFICAÇÃO CHAVE DE ERRO (STATUS 400 RETORNADO PELO APIFETCH)
+          if (resposta && resposta.success === false) {
+              // Se for um erro formatado, retorne-o imediatamente para o CreateButton
+              return resposta; 
+          }
+          
+          // --------------------
+          // LÓGICA DE SUCESSO
+          // --------------------
+          
+          // Se quiser mostrar algo específico na tela:
+          if (resposta?.message) {
+            toast.success(resposta.message);
+          } else if (resposta?.pedido?.id) {
+            toast.success(`Pedido #${resposta.pedido.id} criado com sucesso!`);
+          } else {
+            toast.success('Solicitação enviada com sucesso!');
+          }
+      
+          // Retorna true ou o objeto de sucesso para fechar o modal
+          return true;
+        } catch (err) {
+          // Este bloco só será acionado em caso de exceção (ex: falha de rede/conexão)
+          console.error('Erro completo (exceção):', err);
+          toast.error('Falha de conexão ou erro inesperado.');
+          
+          // Em caso de exceção de rede, retorna o objeto de erro para o CreateButton
+          return { success: false, error: 'Falha de conexão com o servidor.' };
+        }
+      };
 
   const openModal = () => {
     document.dispatchEvent(new CustomEvent('open-create-modal'));

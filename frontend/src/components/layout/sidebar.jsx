@@ -31,7 +31,7 @@ const menuItems = [
     icon: BarChart2,
     subItems: [
       { id: 'produtos', label: 'Produtos', icon: Box, href: '/dashboard/produtos' }, // ← CORRIGIDO
-      { id: 'estoque', label: 'Estoque', icon: PackageOpen, href: '/dashboard/estoque' }, // ← MANTIDO
+      { id: 'estoque', label: 'Estoque', icon: PackageOpen, href: '/dashboard/manager/setores' }, // ← MANTIDO
       { id: 'relatorios', label: 'Relatórios', icon: FileCheck2, href: '/dashboard/relatorios' },
     ],
   },

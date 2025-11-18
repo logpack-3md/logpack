@@ -102,8 +102,12 @@ class AuthMiddleware {
             const status = insumo.get('status_solicitacao')
 
             if (status !== 'Solicitar Reposição') {
-                return res.status(400).json({ message: `Pedido negado. Estoque atual está acima do limite de 35%: ${status}` })//PHL
-            }
+                return res.status(400).json({ 
+                    message: "Estoque acima do limite de 35%", 
+                    details: `Só é permitido solicitar quando o estoque estiver abaixo de 35%. Estoque atual: ${status}`  // V
+                });
+            } 
+            
 
             req.insumo = insumo
             next()

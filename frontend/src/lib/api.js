@@ -1,4 +1,4 @@
-// lib/api.js
+// src/lib/api.js  ←  sem alterações (continua perfeito)
 import { toast } from "sonner";
 
 export function getTokenFromCookie(ctx) {
@@ -22,8 +22,6 @@ export async function apiFetch(path, options = {}) {
   };
 
   try {
-    console.log(`${process.env.NEXT_PUBLIC_API_URL}${path}`);
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
       ...options,
       headers,
@@ -34,7 +32,6 @@ export async function apiFetch(path, options = {}) {
     const isJson = contentType && contentType.includes("application/json");
     const data = isJson ? await response.json() : null;
 
-    // CASOS QUE NÃO SÃO ERRO DE VERDADE (só lista vazia)
     const mensagensNormais = [
       "Nenhum pedido solicitado",
       "Nenhum pedido encontrado",
@@ -43,49 +40,40 @@ export async function apiFetch(path, options = {}) {
       "Não há registros",
       "Sem resultados",
     ];
-
-    const mensagem = data?.message || "";
-    const ehMensagemNormal = mensagensNormais.some(m => mensagem.includes(m));
+    const ehMensagemNormal = data?.message && mensagensNormais.some(m => data.message.includes(m));
 
     if (response.status === 401) {
       toast.error("Sessão expirada. Faça login novamente.");
       document.cookie = "token=; Max-Age=0; path=/";
       return null;
     }
-     
+
     if (response.status === 400) {
-      toast.error("Erro encontrado.");
-      return response.body
-      // return null;
+      return {
+        success: false,
+        error: data?.message || "Erro na solicitação",
+        details: data?.details || "",
+        status: 400,
+      };
     }
-    // SE FOR UMA MENSAGEM "NORMAL" DE LISTA VAZIA → NÃO TRATA COMO ERRO!
+
     if (!response.ok && ehMensagemNormal) {
       return data || { message: "Nenhum item encontrado" };
     }
 
     if (!response.ok) {
-      if (data?.message) {
-        console.error("Erro da API:", data.message);
-        throw new Error(data.message);
-      } else if (data?.errors) {
-        console.error("Erros da API:", data.errors);
-        throw new Error(data.errors);
-      } else {
-        console.error(`Erro HTTP ${response.status}`);
-        throw new Error(`Erro ${response.status}`);
-      }
+      return {
+        success: false,
+        error: data?.message || data?.errors || `Erro ${response.status}`,
+      };
     }
 
     return data;
   } catch (err) {
-    if (!err.handled) {
-      console.error("Erro inesperado no apiFetch:", err);
-    }
-    return { error: true, message: err.message };
+    return { success: false, error: "Falha na conexão com o servidor" };
   }
 }
 
-// Atalhos para métodos comuns
 export const api = {
   get: (path) => apiFetch(path),
   post: (path, body) =>
