@@ -30,7 +30,7 @@ const menuItems = [
     label: 'Painel Geral',
     icon: BarChart2,
     subItems: [
-      { id: 'produtos', label: 'Produtos', icon: Box, href: '/dashboard/produtos' }, // ← CORRIGIDO
+      { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' }, // ← CORRIGIDO
       { id: 'estoque', label: 'Estoque', icon: PackageOpen, href: '/dashboard/manager/setores' }, // ← MANTIDO
       { id: 'relatorios', label: 'Relatórios', icon: FileCheck2, href: '/dashboard/relatorios' },
     ],
