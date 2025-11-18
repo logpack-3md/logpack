@@ -246,52 +246,57 @@ export default function SetoresPage() {
           try {
             const promises = [];
         
-            // 1. NOME
+            // 1. ALTERAR NOME
             if (formData.nome?.trim() && formData.nome.trim() !== editingSetor.name) {
               promises.push(
                 api.put(`manager/setor/name/${editingSetor.id}`, { name: formData.nome.trim() })
               );
             }
         
-            // 2. STATUS
+            // 2. ALTERAR STATUS
             if (formData.status && formData.status !== editingSetor.status) {
               promises.push(
                 api.put(`manager/setor/status/${editingSetor.id}`, { status: formData.status })
               );
             }
         
-            // 3. MAX STORAGE
+            // 3. ALTERAR CAPACIDADE MÁXIMA — USANDO A ROTA CORRETA (SetMaxStorage)
             if (formData.maxStorage !== undefined && formData.maxStorage !== '' && formData.maxStorage !== null) {
-              const value = Number(formData.maxStorage);
-              if (isNaN(value)) {
-                toast.error('Capacidade inválida');
+              const novoValor = Number(formData.maxStorage);
+        
+              if (isNaN(novoValor)) {
+                toast.error('Valor inválido para capacidade');
                 return false;
               }
-              if (value % 200 !== 0) {
-                toast.error('Deve ser múltiplo de 200');
+        
+              if (novoValor % 200 !== 0) {
+                toast.error('A capacidade deve ser múltiplo de 200');
                 return false;
               }
-              if (value !== editingSetor.maxStorage) {
+        
+              if (novoValor !== editingSetor.maxStorage) {
+                // ROTA CORRETA → USA A FUNÇÃO SetMaxStorage DO BACKEND
                 promises.push(
-                  api.put(`manager/insumos/storage/${editingSetor.id}`, { max_storage: value })
+                  api.put(`manager/setor/storage/${editingSetor.id}`, { max_storage: novoValor })
                 );
               }
             }
         
             if (promises.length === 0) {
-              toast.info('Nenhuma alteração');
+              toast.info('Nenhuma alteração detectada');
               setEditOpen(false);
               return true;
             }
         
             await Promise.all(promises);
-            toast.success('Setor atualizado com sucesso!');
-            await fetchSetores();
+        
+            toast.success('Setor atualizado com sucesso! Agora você pode criar pedidos.');
+            await fetchSetores(); // recarrega a lista
             setEditOpen(false);
             return true;
           } catch (err) {
-            console.error('Erro ao salvar:', err);
-            toast.error('Erro ao salvar. Verifique o console.');
+            console.error('Erro ao atualizar setor:', err);
+            toast.error('Erro ao salvar. Verifique se o valor é múltiplo de 200.');
             return false;
           }
         }}
