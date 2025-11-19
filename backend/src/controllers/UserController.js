@@ -135,6 +135,29 @@ class UserController {
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
         }
     }
+
+    static async seeProfile(req, res) {
+        const userId = req.user.id
+
+        try {
+            const user = await User.findByPk(userId, {
+                attributes: [
+                    'name',
+                    'email',
+                    'role'
+                ]
+            })
+
+            if (!user) {
+                return res.status(404).json({ message: "Perfil não encontrado" })
+            }
+
+            return res.status(200).json(user)
+        } catch (error) {
+            console.error("Erro interno ao ver perfil", error)
+            return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao buscar informações de perfil" })
+        }
+    }
 }
 
 export default UserController;

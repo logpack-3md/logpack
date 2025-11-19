@@ -6,6 +6,12 @@ import { uploadSingleImage } from "../middlewares/upload.js";
 
 const router = express.Router()
 
+router.get('/profile',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    UserController.seeProfile
+)
+
 // cadastro
 router.post('/',
     uploadSingleImage,
