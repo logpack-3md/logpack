@@ -1,4 +1,4 @@
-# 🚀 **API LogPack — Manual de Instruções**
+# 🚀 **API LogPack — Manual de Instruções (MD Revisado)**
 
 ## 📝 **Sumário**
 
