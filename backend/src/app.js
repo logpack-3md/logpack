@@ -32,7 +32,7 @@ app.use('/employee', employeeRoute) // funções de solicitação
 app.use('/insumos', insumoRoute) // apenas get
 app.use('/setor', setorRoute) // apenas get
 app.use('/buyer', buyerRoute) // criação de orçamento
-app.use('/contato', contactRoute); // <-- Adicionar esta linha
+app.use('/contato', contactRoute);
 
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
