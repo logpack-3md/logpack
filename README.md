@@ -2,7 +2,7 @@
 
 ## 📝 **Sumário**
 
-- [🚀 **API LogPack — Manual de Instruções**](#-api-logpack--manual-de-instruções)
+- [🚀 **API LogPack — Manual de Instruções (MD Revisado)**](#-api-logpack--manual-de-instruções-md-revisado)
   - [📝 **Sumário**](#-sumário)
 - [**SEÇÃO 1: Introdução ao LogPack**](#seção-1-introdução-ao-logpack)
   - [🔐 **Estrutura de Usuários**](#-estrutura-de-usuários)
