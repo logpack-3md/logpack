@@ -1,4 +1,4 @@
-// src/lib/api.js  ←  sem alterações (continua perfeito)
+// src/lib/api.js
 import { toast } from "sonner";
 
 export function getTokenFromCookie(ctx) {
@@ -8,6 +8,7 @@ export function getTokenFromCookie(ctx) {
     return match ? match[2] : null;
   } else if (typeof window !== "undefined") {
     const match = document.cookie.match(/(^|;)\s*token=([^;]*)/);
+    2;
     return match ? match[2] : null;
   }
   return null;
@@ -16,10 +17,14 @@ export function getTokenFromCookie(ctx) {
 export async function apiFetch(path, options = {}) {
   const token = getTokenFromCookie();
   const headers = {
-    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
+
+  // NUNCA define Content-Type manualmente com FormData (o navegador faz sozinho com boundary)
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
@@ -76,18 +81,18 @@ export async function apiFetch(path, options = {}) {
 
 export const api = {
   get: (path) => apiFetch(path),
+
   post: (path, body) =>
     apiFetch(path, {
       method: "POST",
-      body: JSON.stringify(body),
+      body: body instanceof FormData ? body : JSON.stringify(body),
     }),
+
   put: (path, body) =>
     apiFetch(path, {
       method: "PUT",
-      body: JSON.stringify(body),
+      body: body instanceof FormData ? body : JSON.stringify(body),
     }),
-  del: (path) =>
-    apiFetch(path, {
-      method: "DELETE",
-    }),
+
+  del: (path) => apiFetch(path, { method: "DELETE" }),
 };

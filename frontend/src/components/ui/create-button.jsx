@@ -39,7 +39,7 @@ export default function CreateButton({
     const result = await onSubmit(formData, file);
 
     if (result === false || (result && result.success === false)) {
-      setAlertMessage(result?.error || result?.message || 'Erro ao processar');
+      setAlertMessage(result.error || result?.message || 'Erro ao processar');
       setAlertOpen(true);
       return;
     }

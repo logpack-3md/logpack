@@ -43,7 +43,6 @@ export default function SetoresPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editingSetor, setEditingSetor] = useState(null);
 
-  // FUNÇÃO PARA CARREGAR SETORES — AGORA ESTÁ NO ESCOPO CORRETO
   const fetchSetores = async () => {
     setLoading(true);
     try {
@@ -55,7 +54,7 @@ export default function SetoresPage() {
 
       const data = Array.isArray(response) ? response : response.data || response.setores || [];
       const formatted = data.map(s => ({
-        id: s.id || s._id,
+        id: s.id || s._id,  // garante o ID certo
         name: s.name || s.nome || 'Sem nome',
         status: s.status || 'pendente',
         maxStorage: s.max_storage || null,
@@ -80,7 +79,7 @@ export default function SetoresPage() {
   }, [search]);
 
   useEffect(() => {
-    fetchSetores(); // Carrega na primeira vez
+    fetchSetores();
   }, []);
 
   useEffect(() => {
@@ -137,13 +136,6 @@ export default function SetoresPage() {
         Mostrando <strong>{setores.length}</strong> de <strong>{allSetores.length}</strong> setores
       </div>
 
-      {loading && setores.length === 0 && (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-600">Carregando setores...</p>
-        </div>
-      )}
-
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' },
@@ -176,16 +168,18 @@ export default function SetoresPage() {
                   <Box className={`p-3 rounded-xl ${setor.bgColor} ${textColor}`}>
                     <Icon className="w-6 h-6" />
                   </Box>
-                  <Box>
+                  <div className="flex flex-col gap-1.5">
                     <h3 className="font-semibold text-gray-900">{setor.name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full mt-1 inline-block ${
-                      setor.status === 'ativo' ? 'bg-green-100 text-green-700' :
-                      setor.status === 'inativo' ? 'bg-red-100 text-red-700' :
-                      'bg-yellow-100 text-yellow-700'
+                    
+                    {/* TAG DE STATUS COM TAMANHO FIXO */}
+                    <span className={`inline-flex items-center justify-center min-w-[68px] max-w-[90px] px-3 py-1 text-xs font-medium rounded-full ring-1 ring-inset overflow-hidden ${
+                      setor.status === 'ativo' ? 'bg-green-100 text-green-700 ring-green-700/10' :
+                      setor.status === 'inativo' ? 'bg-red-100 text-red-700 ring-red-700/10' :
+                      'bg-yellow-100 text-yellow-700 ring-yellow-700/10'
                     }`}>
-                      {setor.status}
+                      <span className="truncate block leading-none">{setor.status}</span>
                     </span>
-                  </Box>
+                  </div>
                 </Box>
               </Box>
 
@@ -196,17 +190,17 @@ export default function SetoresPage() {
                   {setor.ultima}
                 </p>
                 {setor.maxStorage != null && (
-  <p className="text-xs text-gray-500 mt-2">
-    Estoque máx: <strong>{Number(setor.maxStorage).toLocaleString('pt-BR')}</strong> unid.
-  </p>
-)}
+                  <p className="text-xs text-gray-500 mt-2">
+                    Estoque máx: <strong>{Number(setor.maxStorage).toLocaleString('pt-BR')}</strong> unid.
+                  </p>
+                )}
               </Box>
             </Box>
           );
         })}
       </Box>
 
-      {/* Botão + */}
+      {/* BOTÃO + */}
       <button
         onClick={() => document.dispatchEvent(new CustomEvent('open-create-modal'))}
         className="fixed bottom-6 right-6 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all hover:scale-110 duration-200 z-50 border-4 border-white"
@@ -216,7 +210,6 @@ export default function SetoresPage() {
 
       <FloatingActions />
 
-      {/* Modal Criação */}
       <CreateButton title="Criar Novo Setor" onSubmit={handleCreateSetor}>
         {({ formData, handleChange }) => (
           <div className="space-y-5">
@@ -235,68 +228,63 @@ export default function SetoresPage() {
         )}
       </CreateButton>
 
-      {/* MODAL DE EDIÇÃO — AGORA FUNCIONA 100% */}
+      {/* MODAL DE EDIÇÃO - AGORA FUNCIONA COM QUALQUER SETOR */}
       <CreateButton
         title="Editar Setor"
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={async (formData) => {
           if (!editingSetor) return false;
-        
+
+          const setorId = editingSetor.id || editingSetor._id; // pega o ID certo sempre
+
           try {
             const promises = [];
-        
-            // 1. ALTERAR NOME
+
+            // Alterar nome
             if (formData.nome?.trim() && formData.nome.trim() !== editingSetor.name) {
-              promises.push(
-                api.put(`manager/setor/name/${editingSetor.id}`, { name: formData.nome.trim() })
-              );
+              promises.push(api.put(`manager/setor/name/${setorId}`, { name: formData.nome.trim() }));
             }
-        
-            // 2. ALTERAR STATUS
+
+            // Alterar status
             if (formData.status && formData.status !== editingSetor.status) {
-              promises.push(
-                api.put(`manager/setor/status/${editingSetor.id}`, { status: formData.status })
-              );
+              promises.push(api.put(`manager/setor/status/${setorId}`, { status: formData.status }));
             }
-        
-            // 3. ALTERAR CAPACIDADE MÁXIMA — USANDO A ROTA CORRETA (SetMaxStorage)
+
+            // Alterar capacidade máxima → USA A ROTA QUE FUNCIONA NO SEU BACKEND
             if (formData.maxStorage !== undefined && formData.maxStorage !== '' && formData.maxStorage !== null) {
-              const novoValor = Number(formData.maxStorage);
-        
-              if (isNaN(novoValor)) {
-                toast.error('Valor inválido para capacidade');
+              const valor = Number(formData.maxStorage);
+
+              if (isNaN(valor) || valor < 200) {
+                toast.error('Valor mínimo é 200');
                 return false;
               }
-        
-              if (novoValor % 200 !== 0) {
-                toast.error('A capacidade deve ser múltiplo de 200');
+              if (valor % 200 !== 0) {
+                toast.error('Deve ser múltiplo de 200');
                 return false;
               }
-        
-              if (novoValor !== editingSetor.maxStorage) {
-                // ROTA CORRETA → USA A FUNÇÃO SetMaxStorage DO BACKEND
+              if (valor !== editingSetor.maxStorage) {
                 promises.push(
-                  api.put(`manager/setor/storage/${editingSetor.id}`, { max_storage: novoValor })
+                  api.put(`manager/insumos/storage/${setorId}`, { max_storage: valor })
                 );
               }
             }
-        
+
             if (promises.length === 0) {
-              toast.info('Nenhuma alteração detectada');
+              toast.info('Nenhuma alteração');
               setEditOpen(false);
               return true;
             }
-        
+
             await Promise.all(promises);
-        
-            toast.success('Setor atualizado com sucesso! Agora você pode criar pedidos.');
-            await fetchSetores(); // recarrega a lista
+            toast.success('Setor atualizado com sucesso!');
+            await fetchSetores();
             setEditOpen(false);
             return true;
+
           } catch (err) {
-            console.error('Erro ao atualizar setor:', err);
-            toast.error('Erro ao salvar. Verifique se o valor é múltiplo de 200.');
+            console.error(err);
+            toast.error('Erro ao salvar capacidade. Verifique o console.');
             return false;
           }
         }}
@@ -305,11 +293,11 @@ export default function SetoresPage() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Nome do Setor</label>
-              <input name="nome" defaultValue={editingSetor?.name} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input name="nome" defaultValue={editingSetor?.name} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-              <select name="status" defaultValue={editingSetor?.status || 'pendente'} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+              <select name="status" defaultValue={editingSetor?.status || 'pendente'} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg">
                 <option value="ativo">Ativo</option>
                 <option value="inativo">Inativo</option>
                 <option value="pendente">Pendente</option>
@@ -317,8 +305,16 @@ export default function SetoresPage() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Capacidade Máxima de Estoque</label>
-              <input type="number" name="maxStorage" defaultValue={editingSetor?.maxStorage || ''} placeholder="Ex: 5000" step="200" onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-              <p className="text-xs text-gray-500 mt-1">Múltiplo de 200</p>
+              <input
+                type="number"
+                name="maxStorage"
+                defaultValue={editingSetor?.maxStorage || ''}
+                placeholder="4000"
+                step="200"
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              />
+              <p className="text-xs text-gray-500 mt-1">Múltiplo de 200 (ex: 2000, 4000, 6000</p>
             </div>
           </div>
         )}
