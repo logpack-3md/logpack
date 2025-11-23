@@ -1,6 +1,7 @@
 import express from "express";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 import BuyerController from "../controllers/BuyerController.js";
+import ManagerController from "../controllers/ManagerController.js";
 
 const router = express.Router()
 
@@ -8,9 +9,25 @@ const router = express.Router()
 router.get('/compras',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
+    // AuthMiddleware.isManager,
     AuthMiddleware.isBuyer,
     BuyerController.getCompras
 )
+
+router.get('/orcamentos', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isBuyer,
+    ManagerController.getOrcamentos
+)
+
+// // buscar um orçamento
+// router.get('/orcamentos/:orcamentoId', 
+//     AuthMiddleware.verifyToken,
+//     AuthMiddleware.isActiveUser,
+//         AuthMiddleware.isBuyer,
+//     ManagerController.getOrcamento
+// )
 
 // buscar uma compra
 router.get('/compras/:id',
@@ -26,6 +43,14 @@ router.post('/orcamento/:compraId',
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isBuyer,
     BuyerController.createOrcamento
+)
+
+router.put('/orcamentos/contestar/:orcamentoId',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isBuyer,
+    AuthMiddleware.isBuyApproved,
+    ManagerController.contestarOrcamento
 )
 
 // atualizar descrição de orçamento
