@@ -25,21 +25,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { HelpCircle } from "lucide-react";
-
+import { LogoSite } from "@/components/ui/icons-geral";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
-    // static createSchema = z.object({
-    //     name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-    //     cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
-    //     email: z.email({ message: "Digite um email válido." }),
-    //     password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-    //     role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
-    // });
+// static createSchema = z.object({
+//     name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
+//     cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
+//     email: z.email({ message: "Digite um email válido." }),
+//     password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
+//     role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
+// });
 
 export function SignupForm({ className, ...props }) {
-  
+
 
 
   const router = useRouter()
@@ -70,9 +70,9 @@ export function SignupForm({ className, ...props }) {
       }
 
 
-        // alert('login bem sucedido')
-        // console.log(data)
-      
+      // alert('login bem sucedido')
+      // console.log(data)
+
       if (data.message)
         alert(data.message)
     } catch (error) {
@@ -84,8 +84,17 @@ export function SignupForm({ className, ...props }) {
   return (
     <Card className={cn("w-full max-w-lg lg:w-200", className)} {...props}>
       <CardHeader className="text-center">
+        
+        <div className="flex justify-center mb-4">
+          <a href="/" className="flex items-center gap-2 self-center font-bold">
+            <div className="text-primary-foreground flex size-6 items-center justify-center rounded-md px-4">
+              <LogoSite />
+            </div>
+          </a>
+        </div>
+
         <CardTitle className="text-2xl font-bold tracking-tight">
-          Crie sua conta
+          Crie sua conta no LogPack!
         </CardTitle>
         <CardDescription>
           Preencha o formulário para criar sua conta empresarial.
