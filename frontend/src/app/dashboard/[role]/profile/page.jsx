@@ -67,11 +67,22 @@ export default function ProfilePage() {
       .toUpperCase()
       .slice(0, 2);
   };
+  // Estado 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* SIDEBAR */}
-      <Sidebar />
+      {/* Overlay mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-[#0000005d] z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+
 
       {/* CONTEÚDO PRINCIPAL */}
       <div className="flex-1 ml-64 p-6 lg:p-10">
@@ -80,7 +91,7 @@ export default function ProfilePage() {
 
           <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden" loading={loading}>
             {/* Header com gradiente */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-10 text-white">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-700 p-10 text-white">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <Upload showUploadList={false} beforeUpload={() => false}>
                   <div className="relative cursor-pointer group">
