@@ -166,6 +166,7 @@ Abertas para qualquer usuário autenticado.
 | --------------- | ------------------- | --------------------- |
 | Cadastro        | `POST /users`       | Criação de conta      |
 | Login           | `POST /users/login` | Autenticação          |
+| Login           | `GET /users/profile`| Ver Perfil            |
 | Atualizar dados | `PUT /users/{id}`   | Editar dados pessoais |
 | Listar insumos  | `GET /insumos`      | Paginação             |
 | Ver insumo      | `GET /insumos/{id}` | Detalhes              |
