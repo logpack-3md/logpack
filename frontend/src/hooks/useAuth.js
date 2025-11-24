@@ -1,39 +1,52 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Cookies from 'js-cookie'
 import { jwtDecode } from 'jwt-decode'
 
 export function useAuth() {
     const [userRole, setUserRole] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(null)
+    const [userStatus, setUserStatus] = useState(null); 
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-    useEffect(() => {
+    const checkAuthStatus = useCallback(() => {
         const token = Cookies.get('token');
-        console.log("Token encontrado no cookie:", !!token);
 
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                console.log("Role decodificada:", decoded.role);
+                const currentTime = Date.now() / 1000;
+                
+                if (decoded.exp < currentTime) {
+                    throw new Error("Token expirado.");
+                }
+                
                 setUserRole(decoded.role);
+                setUserStatus(decoded.status);
                 setIsAuthenticated(true);
 
             } catch (error) {
-                console.error("Token falhou na decodificação ou expiração:", error);
-                Cookies.remove('token'); 
+                console.error("Auth Error:", error);
+                Cookies.remove('token', { path: '/' }); 
                 setUserRole(null);
+                setUserStatus(null);
                 setIsAuthenticated(false);
             }
         } else {
             setUserRole(null);
+            setUserStatus(null);
             setIsAuthenticated(false);
         }
     }, []);
 
+    useEffect(() => {
+        checkAuthStatus();
+    }, [checkAuthStatus]);
+
     const loginSuccess = (token) => {
-        const decoded = jwtDecode(token)
-        setUserRole(decoded.role)
-        setIsAuthenticated(true)
+        const decoded = jwtDecode(token);
+        setUserRole(decoded.role);
+        setUserStatus(decoded.status);
+        setIsAuthenticated(true);
     };
 
-    return { userRole, isAuthenticated, loginSuccess }
+    return { userRole, userStatus, isAuthenticated, loginSuccess }
 }

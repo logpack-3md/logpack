@@ -39,27 +39,24 @@ import Cookies from "js-cookie";
 // });
 
 export function SignupForm({ className, ...props }) {
-
-
-
   const router = useRouter()
   const [name, setName] = useState('')
   const [cpf, setCpf] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState('')
-
 
   const handleSingUp = async (e) => {
     e.preventDefault()
-    // console.log({ email, password })
+
     try {
       const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "users", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, cpf, email, password, role })
+        body: JSON.stringify({ name, cpf, email, password, confirmPassword, role })
       })
 
       const data = await response.json()
@@ -69,14 +66,13 @@ export function SignupForm({ className, ...props }) {
         router.push('/login')
       }
 
-
-      // alert('login bem sucedido')
-      // console.log(data)
-
-      if (data.message)
+      if (data.message) {
         alert(data.message)
-    } catch (error) {
+      }
 
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert('Não foi possível se conectar ao servidor. Tente novamente.');
     }
   }
 
@@ -84,7 +80,7 @@ export function SignupForm({ className, ...props }) {
   return (
     <Card className={cn("w-full max-w-lg lg:w-200", className)} {...props}>
       <CardHeader className="text-center">
-        
+
         <div className="flex justify-center mb-4">
           <a href="/" className="flex items-center gap-2 self-center font-bold">
             <div className="text-primary-foreground flex size-6 items-center justify-center rounded-md px-4">
@@ -168,7 +164,7 @@ export function SignupForm({ className, ...props }) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                <Input id="confirm-password" type="password" placeholder="••••••••" required />
+                <Input id="confirm-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value) }} type="password" placeholder="••••••••" required />
               </div>
             </div>
 

@@ -7,7 +7,7 @@ import { Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function SwitchTheme() {
-    const { theme, setTheme } = useTheme();
+    const {theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -19,7 +19,7 @@ export function SwitchTheme() {
     };
 
     return (
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className={"bg-background dark:bg-secondary"}>
+        <Button variant="ghost" className size="icon" onClick={toggleTheme}>
             {mounted && theme === "dark" ? (
                 <Sun className="h-[1.2rem] w-[1.2rem]" />
             ) : mounted ? (
