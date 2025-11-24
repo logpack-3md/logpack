@@ -1,9 +1,9 @@
-import {Login} from "@/components/Blocks/Login/index";
+import { Login } from "@/components/Blocks/Login";
 
 export default function Home() {
   return (
     <>
-      <Login/>
+      <Login />
     </>
   );
 }
