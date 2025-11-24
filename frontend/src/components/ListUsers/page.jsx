@@ -71,12 +71,12 @@ export function ListUsers() {
     error,
     isUpdating, // Novo estado
     totalItems,
-    currentPage, 
+    currentPage,
     pageSize,
     setPage,
     setLimit,
     setStatus, // Nova função
-  } = useUsers(); 
+  } = useUsers();
 
   const totalPages = Math.ceil(totalItems / pageSize);
   const isActionDisabled = loading || isUpdating;
@@ -104,7 +104,7 @@ export function ListUsers() {
     console.log(`Tentando mudar o status do usuário ${userId} para ${newStatus}`);
     setStatus(userId, newStatus);
   };
-  
+
   // Renderização condicional para estado de carregamento/erro
   if (loading && users.length === 0) {
     return (
@@ -140,8 +140,8 @@ export function ListUsers() {
             <TableHead>Nome</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Função</TableHead>
-            <TableHead>Status</TableHead> {/* Nova Coluna */}
-            <TableHead className="text-right">Ações</TableHead> {/* Nova Coluna */}
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Ações</TableHead> 
           </TableRow>
         </TableHeader>
 
@@ -159,7 +159,7 @@ export function ListUsers() {
                 <TableCell>{user.name || 'N/A'}</TableCell>
                 <TableCell>{user.email || 'N/A'}</TableCell>
                 <TableCell>{user.role || 'N/A'}</TableCell>
-                
+
                 {/* Coluna Status */}
                 <TableCell>
                   <Badge variant={statusVariant}>{user.status || 'N/D'}</Badge>
@@ -167,8 +167,8 @@ export function ListUsers() {
 
                 {/* Coluna Ações (Botão de Status) */}
                 <TableCell className="text-right">
-                  <Button 
-                    variant={buttonVariant} 
+                  <Button
+                    variant={buttonVariant}
                     size="sm"
                     onClick={() => handleSetStatus(user)}
                     disabled={isActionDisabled}
@@ -192,20 +192,20 @@ export function ListUsers() {
           <PaginationContent>
             {/* Botão Anterior */}
             <PaginationItem>
-              <PaginationPrevious 
+              <PaginationPrevious
                 onClick={handlePrevious}
                 className={currentPage === 0 || isActionDisabled ? "pointer-events-none opacity-50" : undefined}
                 aria-disabled={currentPage === 0 || isActionDisabled}
               />
             </PaginationItem>
-            
+
             {/* Links das Páginas */}
             {generatePaginationLinks(currentPage, totalPages, setPage)}
 
             {/* Botão Próximo */}
             <PaginationItem>
-              <PaginationNext 
-                onClick={handleNext} 
+              <PaginationNext
+                onClick={handleNext}
                 className={currentPage >= totalPages - 1 || isActionDisabled ? "pointer-events-none opacity-50" : undefined}
                 aria-disabled={currentPage >= totalPages - 1 || isActionDisabled}
               />
@@ -228,3 +228,73 @@ export function ListUsers() {
     </div>
   )
 }
+
+//   <TableHeader>
+//     <TableRow>
+//       <TableHead className="w-[100px]">ID</TableHead>
+//       <TableHead>Nome</TableHead>
+//       <TableHead>Email</TableHead>
+//       <TableHead>Função</TableHead>
+//       <TableHead>Status</TableHead> {/* Nova Coluna */}
+//       <TableHead className="text-right">Ações</TableHead> {/* Nova Coluna */}
+//     </TableRow>
+//   </TableHeader>
+//          {/* Coluna Status */}
+//           <TableCell>
+//             <Badge variant={statusVariant}>{user.status || 'N/D'}</Badge>
+//           </TableCell>
+
+//           {/* Coluna Ações (Botão de Status) */}
+//           <TableCell className="text-right">
+//             <Button
+//               variant={buttonVariant}
+//               size="sm"
+//               onClick={() => handleSetStatus(user)}
+//               disabled={isActionDisabled}
+//             >
+//               {buttonText}
+//             </Button>
+//           </TableCell>
+
+// {/* Paginação e Controle de Limite */}
+// <div className="p-4 border-t flex justify-between items-center">
+//   <div className="text-sm text-gray-600">
+//     Mostrando {users.length} de {totalItems} itens. (Página {currentPage + 1} de {totalPages})
+//   </div>
+
+//   <Pagination>
+//     <PaginationContent>
+//       {/* Botão Anterior */}
+//       <PaginationItem>
+//         <PaginationPrevious
+//           onClick={handlePrevious}
+//           className={currentPage === 0 || isActionDisabled ? "pointer-events-none opacity-50" : undefined}
+//           aria-disabled={currentPage === 0 || isActionDisabled}
+//         />
+//       </PaginationItem>
+
+//       {/* Links das Páginas */}
+//       {generatePaginationLinks(currentPage, totalPages, setPage)}
+
+//       {/* Botão Próximo */}
+//       <PaginationItem>
+//         <PaginationNext
+//           onClick={handleNext}
+//           className={currentPage >= totalPages - 1 || isActionDisabled ? "pointer-events-none opacity-50" : undefined}
+//           aria-disabled={currentPage >= totalPages - 1 || isActionDisabled}
+//         />
+//       </PaginationItem>
+//     </PaginationContent>
+//   </Pagination>
+
+//   {/* Seletor de Limite/PageSize */}
+//   <select
+//     value={pageSize}
+//     onChange={(e) => setLimit(Number(e.target.value))}
+//     className="px-2 py-1 border rounded text-sm"
+//     disabled={isActionDisabled}
+//   >
+//     <option value={10}>10 por pág.</option>
+//     <option value={20}>20 por pág.</option>
+//     <option value={50}>50 por pág.</option>
+//   </select>

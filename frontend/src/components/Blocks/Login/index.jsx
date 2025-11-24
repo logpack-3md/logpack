@@ -108,7 +108,7 @@ const Login = () => {
                       <div className="flex items-center justify-between">
                         <FormLabel>Senha</FormLabel>
                         <Link
-                          href="dashboard"
+                          href="#"
                           className="text-sm font-medium text-muted-foreground hover:underline"
                         >
                           Esqueceu senha?
