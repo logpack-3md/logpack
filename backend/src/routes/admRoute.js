@@ -20,7 +20,7 @@ router.get('/',
 router.get('/:id', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
-    // AuthMiddleware.isAdmin,
+    AuthMiddleware.isAdmin,
     AdminController.getUser
 )
 
