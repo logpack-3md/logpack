@@ -144,7 +144,8 @@ class UserController {
                 attributes: [
                     'name',
                     'email',
-                    'role'
+                    'role',
+                    'image'
                 ]
             })
 

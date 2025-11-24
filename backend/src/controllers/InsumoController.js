@@ -3,6 +3,7 @@ import InsumosLog from '../models/InsumosLog.js';
 import z from 'zod'
 import { put, del } from '@vercel/blob'
 import Setor from '../models/Setor.js';
+import { Op } from 'sequelize';
 
 class InsumosController {
     static createSchema = z.object({
@@ -28,7 +29,12 @@ class InsumosController {
         const page = parseInt(req.query.page) || 1
         const limit = parseInt(req.query.limit) || 10
 
-        const statusFilter = req.query.status
+        const {
+            status: statusFilter,
+            setorName: setorNameFilter, 
+            sku: skuFilter,             
+            name: nameFilter           
+        } = req.query;
 
         const offset = (page - 1) * limit
 
@@ -36,6 +42,17 @@ class InsumosController {
 
         if (statusFilter) {
             whereClause.status = statusFilter
+        }
+        if (setorNameFilter) {
+            whereClause.setorName = setorNameFilter
+        }
+        if (skuFilter) {
+            whereClause.SKU = skuFilter
+        }
+        if (nameFilter) {
+            whereClause.name = {
+                [Op.like]: `%${nameFilter}%`
+            }
         }
 
         try {
@@ -73,6 +90,8 @@ class InsumosController {
             }
 
             if (totalItems === 0) {
+
+                const hasFilters = statusFilter || setorNameFilter || skuFilter || nameFilter;
                 const msg = statusFilter
                     ? `Nenhum Insumo com encontrado com o status: "${statusFilter}"`
                     : "Nenhum Insumo disponível."
@@ -86,9 +105,14 @@ class InsumosController {
                     totalPages: totalPages,
                     currentPage: page,
                     itemsPerPage: limit,
-                    filterApplied: statusFilter || null
+                    filterApplied: {
+                        status: statusFilter || null,
+                        setorName: setorNameFilter || null,
+                        sku: skuFilter || null,
+                        name: nameFilter || null
+                    }
                 }
-            });
+                });
 
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar insumos." })

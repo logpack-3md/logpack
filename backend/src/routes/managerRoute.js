@@ -4,6 +4,7 @@ import InsumosController from '../controllers/InsumoController.js';
 import SetorController from "../controllers/SetorController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 import { uploadSingleImage } from '../middlewares/upload.js';
+import BuyerController from '../controllers/BuyerController.js';
 
 const router = express.Router()
 
@@ -24,6 +25,14 @@ router.put('/insumos/:id',
     AuthMiddleware.isManager,
     uploadSingleImage,
     InsumosController.updateItem
+)
+
+router.get('/compras',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isManager,
+    // AuthMiddleware.isBuyer,
+    BuyerController.getCompras
 )
 
 // setar status de insumo (ativo/inativo) por id
