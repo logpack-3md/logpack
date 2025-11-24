@@ -89,15 +89,10 @@ class UserController {
     static async updateUser(req, res) {
         const file = req.file
         let imageUrl = null
-        const { id } = req.params
         const userId = req.user.id
 
         try {
-            if (id !== userId) {
-                return res.status(403).json({ message: "Acesso negado: Você só pode atualizar o seu próprio perfil." })
-            }
-
-            const oldDataJson = await User.findByPk(id)
+            const oldDataJson = await User.findByPk(userId)
             if (!oldDataJson) {
                 return res.status(404).json({ message: "Usuário não encontrado." })
             }
@@ -137,14 +132,14 @@ class UserController {
             }
 
             const [rowsAffected] = await User.update(updateData, {
-                where: { id: id }
+                where: { id: userId }
             })
 
             if (rowsAffected === 0) {
                 return res.status(200).json({ message: "Nenhuma alteração detectada. Usuário permanece o mesmo." })
             }
 
-            const newDataJson = await User.findByPk(id)
+            const newDataJson = await User.findByPk(userId)
 
             await UserLog.create({
                 userId: userId,

@@ -12,19 +12,20 @@ router.get('/profile',
     UserController.seeProfile
 )
 
+// atualizar seu perfil
+router.put('/profile',
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    uploadSingleImage,
+    UserController.updateUser
+)
+
 // cadastro
 router.post('/',
     uploadSingleImage,
     UserController.createUser
 )
 
-// atualizar seu perfil
-router.put('/:id',
-    AuthMiddleware.verifyToken,
-    AuthMiddleware.isActiveUser,
-    uploadSingleImage,
-    UserController.updateUser
-)
 
 //login
 
