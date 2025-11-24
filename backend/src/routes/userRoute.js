@@ -22,6 +22,7 @@ router.post('/',
 router.put('/:id',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
+    uploadSingleImage,
     UserController.updateUser
 )
 

@@ -27,7 +27,7 @@ export default function DynamicDashboard({ params }) {
     const Component = RoleComponentMap[role];
 
     if (!Component) {
-        return <h1>Acesso Negado ou Role Desconhecida</h1>;
+        return <h1>Conta precisa ser autorizada por administrador ou cargo desconhecido</h1>;
     }
 
     return <Component />;
