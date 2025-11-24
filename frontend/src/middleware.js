@@ -28,10 +28,13 @@ function getRoleFromToken(req) {
 
   const decoded = decodeJwt(token);
 
+  if (decoded.status === 'pendente' || decoded.status === 'inativo') {
+    return decoded.status
+  }
+
   if (decoded && decoded.role) {
     return decoded.role.toLowerCase();
   }
-
 
   return null;
 }
@@ -62,7 +65,7 @@ export function middleware(req) {
             segments[1] = userRole; 
             const newPath = '/' + segments.join('/');
 
-            console.log(`MIDDLEWARE: Usuário ${userRole} redirecionado de ${pathname} para ${newPath}`);
+            // console.log(`MIDDLEWARE: Usuário ${userRole} redirecionado de ${pathname} para ${newPath}`);
             return NextResponse.redirect(new URL(newPath, req.url));
             
         } else if (!urlRole && pathname === targetBase) {
