@@ -108,7 +108,7 @@ const Login = () => {
                       <div className="flex items-center justify-between">
                         <FormLabel>Senha</FormLabel>
                         <Link
-                          href="#"
+                          href="dashboard"
                           className="text-sm font-medium text-muted-foreground hover:underline"
                         >
                           Esqueceu senha?
@@ -147,4 +147,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export { Login };
