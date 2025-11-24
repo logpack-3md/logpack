@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Loader2, 
   AlertCircle, 
@@ -28,6 +28,19 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+
+// --- IMPORTAÇÕES NOVAS PARA O MODAL DE CONFIRMAÇÃO ---
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 import { useUsers } from '@/hooks/useUsers';
 import clsx from 'clsx';
 
@@ -83,10 +96,14 @@ export function ListUsers() {
     setStatus,
   } = useUsers();
 
+  // --- NOVOS ESTADOS PARA CONTROLAR O MODAL ---
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [userToToggle, setUserToToggle] = useState(null);
+
   const totalPages = Math.ceil(totalItems / pageSize);
   const isActionDisabled = loading || isUpdating;
 
-  // Funções de Navegação (Mantidas)
+  // Funções de Navegação
   const handlePrevious = () => {
     if (currentPage > 0) setPage(currentPage - 1);
   };
@@ -95,11 +112,27 @@ export function ListUsers() {
     if (currentPage < totalPages - 1) setPage(currentPage + 1);
   };
 
-  const handleSetStatus = (user) => {
-    const newStatus = user.status === 'ativo' ? 'inativo' : 'ativo';
-    const userId = user.id || user._id;
-    console.log(`Tentando mudar o status do usuário ${userId} para ${newStatus}`);
-    setStatus(userId, newStatus);
+  // 1. Ao clicar no botão da tabela, apenas abrimos o modal e salvamos o usuário
+  const handleClickToggleStatus = (user) => {
+    setUserToToggle(user);
+    setIsDialogOpen(true);
+  };
+
+  // 2. Esta função é chamada quando o usuário clica em "Continuar" no modal
+  const handleConfirmStatusChange = async () => {
+    if (!userToToggle) return;
+
+    const userId = userToToggle.id || userToToggle._id;
+    const newStatus = userToToggle.status === 'ativo' ? 'inativo' : 'ativo';
+
+    console.log(`Confirmado: Mudando status do usuário ${userId} para ${newStatus}`);
+    
+    // Chama a função do hook
+    await setStatus(userId, newStatus);
+    
+    // Limpa o estado e fecha o modal
+    setIsDialogOpen(false);
+    setUserToToggle(null);
   };
 
   if (loading && users.length === 0) {
@@ -151,7 +184,6 @@ export function ListUsers() {
               const userId = user.id || user._id;
               const isUserActive = user.status === 'ativo';
               
-              // Estilização customizada para o Badge
               const statusClasses = isUserActive
                 ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400";
@@ -193,7 +225,8 @@ export function ListUsers() {
                       variant={buttonVariant}
                       size="sm"
                       className="h-8 px-3 text-xs"
-                      onClick={() => handleSetStatus(user)}
+                      // AQUI: Mudamos para abrir o modal
+                      onClick={() => handleClickToggleStatus(user)}
                       disabled={isActionDisabled}
                     >
                       {buttonText}
@@ -240,7 +273,6 @@ export function ListUsers() {
             </PaginationContent>
           </Pagination>
 
-          {/* Seletor de Limite Estilizado */}
           <div className="relative">
              <select
               value={pageSize}
@@ -252,13 +284,52 @@ export function ListUsers() {
               <option value={20}>20 linhas</option>
               <option value={50}>50 linhas</option>
             </select>
-            {/* Ícone chevron para simular um select customizado */}
             <div className="pointer-events-none absolute right-3 top-2.5 opacity-50">
                <MoreHorizontal size={14} className="rotate-90"/>
             </div>
           </div>
         </div>
       </div>
+
+      {/* --- COMPONENTE DE CONFIRMAÇÃO --- */}
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {userToToggle?.status === 'ativo' ? 'Inativar Usuário?' : 'Ativar Usuário?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem certeza que deseja 
+              <span className="font-bold"> {userToToggle?.status === 'ativo' ? 'inativar' : 'ativar'} </span> 
+              o acesso de <span className="font-semibold text-foreground">{userToToggle?.name}</span>?
+              {userToToggle?.status === 'ativo' && (
+                <span className="block mt-2 text-red-500">
+                  O usuário perderá acesso ao sistema imediatamente.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdating}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmStatusChange}
+              disabled={isUpdating}
+              className={clsx(
+                userToToggle?.status === 'ativo' 
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                  : ""
+              )}
+            >
+              {isUpdating ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando</>
+              ) : (
+                "Confirmar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }

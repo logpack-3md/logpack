@@ -4,9 +4,13 @@ import { useState, useCallback, useEffect } from "react";
 import { api } from "@/lib/api"; 
 
 const USER_ENDPOINT = "admin"; 
+
 export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Estado para indicar que uma ação específica (update) está em andamento
+  const [isUpdating, setIsUpdating] = useState(false); 
 
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -20,14 +24,8 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
       : [];
 
   const [users, setUsers] = useState(initialUsersArray);
-
   const [hasInitialDataBeenProcessed, setHasInitialDataBeenProcessed] = useState(initialUsersArray.length > 0);
 
-  /**
-   * LER: Carrega ou recarrega a lista de usuários do backend com paginação.
-   * @param {number} pageIndex - O índice da página a ser carregada (base 0).
-   * @param {number} size - O número de itens por página.
-   */
   const loadUsers = useCallback(
     async (pageIndex, size) => {
       setLoading(true);
@@ -35,11 +33,12 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
 
       try {
         const apiPage = pageIndex + 1;
-  
+        // Chamada usando a lib/api.js
         const result = await api.get(`${USER_ENDPOINT}?page=${apiPage}&limit=${size}`);
 
-        if (result && result.error) {
-          setError(result.message || "Erro ao carregar lista de usuários.");
+        // Tratamento de erro conforme a sua lib (result.success === false)
+        if (result && result.success === false) {
+          setError(result.error || "Erro ao carregar lista de usuários.");
           setUsers([]);
           setTotalItems(0);
           return;
@@ -61,10 +60,9 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
         setLoading(false);
       }
     },
-    [USER_ENDPOINT]
+    []
   );
 
-  // Efeito para carregar os dados na montagem
   useEffect(() => {
     if (!hasInitialDataBeenProcessed && users.length === 0) {
       loadUsers(currentPage, pageSize);
@@ -72,31 +70,67 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
     }
   }, [hasInitialDataBeenProcessed, users.length, currentPage, pageSize, loadUsers]);
 
-  // Função para mudar a página (será chamada pelo componente de UI)
   const setPage = useCallback((pageIndex) => {
     if (pageIndex !== currentPage) {
       loadUsers(pageIndex, pageSize);
     }
   }, [currentPage, pageSize, loadUsers]);
 
-  // Função para mudar o tamanho da página (será chamada pelo componente de UI)
   const setLimit = useCallback((newSize) => {
     if (newSize !== pageSize) {
-      loadUsers(0, newSize); // Volta para a primeira página ao mudar o limite
+      loadUsers(0, newSize);
     }
   }, [pageSize, loadUsers]);
 
-  // ** Funções addUser, editUser, e deleteUser foram removidas **
+  // --- FUNÇÃO PARA ATIVAR/INATIVAR (setStatus) ---
+  const setStatus = useCallback(async (id, newStatus) => {
+    setIsUpdating(true);
+    let success = false;
+    
+    try {
+      // Faz o PUT para o endpoint de status, enviando o novo status no corpo
+      const result = await api.put(`${USER_ENDPOINT}/status/${id}`, { status: newStatus });
 
-  // Retorna apenas o estado e funções de paginação/carregamento
+      // Verifica se a API retornou sucesso (sem o flag success: false)
+      if (result && result.success !== false) {
+        success = true;
+        
+        // Atualiza a lista localmente (Optimistic UI)
+        setUsers((currentUsers) => 
+          currentUsers.map((user) => {
+              const currentUserId = user.id || user._id;
+              if (currentUserId === id) {
+                  return { ...user, status: newStatus };
+              }
+              return user;
+          })
+        );
+      } else {
+         // Trata erro e mostra Toast
+         console.error("Erro ao mudar status:", result?.error);
+         // Se você tiver acesso ao 'toast' do sonner aqui, use: 
+         // toast.error(result?.error || "Erro desconhecido ao atualizar status.");
+      }
+
+    } catch (error) {
+        console.error("Erro de rede:", error);
+        // toast.error("Falha na conexão com o servidor.");
+    } finally {
+        setIsUpdating(false);
+    }
+    return success;
+  }, []);
+
   return {
     users,
     loading,
+    isUpdating, // Retorna o estado de update
     error,
     totalItems,
-    currentPage, // 0-based
+    currentPage,
     pageSize,
     setPage,
     setLimit,
+    setStatus, // Retorna a função setStatus
   };
 }
