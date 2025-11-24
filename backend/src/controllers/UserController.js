@@ -87,6 +87,8 @@ class UserController {
     }
 
     static async updateUser(req, res) {
+        const file = req.file
+        let imageUrl = null
         const { id } = req.params
         const userId = req.user.id
 
@@ -95,35 +97,68 @@ class UserController {
                 return res.status(403).json({ message: "Acesso negado: Você só pode atualizar o seu próprio perfil." })
             }
 
+            const oldDataJson = await User.findByPk(id)
+            if (!oldDataJson) {
+                return res.status(404).json({ message: "Usuário não encontrado." })
+            }
+
+            const oldImageUrl = oldDataJson.image;
+
             const validatedUpdate = UserController.updateSchema.parse(req.body)
-            if (Object.keys(validatedUpdate).length === 0) {
+            let updateData = { ...validatedUpdate }
+
+            if (file) {
+                const filename = `${Date.now()}_${file.originalname}`
+
+                const blob = await put(
+                    filename,
+                    file.buffer,
+                    {
+                        access: 'public',
+                        contentType: file.mimetype,
+                    }
+                )
+
+                imageUrl = blob.url
+                updateData.image = imageUrl
+
+                if (oldImageUrl) {
+                    try {
+                        await del(oldImageUrl);
+                        console.log(`Imagem de perfil antiga excluída do Blob: ${oldImageUrl}`);
+                    } catch (error) {
+                        console.error(`Falha ao excluir imagem de perfil antiga do Blob (${oldImageUrl}):`, error);
+                    }
+                }
+            }
+
+            if (Object.keys(updateData).length === 0) {
                 return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização." })
             }
 
-            const oldDataJson = await User.findByPk(id)
-
-            const [rowsAffected] = await User.update(validatedUpdate, {
+            const [rowsAffected] = await User.update(updateData, {
                 where: { id: id }
             })
 
             if (rowsAffected === 0) {
-                const userExists = await User.findByPk(id);
-                if (!userExists) {
-                    return res.status(404).json({ message: "Usuário não encontrado." })
-                }
+                return res.status(200).json({ message: "Nenhuma alteração detectada. Usuário permanece o mesmo." })
             }
 
             const newDataJson = await User.findByPk(id)
 
             await UserLog.create({
                 userId: userId,
-                contextDetails: "Atualização de dados de usuário.",
+                contextDetails: "Atualização de dados de usuário e/ou imagem de perfil.",
                 actionType: 'UPDATE',
                 oldData: oldDataJson.toJSON(),
                 newData: newDataJson.toJSON()
             })
 
-            return res.status(200).json({ message: "Usuário atualizado com sucesso." })
+            return res.status(200).json({
+                message: "Usuário atualizado com sucesso.",
+                user: newDataJson
+            })
+            
         } catch (error) {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({

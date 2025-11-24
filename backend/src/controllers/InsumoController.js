@@ -272,7 +272,6 @@ class InsumosController {
 
             let updateData = { ...validatedUpdate }
 
-
             if (file) {
                 const filename = `${Date.now()}_${file.originalname}`
 
