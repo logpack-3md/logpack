@@ -82,17 +82,15 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     >
 
       <div className="flex items-center justify-between h-16 px-5 border-b border-sidebar-border shrink-0">
-        <Link 
-          href="/dashboard" 
-          onClick={handleLogoClick}
-          className="flex items-center gap-3 group outline-none"
-        >
+        <Link href="/dashboard" onClick={handleLogoClick}className="flex items-center gap-3 group outline-none">
+
           <div className="transition-transform duration-300 group-hover:scale-105">
             <LogoSite />
           </div>
           <h1 className="text-xl font-bold tracking-tight text-sidebar-foreground group-hover:text-primary transition-colors">
             LogPack
           </h1>
+          
         </Link>
 
         <button
@@ -115,7 +113,6 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                     onClick={() => handleSubmenuToggle(item.id)}
                     className={clsx(
                       'flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors outline-none group',
-                      // Lógica de Cores: Pai Ativo (se algum filho estiver ativo) ou Hover
                       activeMenu.startsWith(item.id) || Object.values(item.subItems).some(sub => sub.id === activeMenu)
                         ? 'text-sidebar-primary font-semibold' 
                         : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -156,7 +153,6 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                   )}
                 </div>
               ) : (
-                // Item sem submenu (Link direto)
                 <Link
                   href={item.href}
                   className={clsx(
@@ -175,6 +171,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
           ))}
         </ul>
       </nav>
+
     </aside>
   );
 }
