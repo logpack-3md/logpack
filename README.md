@@ -19,7 +19,11 @@
     - [**📨 Solicitação de Insumo**](#-solicitação-de-insumo)
   - [👑 **Administrador (Admin)**](#-administrador-admin)
     - [**👤 Gerenciamento de Usuários**](#-gerenciamento-de-usuários)
+  - [💡 **IOTs e dispositivos anexos (IOT)**](#-administrador-admin)
+    - [**📦 Gerenciamento de estoque**](#-gerenciamento-de-usuários)
   - [⚙ **Rotas Públicas**](#-rotas-públicas)
+- [**SEÇÃO 3: Manual Bridge**](#seção-1-introdução-ao-logpack)
+  
 
 ---
 
@@ -37,6 +41,8 @@ Cada usuário possui permissões específicas e claramente definidas:
 | **Manager**  | Gestão de setores, insumos e pedidos | Criar/editar setores e insumos, aprovar pedidos           |
 | **Buyer**    | Negociação e orçamentos              | Criar orçamentos, renegociar valores, cancelar orçamentos |
 | **Employee** | Uso operacional                      | Solicitar insumos quando o volume está baixo              |
+| **IOT**      | Dispositivos de analise de estoque   | Enviar dados sobre o nivel de estoque              |
+
 
 ---
 
@@ -141,6 +147,16 @@ Gestão geral do sistema.
 | Alterar status  | `PUT /admin/status/{id}` | Ativa/desativa usuário |
 
 ---
+## 💡 **IOTs e dispositivos anexos (IOT)**
+
+Dispositivos responsaveis pela verificação e analise em tempo real do estoque.
+
+### **🏭 Gerenciamento de Setores**
+
+| Funcionalidade          | Endpoint                         | Descrição                                        |
+| ----------------------- | -------------------------------- | ------------------------------------------------ |
+| Atualizar estoque atual | `PUT /mqtt/update`               | Atualizar o estoque atual de um insumo           |
+| Atualizar estoque Max   | `PUT /mqtt/max_storage`          | Atualizar o estoque Maximo de um insumo          |
 
 ## ⚙ **Rotas Públicas**
 
@@ -156,3 +172,14 @@ Abertas para qualquer usuário autenticado.
 | Ver insumo      | `GET /insumos/{id}` | Detalhes              |
 | Listar setores  | `GET /setor`        | Paginação             |
 | Ver setor       | `GET /setor/{id}`   | Detalhes              |
+
+# **SEÇÃO 3: Bridge**
+
+O **LogPack** consta com um microserviço integrado a sua aplicações, onde periodicamente analise e verifica o nivel de estoque atual, etc; sendo totalmente autonomo
+
+## 🔐 **Manual Bridge**
+
+Ele deve ser iniciado em uma outra repartição do seu servidor, alterando pequenas varaiveis, como o endereço do servidor e o ip do broker, após iniciar com o comando node bridge.js, ele estará
+pronto para sua funcionalidade
+
+
