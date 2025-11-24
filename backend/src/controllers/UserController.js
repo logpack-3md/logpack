@@ -10,14 +10,54 @@ class UserController {
         cpf: z.string().refine(validarCpf, { error: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
         email: z.email({ error: "Digite um email válido." }),
         password: z.string().min(6, { error: "A senha deve conter no mínimo 6 caracteres." }),
+        confirmPassword: z.string(),
         role: z.enum(['employee', 'admin', 'buyer', 'manager'], { error: "A função é obrigatória." })
+    }).superRefine((data, ctx) => {
+        if (data.password) {
+            if (!data.confirmPassword) {
+                ctx.addIssue({
+                    code: "custom",
+                    message: "A confirmação de senha é obrigatória ao alterar a senha.",
+                    path: ['confirmPassword'],
+                });
+                return;
+            }
+
+            if (data.password !== data.confirmPassword) {
+                ctx.addIssue({
+                    code: "custom",
+                    message: "As senhas não coincidem.",
+                    path: ['confirmPassword'],
+                });
+            }
+        }
     });
 
     static updateSchema = z.object({
-        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
-        password: z.string().min(6, { error: "A senha deve conter no mínimo 6 caracteres." }),
-        email: z.email({ error: "Digite um email válido." }),
-    }).partial();
+        name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }).optional(),
+        email: z.string().email({ message: "Digite um email válido." }).optional(),
+        password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }).optional(),
+        confirmPassword: z.string().optional(),
+    }).partial().superRefine((data, ctx) => {
+        if (data.password) {
+            if (!data.confirmPassword) {
+                ctx.addIssue({
+                    code: "custom",
+                    message: "A confirmação de senha é obrigatória ao alterar a senha.",
+                    path: ['confirmPassword'],
+                });
+                return;
+            }
+
+            if (data.password !== data.confirmPassword) {
+                ctx.addIssue({
+                    code: "custom",
+                    message: "As senhas não coincidem.",
+                    path: ['confirmPassword'],
+                });
+            }
+        }
+    });
 
     static async createUser(req, res) {
         const file = req.file;
@@ -153,7 +193,7 @@ class UserController {
                 message: "Usuário atualizado com sucesso.",
                 user: newDataJson
             })
-            
+
         } catch (error) {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({
