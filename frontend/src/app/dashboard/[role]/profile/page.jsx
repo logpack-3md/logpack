@@ -8,7 +8,7 @@ import {
   SafetyCertificateOutlined,
   PhoneOutlined,
 } from "@ant-design/icons";
-import Sidebar from "@/components/layout/sidebar";
+import Sidebar from "@/components/layout/sidebar-admin";
 import { api } from "@/lib/api";
 
 export default function ProfilePage() {
