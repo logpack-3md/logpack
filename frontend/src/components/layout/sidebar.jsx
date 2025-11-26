@@ -115,7 +115,6 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                     onClick={() => handleSubmenuToggle(item.id)}
                     className={clsx(
                       'flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors outline-none group',
-                      // Lógica de Cores: Pai Ativo (se algum filho estiver ativo) ou Hover
                       activeMenu.startsWith(item.id) || Object.values(item.subItems).some(sub => sub.id === activeMenu)
                         ? 'text-sidebar-primary font-semibold' 
                         : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
