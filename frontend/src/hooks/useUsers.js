@@ -121,6 +121,44 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
     return success;
   }, []);
 
+  const editUser = useCallback(async (id, data) => {
+    setIsUpdating(true);
+    let success = false;
+    
+    try {
+      // Faz o PUT para o endpoint de atualização /admin/users/:id
+      // A rota é apenas o USER_ENDPOINT, pois o ID já está no caminho
+      const result = await api.put(`${USER_ENDPOINT}/${id}`, data); 
+
+      if (result && result.success !== false) {
+        success = true;
+        
+        // Atualiza a lista localmente (Optimistic UI)
+        setUsers((currentUsers) => 
+          currentUsers.map((user) => {
+              const currentUserId = user.id || user._id;
+              if (currentUserId === id) {
+                  return { ...user, ...data }; // Aplica as novas alterações (name e role)
+              }
+              return user;
+          })
+        );
+        // Exibe feedback de sucesso, se necessário
+        // toast.success("Usuário atualizado com sucesso!");
+
+      } else {
+         console.error("Erro ao editar usuário:", result?.error);
+         // toast.error(result?.error || "Erro ao atualizar usuário.");
+      }
+
+    } catch (error) {
+        console.error("Erro de rede ao editar usuário:", error);
+    } finally {
+        setIsUpdating(false);
+    }
+    return success;
+  }, []);
+
   return {
     users,
     loading,
@@ -132,5 +170,6 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
     setPage,
     setLimit,
     setStatus, // Retorna a função setStatus
+    editUser
   };
 }
