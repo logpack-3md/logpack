@@ -3,12 +3,13 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import ManagerDashboard from './components/ManagerDashboard';
 import AdminDashboard from './components/AdminDashboard/page';
+import BuyerDashboard from './components/BuyerDashboard/page';
 
 const RoleComponentMap = {
     'admin': () => <AdminDashboard />,
     'manager': ManagerDashboard,
     'employee': () => <div>Employee Dashboard</div>,
-    'buyer': () => <div>Buyer Dashboard</div>,
+    'buyer': () => <BuyerDashboard />,
 };
 
 export default function DynamicDashboard({ params }) {
