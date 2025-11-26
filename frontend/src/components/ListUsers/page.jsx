@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Loader2, 
-  AlertCircle, 
-  Inbox, 
-  CheckCircle2, 
+import {
+  Loader2,
+  AlertCircle,
+  Inbox,
+  CheckCircle2,
   XCircle,
-  MoreHorizontal 
+  MoreHorizontal
 } from 'lucide-react';
 
 // Importações do Shadcn/ui
@@ -99,11 +99,8 @@ export function ListUsers() {
   // --- NOVOS ESTADOS PARA CONTROLAR O MODAL ---
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [userToToggle, setUserToToggle] = useState(null);
-
   const totalPages = Math.ceil(totalItems / pageSize);
   const isActionDisabled = loading || isUpdating;
-
-  // Funções de Navegação
   const handlePrevious = () => {
     if (currentPage > 0) setPage(currentPage - 1);
   };
@@ -121,16 +118,12 @@ export function ListUsers() {
   // 2. Esta função é chamada quando o usuário clica em "Continuar" no modal
   const handleConfirmStatusChange = async () => {
     if (!userToToggle) return;
-
     const userId = userToToggle.id || userToToggle._id;
     const newStatus = userToToggle.status === 'ativo' ? 'inativo' : 'ativo';
 
     console.log(`Confirmado: Mudando status do usuário ${userId} para ${newStatus}`);
-    
-    // Chama a função do hook
+
     await setStatus(userId, newStatus);
-    
-    // Limpa o estado e fecha o modal
     setIsDialogOpen(false);
     setUserToToggle(null);
   };
@@ -165,101 +158,113 @@ export function ListUsers() {
 
   return (
     <div className="space-y-4">
-      {/* Container da Tabela com estilo de Card */}
       <div className="rounded-md border bg-card text-card-foreground shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead className="w-[100px] font-semibold">ID</TableHead>
-              <TableHead className="font-semibold">Nome</TableHead>
-              <TableHead className="font-semibold hidden md:table-cell">Email</TableHead>
-              <TableHead className="font-semibold">Função</TableHead>
-              <TableHead className="font-semibold text-center">Status</TableHead>
-              <TableHead className="text-right font-semibold">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-[100px] font-semibold hidden sm:table-cell">ID</TableHead>
+                <TableHead className="font-semibold min-w-[150px]">Nome</TableHead>
+                <TableHead className="font-semibold hidden md:table-cell">Email</TableHead>
+                <TableHead className="font-semibold hidden lg:table-cell">Função</TableHead>
+                <TableHead className="font-semibold text-center">Status</TableHead>
+                <TableHead className="text-right font-semibold">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
 
-          <TableBody>
-            {users.map((user) => {
-              const userId = user.id || user._id;
-              const isUserActive = user.status === 'ativo';
-              
-              const statusClasses = isUserActive
-                ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400";
+            <TableBody>
+              {users.map((user) => {
+                const userId = user.id || user._id;
+                const isUserActive = user.status === 'ativo';
+                const statusClasses = isUserActive
+                  ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400";
+                const buttonText = isUserActive ? "Inativar" : "Ativar";
+                const buttonVariant = isUserActive ? "destructive" : "outline";
 
-              const buttonText = isUserActive ? "Inativar" : "Ativar";
-              const buttonVariant = isUserActive ? "destructive" : "outline";
+                return (
+                  <TableRow key={userId} className="hover:bg-muted/30 transition-colors">
 
-              return (
-                <TableRow key={userId} className="hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {userId.substring(0, 8)}...
-                  </TableCell>
-                  <TableCell className="font-medium text-foreground">
-                    {user.name || 'N/A'}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">
-                    {user.email || 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="capitalize">{user.role || 'N/A'}</span>
-                    </div>
-                  </TableCell>
+                    {/* ID Cell */}
+                    <TableCell className="font-mono text-xs text-muted-foreground hidden sm:table-cell">
+                      {userId.substring(0, 8)}...
+                    </TableCell>
 
-                  {/* Coluna Status */}
-                  <TableCell className="text-center">
-                    <Badge 
-                      variant="outline" 
-                      className={clsx("capitalize shadow-none border-0 font-medium", statusClasses)}
-                    >
-                      {isUserActive ? <CheckCircle2 size={12} className="mr-1" /> : <XCircle size={12} className="mr-1" />}
-                      {user.status || 'N/D'}
-                    </Badge>
-                  </TableCell>
+                    <TableCell className="font-medium text-foreground">
+                      <div className="flex flex-col">
+                        <span>{user.name || 'N/A'}</span>
+                        <span className="md:hidden text-xs text-muted-foreground font-normal">
+                          {user.email}
+                        </span>
+                      </div>
+                    </TableCell>
 
-                  {/* Coluna Ações */}
-                  <TableCell className="text-right">
-                    <Button
-                      variant={buttonVariant}
-                      size="sm"
-                      className="h-8 px-3 text-xs"
-                      // AQUI: Mudamos para abrir o modal
-                      onClick={() => handleClickToggleStatus(user)}
-                      disabled={isActionDisabled}
-                    >
-                      {buttonText}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    {/* Email Cell */}
+                    <TableCell className="hidden md:table-cell text-muted-foreground">
+                      {user.email || 'N/A'}
+                    </TableCell>
+
+                    {/* Role Cell */}
+                    <TableCell className="hidden lg:table-cell">
+                      <div className="flex items-center gap-2">
+                        <span className="capitalize">{user.role || 'N/A'}</span>
+                      </div>
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className={clsx("capitalize shadow-none border-0 font-medium whitespace-nowrap", statusClasses)}>
+                        {isUserActive ? <CheckCircle2 size={12} className="mr-1" /> : <XCircle size={12} className="mr-1" />}
+                        {user.status || 'N/D'}
+                      </Badge>
+                    </TableCell>
+
+                    {/* Coluna Ações */}
+                    <TableCell className="text-right">
+                      <Button
+                        variant={buttonVariant}
+                        size="sm"
+                        className="h-8 px-3 text-xs"
+                        onClick={() => handleClickToggleStatus(user)}
+                        disabled={isActionDisabled}
+                      >
+                        {buttonText}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      {/* Footer: Paginação e Controle de Limite */}
-      <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 py-2">
-        
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-2">
+
+        <div className="text-sm text-muted-foreground text-center sm:text-left">
           Mostrando <span className="font-medium text-foreground">{users.length}</span> de <span className="font-medium text-foreground">{totalItems}</span> registros.
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto justify-center">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
                   onClick={handlePrevious}
                   className={clsx(
-                    "cursor-pointer select-none", 
+                    "cursor-pointer select-none",
                     (currentPage === 0 || isActionDisabled) && "pointer-events-none opacity-50"
                   )}
                 />
               </PaginationItem>
 
-              {generatePaginationLinks(currentPage, totalPages, setPage)}
+              <div className="hidden xs:flex">
+                {generatePaginationLinks(currentPage, totalPages, setPage)}
+              </div>
+
+              <div className="xs:hidden text-sm flex items-center px-2">
+                Pág {currentPage + 1}
+              </div>
 
               <PaginationItem>
                 <PaginationNext
@@ -274,7 +279,7 @@ export function ListUsers() {
           </Pagination>
 
           <div className="relative">
-             <select
+            <select
               value={pageSize}
               onChange={(e) => setLimit(Number(e.target.value))}
               disabled={isActionDisabled}
@@ -285,7 +290,7 @@ export function ListUsers() {
               <option value={50}>50 linhas</option>
             </select>
             <div className="pointer-events-none absolute right-3 top-2.5 opacity-50">
-               <MoreHorizontal size={14} className="rotate-90"/>
+              <MoreHorizontal size={14} className="rotate-90" />
             </div>
           </div>
         </div>
@@ -293,14 +298,14 @@ export function ListUsers() {
 
       {/* --- COMPONENTE DE CONFIRMAÇÃO --- */}
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95%] max-w-lg rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {userToToggle?.status === 'ativo' ? 'Inativar Usuário?' : 'Ativar Usuário?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Você tem certeza que deseja 
-              <span className="font-bold"> {userToToggle?.status === 'ativo' ? 'inativar' : 'ativar'} </span> 
+              Você tem certeza que deseja
+              <span className="font-bold"> {userToToggle?.status === 'ativo' ? 'inativar' : 'ativar'} </span>
               o acesso de <span className="font-semibold text-foreground">{userToToggle?.name}</span>?
               {userToToggle?.status === 'ativo' && (
                 <span className="block mt-2 text-red-500">
@@ -309,14 +314,14 @@ export function ListUsers() {
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isUpdating}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogCancel disabled={isUpdating} className="mt-2 sm:mt-0">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleConfirmStatusChange}
               disabled={isUpdating}
               className={clsx(
-                userToToggle?.status === 'ativo' 
-                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                userToToggle?.status === 'ativo'
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   : ""
               )}
             >

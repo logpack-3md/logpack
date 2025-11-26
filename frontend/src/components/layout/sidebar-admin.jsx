@@ -23,27 +23,7 @@ import clsx from 'clsx';
 import { LogoSite } from "@/components/ui/icons-geral";
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-  {
-    id: 'painel-geral',
-    label: 'Painel Geral',
-    icon: BarChart2,
-    subItems: [
-      { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' },
-      { id: 'estoque', label: 'Estoque', icon: PackageOpen, href: '/dashboard/manager/setores' },
-      { id: 'relatorios', label: 'Relatórios', icon: FileCheck2, href: '/dashboard/relatorios' },
-    ],
-  },
-  {
-    id: 'operacoes',
-    label: 'Operações',
-    icon: Wallet,
-    subItems: [
-      { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
-      { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/orcamentos' },
-      { id: 'notificacoes', label: 'Notificações', icon: Bell, href: '/dashboard/notificacoes' },
-    ],
-  },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' }, 
   {
     id: 'perfil-usuario',
     label: 'Perfil do Usuário',
