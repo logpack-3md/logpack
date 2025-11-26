@@ -8,7 +8,6 @@ export function getTokenFromCookie(ctx) {
     return match ? match[2] : null;
   } else if (typeof window !== "undefined") {
     const match = document.cookie.match(/(^|;)\s*token=([^;]*)/);
-    2;
     return match ? match[2] : null;
   }
   return null;
@@ -16,22 +15,27 @@ export function getTokenFromCookie(ctx) {
 
 export async function apiFetch(path, options = {}) {
   const token = getTokenFromCookie();
+
   const headers = {
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
 
-  // NUNCA define Content-Type manualmente com FormData (o navegador faz sozinho com boundary)
-  if (!(options.body instanceof FormData)) {
+  // ⛔ NÃO definir Content-Type manualmente se o body for FormData
+  const isFormData = options.body instanceof FormData;
+  if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
-      ...options,
-      headers,
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}${path}`,
+      {
+        ...options,
+        headers,
+        credentials: "include",
+      }
+    );
 
     const contentType = response.headers.get("content-type");
     const isJson = contentType && contentType.includes("application/json");
@@ -45,7 +49,10 @@ export async function apiFetch(path, options = {}) {
       "Não há registros",
       "Sem resultados",
     ];
-    const ehMensagemNormal = data?.message && mensagensNormais.some(m => data.message.includes(m));
+
+    const ehMensagemNormal =
+      data?.message &&
+      mensagensNormais.some((m) => data.message.includes(m));
 
     if (response.status === 401) {
       toast.error("Sessão expirada. Faça login novamente.");
@@ -91,6 +98,12 @@ export const api = {
   put: (path, body) =>
     apiFetch(path, {
       method: "PUT",
+      body: body instanceof FormData ? body : JSON.stringify(body),
+    }),
+
+  patch: (path, body) =>
+    apiFetch(path, {
+      method: "PATCH",
       body: body instanceof FormData ? body : JSON.stringify(body),
     }),
 

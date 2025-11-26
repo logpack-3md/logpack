@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Card, Avatar, Descriptions, message } from "antd";
+import { Card, Avatar, Descriptions, message, Upload, Spin } from "antd";
+import { UploadOutlined, CameraOutlined } from "@ant-design/icons";
 import Sidebar from "@/components/layout/sidebar";
 import { api } from "@/lib/api";
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  const fileInputRef = useRef();
+  const [uploading, setUploading] = useState(false); // novo estado pro upload
+  const fileInputRef = useRef(null);
 
   const [user, setUser] = useState({
     name: "Carregando...",
@@ -21,36 +23,71 @@ export default function ProfilePage() {
   // BUSCAR PERFIL
   // =============================================
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await api.get("users/profile");
-
-        // Backend retorna direto o objeto
-        const data = response;
-
-        if (!data) {
-          message.error("Erro: backend não enviou o perfil corretamente.");
-          return;
-        }
-
-        setUser({
-          name: data.name,
-          email: data.email,
-          role: data.role,
-          phone: data.phone ?? "",
-          image: data.image ?? null,
-        });
-
-      } catch (err) {
-        console.log(err);
-        message.error("Erro ao carregar perfil");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUser();
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const response = await api.get("users/profile");
+      setUser({
+        name: response.name || "Usuário",
+        email: response.email || "",
+        role: response.role || "",
+        phone: response.phone ?? "",
+        image: response.image ?? null,
+      });
+    } catch (err) {
+      console.error(err);
+      message.error("Erro ao carregar perfil");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =============================================
+  // UPLOAD DE FOTO
+  // =============================================
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    if (file.size > 5 * 1024 * 1024) {
+      message.error("A imagem deve ter no máximo 5MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      message.error("Por favor selecione uma imagem válida");
+      return;
+    }
+  
+    const previewUrl = URL.createObjectURL(file);
+    setUser((prev) => ({ ...prev, image: previewUrl }));
+  
+    const formData = new FormData();
+    formData.append("image", file);
+  
+    setUploading(true);
+    try {
+      const response = await api.put("users/profile", formData);
+  
+      setUser((prev) => ({
+        ...prev,
+        image: response.user.image,
+      }));
+  
+      message.success("Foto de perfil atualizada com sucesso!");
+    } catch (err) {
+      console.error("Erro ao atualizar foto:", err);
+      message.error("Não foi possível atualizar a foto");
+      fetchUser();
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Avatar - iniciais
   const getInitials = (name) => {
@@ -80,19 +117,41 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Meu Perfil</h1>
 
           <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden" loading={loading}>
-            {/* Header */}
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 p-10 text-white">
+            {/* Header com foto clicável */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-10 text-white relative">
               <div className="flex flex-col md:flex-row items-center gap-8">
-
-                {/* Avatar */}
-                <div className="relative cursor-pointer">
-                  <Avatar
-                    size={140}
-                    src={user.image ? user.image : null}
-                    className="border-6 border-white shadow-2xl text-5xl font-bold bg-gradient-to-br from-blue-500 to-indigo-600"
+                {/* Avatar clicável + overlay de upload */}
+                <div className="relative group">
+                  <div
+                    className="cursor-pointer"
+                    onClick={handleAvatarClick}
                   >
-                    {!user.image && getInitials(user.name)}
-                  </Avatar>
+                    <Avatar
+                      size={140}
+                      src={user.image}
+                      className="border-8 border-white shadow-2xl text-5xl font-bold bg-gradient-to-br from-blue-500 to-indigo-600 transition-all group-hover:opacity-80"
+                    >
+                      {!user.image && getInitials(user.name)}
+                    </Avatar>
+
+                    {/* Overlay com ícone de câmera */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                      {uploading ? (
+                        <Spin size="large" />
+                      ) : (
+                        <CameraOutlined className="text-4xl text-white" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Input escondido */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
                 </div>
 
                 {/* Nome e dados */}
@@ -101,7 +160,6 @@ export default function ProfilePage() {
                   <p className="text-xl opacity-90 mt-2">{user.role}</p>
                   <p className="text-lg opacity-80 mt-1">{user.email}</p>
                 </div>
-
               </div>
             </div>
 
@@ -122,7 +180,6 @@ export default function ProfilePage() {
                 </Descriptions.Item>
               </Descriptions>
             </div>
-
           </Card>
         </div>
       </div>
