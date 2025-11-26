@@ -8,8 +8,7 @@ import {
     XCircle,
     MoreHorizontal,
     Pencil, 
-    Power, // Novo ícone de Power/Status
-    // Outros ícones se quiser (e.g., Lock, Unlock, Zap)
+    Power,
 } from 'lucide-react';
 
 // Importações do Shadcn/ui (todas as necessárias)
@@ -115,7 +114,7 @@ export function ListUsers() {
         setPage,
         setLimit,
         setStatus,
-        editUser, // Pegamos a nova função
+        editUser,
     } = useUsers();
 
     // --- ESTADOS PARA O MODAL DE STATUS (AlertDialog) ---
@@ -187,18 +186,29 @@ export function ListUsers() {
 
         const userId = editingUser.id;
         
-        // Constrói o objeto de dados APENAS com o que mudou (Backend espera name e/ou role)
+        // Constrói o objeto de dados APENAS com o que mudou
         const updateData = {};
+        
+        // CORREÇÃO: Verifica se o nome mudou E se não está vazio
         if (editFormData.name !== editingUser.name && editFormData.name.trim() !== '') {
             updateData.name = editFormData.name.trim();
         }
-        if (editFormData.role !== editingUser.role && editFormData.role.trim() !== '') {
-            updateData.role = editFormData.role.trim();
+        
+        // CORREÇÃO: Verifica se a função mudou (sem checagem de trim(), pois é um Select)
+        if (editFormData.role !== editingUser.role) {
+            updateData.role = editFormData.role;
         }
         
         // Se nada mudou, fecha e sai.
         if (Object.keys(updateData).length === 0) {
             setIsEditModalOpen(false);
+            return;
+        }
+
+        // Verifica se o formulário está válido antes de chamar o backend
+        if (editFormData.name.trim() === '' || editFormData.role.trim() === '') {
+            // Este caso deve ser evitado pelo disabled do botão, mas é uma checagem de segurança.
+            console.error("Nome ou Função não podem ser vazios.");
             return;
         }
 
@@ -263,11 +273,8 @@ export function ListUsers() {
                                 ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400";
 
-                            // const buttonText = isUserActive ? "Inativar" : "Ativar"; // Não usado mais
-                            // const buttonVariant = isUserActive ? "destructive" : "outline"; // Não usado mais
-
                             // Lógica de ícone e cor para o botão de status
-                            const StatusIcon = isUserActive ? Power : Power; // Usando Power para ambos, mas a cor muda
+                            const StatusIcon = Power; 
                             const iconClass = isUserActive 
                                 ? "text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300" 
                                 : "text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300";
@@ -317,11 +324,11 @@ export function ListUsers() {
                                             <Pencil size={16} />
                                         </Button>
 
-                                        {/* ALTERAÇÃO AQUI: BOTÃO DE STATUS COM ÍCONE */}
+                                        {/* BOTÃO DE STATUS COM ÍCONE */}
                                         <Button
-                                            variant="ghost" // Usa ghost para que o ícone e a cor sejam o foco
+                                            variant="ghost" 
                                             size="icon"
-                                            className={clsx("h-8 w-8", iconClass)} // Aplica as classes de cor/hover
+                                            className={clsx("h-8 w-8", iconClass)} 
                                             onClick={() => handleClickToggleStatus(user)}
                                             disabled={isActionDisabled}
                                             title={iconTitle}
@@ -336,7 +343,7 @@ export function ListUsers() {
                 </Table>
             </div>
 
-            {/* Footer: Paginação e Controle de Limite (omitido para brevidade, mas está no código original) */}
+            {/* Footer: Paginação e Controle de Limite */}
             <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 py-2">
                 
                 <div className="text-sm text-muted-foreground">
@@ -427,13 +434,13 @@ export function ListUsers() {
                 </AlertDialogContent>
             </AlertDialog>
             
-            {/* --- NOVO MODAL DE EDIÇÃO DE USUÁRIO (FORMULÁRIO) --- */}
+            {/* --- MODAL DE EDIÇÃO DE USUÁRIO (FORMULÁRIO) --- */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Editar Usuário</DialogTitle>
                         <DialogDescription>
-                            Edite o nome e a função de **{editingUser?.email}**.
+                            Edite o nome e a função de {editingUser?.email} ({editingUser?.name}).
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveEdit}>
@@ -486,7 +493,11 @@ export function ListUsers() {
                             >
                                 Cancelar
                             </Button>
-                            <Button type="submit" disabled={isUpdating || !editFormData.name || !editFormData.role}>
+                            <Button 
+                                type="submit" 
+                                // O botão é desabilitado se estiver atualizando OU se nome/função estiverem vazios.
+                                disabled={isUpdating || !editFormData.name.trim() || !editFormData.role.trim()} 
+                            >
                                 {isUpdating ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando</>
                                 ) : (
