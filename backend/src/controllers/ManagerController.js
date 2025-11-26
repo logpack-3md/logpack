@@ -208,30 +208,43 @@ class ManagerController {
         try {
             const { status } = statusSchema.parse(req.body)
 
-            const oldDataJson = await Insumos.findByPk(id)
+            const oldInsumo = await Insumos.findByPk(id)
+            if (!oldInsumo) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            }
 
-            const rowsAffected = await Insumos.update(
-                { status: status },
+            const oldDataJson = oldInsumo.toJSON()
+            let updateFields = { status: status };
+            let contextDetails = `Alteração de status do Insumo para ${status}.`;
+
+            if (status === 'inativo' && oldInsumo.setorName) {
+                updateFields.setorName = null;
+                contextDetails = `Alteração de status do Insumo para ${status} e desvinculação do Setor ${oldInsumo.setorName}.`;
+                console.log(`Insumo ${oldInsumo.name} será desativado e desvinculado do setor ${oldInsumo.setorName}.`);
+            }
+            
+            const [rowsAffected] = await Insumos.update(
+                updateFields, 
                 { where: { id: id } }
             )
 
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Insumo não encontrado." })
             }
-
-            const newDataJson = await Insumos.findByPk(id)
+            
+            const updatedInsumo = await Insumos.findByPk(id)
+            const newDataJson = updatedInsumo.toJSON()
 
             await InsumosLog.create({
                 userId: userId,
                 insumoId: id,
                 actionType: 'UPDATE',
-                contextDetails: "Alteração de status do Insumo",
-                oldData: oldDataJson.toJSON(),
-                newData: newDataJson.toJSON()
-
+                contextDetails: contextDetails,
+                oldData: oldDataJson,
+                newData: newDataJson  
             })
 
-            return res.status(200).json({ message: `Status de insumo alterado para ${status}` })
+            return res.status(200).json({ message: `Status de insumo alterado para ${status}.` })
 
         } catch (error) {
             if (error instanceof z.ZodError) {
@@ -302,7 +315,41 @@ class ManagerController {
         try {
             const { status } = statusSchema.parse(req.body)
 
-            const oldDataJson = await Setor.findByPk(id)
+            const oldSetor = await Setor.findByPk(id)
+            if (!oldSetor) {
+                return res.status(404).json({ message: "Setor não encontrado." })
+            }
+            const oldDataJson = oldSetor.toJSON()
+            let logContextDetails = `Atualização de status do setor para ${status}.`;
+
+            if (status === 'inativo') {
+                const insumoVinculado = await Insumos.findOne({
+                    where: { setorName: oldSetor.name }
+                });
+
+                if (insumoVinculado) {
+                    const oldInsumoData = insumoVinculado.toJSON();
+                    
+                    await Insumos.update(
+                        { setorName: null },
+                        { where: { id: insumoVinculado.id } }
+                    );
+                    
+                    const newInsumoData = { ...oldInsumoData, setorName: null };
+
+                    await InsumosLog.create({
+                        userId: gerenteId,
+                        insumoId: insumoVinculado.id,
+                        actionType: 'UPDATE',
+                        contextDetails: `Desvinculação automática: Setor ${oldSetor.name} foi desativado.`,
+                        oldData: oldInsumoData,
+                        newData: newInsumoData
+                    });
+                    
+                    logContextDetails += ` O insumo ${insumoVinculado.name} foi desvinculado.`;
+                    console.log(`Setor ${oldSetor.name} desativado e Insumo ${insumoVinculado.name} desvinculado.`);
+                }
+            }
 
             const [rowsAffected] = await Setor.update(
                 { status: status },
@@ -319,8 +366,8 @@ class ManagerController {
                 gerenteId: gerenteId,
                 setorId: newDataJson.id,
                 actionType: 'UPDATE',
-                contextDetails: "Atualização de status do setor.",
-                oldData: oldDataJson.toJSON(),
+                contextDetails: logContextDetails,
+                oldData: oldDataJson,
                 newData: newDataJson.toJSON()
             })
 

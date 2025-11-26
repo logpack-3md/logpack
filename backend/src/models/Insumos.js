@@ -24,7 +24,7 @@ Insumos.init({
 
     setorName: {
         type: DataTypes.STRING(6),
-        allowNull: false,
+        allowNull: true,
         unique: true
     },
 
