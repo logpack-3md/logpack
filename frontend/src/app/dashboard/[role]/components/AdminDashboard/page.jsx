@@ -6,12 +6,10 @@ import { ListUsers } from "@/components/ListUsers/page";
 import clsx from "clsx";
 
 export default function AdminDashboard() {
-  // Estado controla a visibilidade APENAS no mobile.
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
-      {/* 1. Overlay Escuro (Apenas Mobile) */}
       <div
         className={clsx(
           "fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-300",
@@ -20,13 +18,8 @@ export default function AdminDashboard() {
         onClick={() => setIsSidebarOpen(false)}
       />
 
-      {/* 2. Sidebar Component */}
-      <SidebarAdmin
-        isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
+      <SidebarAdmin isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)}/>
 
-      {/* 3. Conteúdo Principal */}
       <main className="flex flex-col min-h-screen transition-all duration-300 lg:ml-64">
 
         {/* Header Mobile */}
@@ -35,7 +28,8 @@ export default function AdminDashboard() {
             onClick={() => setIsSidebarOpen(true)}
             className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
             aria-label="Abrir menu"
-          >
+            >
+            
             <Menu size={24} />
           </button>
           <span className="font-bold text-lg tracking-tight text-foreground">LogPack</span>
