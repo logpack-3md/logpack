@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false); // novo estado pro upload
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const [user, setUser] = useState({
@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
           <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden" loading={loading}>
             {/* Header com foto clicável */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-10 text-white relative">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-700 p-10 text-white relative">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 {/* Avatar clicável + overlay de upload */}
                 <div className="relative group">
@@ -129,7 +129,7 @@ export default function ProfilePage() {
                     <Avatar
                       size={140}
                       src={user.image}
-                      className="border-8 border-white shadow-2xl text-5xl font-bold bg-gradient-to-br from-blue-500 to-indigo-600 transition-all group-hover:opacity-80"
+                      className="border-8 border-white shadow-2xl text-5xl font-bold bg-linear-to-br from-blue-500 to-indigo-600 transition-all group-hover:opacity-80"
                     >
                       {!user.image && getInitials(user.name)}
                     </Avatar>
