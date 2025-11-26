@@ -29,7 +29,7 @@ const menuItems = [
     label: 'Perfil do Usuário',
     icon: User,
     subItems: [
-      { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
+      { id: 'profile', label: 'Meu Perfil', icon: User, href: '/dashboard/manager/profile' },
       { id: 'configuracoes', label: 'Configurações', icon: Settings, href: '/dashboard/configuracoes' },
       { id: 'sair', label: 'Sair', icon: LogOut, href: '/' },
     ],
