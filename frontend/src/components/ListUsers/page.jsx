@@ -1,17 +1,15 @@
 'use client';
 import React, { useState, useMemo } from 'react';
-import { 
-    Loader2, 
-    AlertCircle, 
-    Inbox, 
-    CheckCircle2, 
+import {
+    Loader2,
+    AlertCircle,
+    Inbox,
+    CheckCircle2,
     XCircle,
     MoreHorizontal,
-    Pencil, 
+    Pencil,
     Power,
 } from 'lucide-react';
-
-// Importações do Shadcn/ui (todas as necessárias)
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -125,7 +123,7 @@ export function ListUsers() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [editFormData, setEditFormData] = useState({ name: '', role: '' });
-    
+
     // Roles permitidas (ajuste conforme seu backend espera)
     const availableRoles = useMemo(() => ['admin', 'manager', 'employee', 'buyer'], []);
 
@@ -155,19 +153,19 @@ export function ListUsers() {
         setIsDialogOpen(false);
         setUserToToggle(null);
     };
-    
+
     // --- LÓGICA DE EDIÇÃO (NOME/FUNÇÃO) ---
 
     const handleEditClick = (user) => {
         const userId = user.id || user._id;
         // Salva dados essenciais e preenche o formulário com dados atuais
-        setEditingUser({ 
-            id: userId, 
+        setEditingUser({
+            id: userId,
             email: user.email,
             name: user.name, // Guarda o original para checagem de mudança
             role: user.role  // Guarda o original para checagem de mudança
-        }); 
-        setEditFormData({ name: user.name || '', role: user.role || '' }); 
+        });
+        setEditFormData({ name: user.name || '', role: user.role || '' });
         setIsEditModalOpen(true);
     };
 
@@ -185,20 +183,20 @@ export function ListUsers() {
         if (!editingUser || isUpdating) return;
 
         const userId = editingUser.id;
-        
+
         // Constrói o objeto de dados APENAS com o que mudou
         const updateData = {};
-        
+
         // CORREÇÃO: Verifica se o nome mudou E se não está vazio
         if (editFormData.name !== editingUser.name && editFormData.name.trim() !== '') {
             updateData.name = editFormData.name.trim();
         }
-        
+
         // CORREÇÃO: Verifica se a função mudou (sem checagem de trim(), pois é um Select)
         if (editFormData.role !== editingUser.role) {
             updateData.role = editFormData.role;
         }
-        
+
         // Se nada mudou, fecha e sai.
         if (Object.keys(updateData).length === 0) {
             setIsEditModalOpen(false);
@@ -217,9 +215,9 @@ export function ListUsers() {
         if (success) {
             setIsEditModalOpen(false);
             setEditingUser(null);
-        } 
+        }
     };
-    
+
     if (loading && users.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-muted/10 animate-pulse">
@@ -250,17 +248,18 @@ export function ListUsers() {
 
     return (
         <div className="space-y-4">
-            {/* Container da Tabela */}
-            <div className="rounded-md border bg-card text-card-foreground shadow-sm overflow-hidden">
-                <Table>
+
+            <div className="rounded-md border bg-card text-card-foreground shadow-sm overflow-hidden overflow-x-auto">
+
+                <Table className="min-w-full ">
                     <TableHeader className="bg-muted/50">
                         <TableRow>
-                            <TableHead className="w-[100px] font-semibold">ID</TableHead>
-                            <TableHead className="font-semibold">Nome</TableHead>
+                            <TableHead className="w-[80px] font-semibold hidden sm:table-cell">ID</TableHead>
+                            <TableHead className="font-semibold min-w-[120px]">Nome</TableHead>
                             <TableHead className="font-semibold hidden md:table-cell">Email</TableHead>
-                            <TableHead className="font-semibold">Função</TableHead>
-                            <TableHead className="font-semibold text-center">Status</TableHead>
-                            <TableHead className="text-right font-semibold">Ações</TableHead>
+                            <TableHead className="font-semibold whitespace-nowrap">Função</TableHead>
+                            <TableHead className="font-semibold text-center whitespace-nowrap">Status</TableHead>
+                            <TableHead className="text-right font-semibold min-w-[100px]">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
 
@@ -268,40 +267,47 @@ export function ListUsers() {
                         {users.map((user) => {
                             const userId = user.id || user._id;
                             const isUserActive = user.status === 'ativo';
-                            
+
                             const statusClasses = isUserActive
                                 ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400";
 
-                            // Lógica de ícone e cor para o botão de status
-                            const StatusIcon = Power; 
-                            const iconClass = isUserActive 
-                                ? "text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300" 
+                            const StatusIcon = Power;
+                            const iconClass = isUserActive
+                                ? "text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
                                 : "text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300";
                             const iconTitle = isUserActive ? "Inativar Acesso" : "Ativar Acesso";
 
 
                             return (
                                 <TableRow key={userId} className="hover:bg-muted/30 transition-colors">
-                                    <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {/* ID oculto em mobile */}
+                                    <TableCell className="font-mono text-xs text-muted-foreground hidden sm:table-cell">
                                         {userId.substring(0, 8)}...
                                     </TableCell>
+
                                     <TableCell className="font-medium text-foreground">
-                                        {user.name || 'N/A'}
+                                        <div className="flex flex-col">
+                                            <span>{user.name || 'N/A'}</span>
+                                            <span className="md:hidden text-xs text-muted-foreground font-normal">
+                                                {user.email}
+                                            </span>
+                                        </div>
                                     </TableCell>
+
                                     <TableCell className="hidden md:table-cell text-muted-foreground">
                                         {user.email || 'N/A'}
                                     </TableCell>
-                                    <TableCell>
+
+                                    <TableCell className="whitespace-nowrap">
                                         <div className="flex items-center gap-2">
-                                            {/* Capitalização da Role */}
                                             <span className="font-medium">{capitalize(user.role) || 'N/A'}</span>
                                         </div>
                                     </TableCell>
 
-                                    <TableCell className="text-center">
-                                        <Badge 
-                                            variant="outline" 
+                                    <TableCell className="text-center whitespace-nowrap">
+                                        <Badge
+                                            variant="outline"
                                             className={clsx("capitalize shadow-none border-0 font-medium", statusClasses)}
                                         >
                                             {isUserActive ? <CheckCircle2 size={12} className="mr-1" /> : <XCircle size={12} className="mr-1" />}
@@ -309,32 +315,30 @@ export function ListUsers() {
                                         </Badge>
                                     </TableCell>
 
-                                    {/* Coluna Ações com dois botões */}
-                                    <TableCell className="text-right flex items-center justify-end space-x-2">
-                                        
-                                        {/* BOTÃO DE EDIÇÃO (LÁPIS) */}
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-primary/80 hover:text-primary transition-colors"
-                                            onClick={() => handleEditClick(user)}
-                                            disabled={isActionDisabled}
-                                            title="Editar Nome e Função"
-                                        >
-                                            <Pencil size={16} />
-                                        </Button>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end space-x-1 sm:space-x-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-primary/80 hover:text-primary transition-colors"
+                                                onClick={() => handleEditClick(user)}
+                                                disabled={isActionDisabled}
+                                                title="Editar Nome e Função"
+                                            >
+                                                <Pencil size={16} />
+                                            </Button>
 
-                                        {/* BOTÃO DE STATUS COM ÍCONE */}
-                                        <Button
-                                            variant="ghost" 
-                                            size="icon"
-                                            className={clsx("h-8 w-8", iconClass)} 
-                                            onClick={() => handleClickToggleStatus(user)}
-                                            disabled={isActionDisabled}
-                                            title={iconTitle}
-                                        >
-                                            <StatusIcon size={18} />
-                                        </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={clsx("h-8 w-8", iconClass)}
+                                                onClick={() => handleClickToggleStatus(user)}
+                                                disabled={isActionDisabled}
+                                                title={iconTitle}
+                                            >
+                                                <StatusIcon size={18} />
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );
@@ -343,100 +347,98 @@ export function ListUsers() {
                 </Table>
             </div>
 
-            {/* Footer: Paginação e Controle de Limite */}
-            <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 py-2">
-                
-                <div className="text-sm text-muted-foreground">
+            <div className="flex flex-col gap-4 sm:flex-row justify-between items-center py-2">
+
+                <div className="text-sm text-muted-foreground text-center sm:text-left order-2 sm:order-1">
                     Mostrando <span className="font-medium text-foreground">{users.length}</span> de <span className="font-medium text-foreground">{totalItems}</span> registros.
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                        <PaginationPrevious
-                            onClick={handlePrevious}
-                            className={clsx(
-                            "cursor-pointer select-none", 
-                            (currentPage === 0 || isActionDisabled) && "pointer-events-none opacity-50"
-                            )}
-                        />
-                        </PaginationItem>
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto order-1 sm:order-2">
+                    <Pagination className="justify-center">
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    onClick={handlePrevious}
+                                    className={clsx(
+                                        "cursor-pointer select-none",
+                                        (currentPage === 0 || isActionDisabled) && "pointer-events-none opacity-50"
+                                    )}
+                                />
+                            </PaginationItem>
 
-                        {generatePaginationLinks(currentPage, totalPages, setPage)}
+                            {generatePaginationLinks(currentPage, totalPages, setPage)}
 
-                        <PaginationItem>
-                        <PaginationNext
-                            onClick={handleNext}
-                            className={clsx(
-                            "cursor-pointer select-none",
-                            (currentPage >= totalPages - 1 || isActionDisabled) && "pointer-events-none opacity-50"
-                            )}
-                        />
-                        </PaginationItem>
-                    </PaginationContent>
+                            <PaginationItem>
+                                <PaginationNext
+                                    onClick={handleNext}
+                                    className={clsx(
+                                        "cursor-pointer select-none",
+                                        (currentPage >= totalPages - 1 || isActionDisabled) && "pointer-events-none opacity-50"
+                                    )}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
                     </Pagination>
 
-                    <div className="relative">
+                    <div className="relative flex justify-center w-full sm:w-auto">
                         <select
-                        value={pageSize}
-                        onChange={(e) => setLimit(Number(e.target.value))}
-                        disabled={isActionDisabled}
-                        className="h-9 w-[110px] appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            value={pageSize}
+                            onChange={(e) => setLimit(Number(e.target.value))}
+                            disabled={isActionDisabled}
+                            className="h-9 w-full sm:w-[110px] appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                        <option value={10}>10 linhas</option>
-                        <option value={20}>20 linhas</option>
-                        <option value={50}>50 linhas</option>
+                            <option value={10}>10 linhas</option>
+                            <option value={20}>20 linhas</option>
+                            <option value={50}>50 linhas</option>
                         </select>
-                        <div className="pointer-events-none absolute right-3 top-2.5 opacity-50">
-                            <MoreHorizontal size={14} className="rotate-90"/>
+                        <div className="pointer-events-none absolute right-3 sm:right-3 top-2.5 opacity-50">
+                            <MoreHorizontal size={14} className="rotate-90" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* --- MODAL DE CONFIRMAÇÃO DE STATUS (EXISTENTE) --- */}
+            {/* --- MODAL DE CONFIRMAÇÃO DE STATUS --- */}
             <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="w-[95%] max-w-lg rounded-lg">
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                        {userToToggle?.status === 'ativo' ? 'Inativar Usuário?' : 'Ativar Usuário?'}
+                            {userToToggle?.status === 'ativo' ? 'Inativar Usuário?' : 'Ativar Usuário?'}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                        Você tem certeza que deseja 
-                        <span className="font-bold"> {userToToggle?.status === 'ativo' ? 'inativar' : 'ativar'} </span> 
-                        o acesso de <span className="font-semibold text-foreground">{userToToggle?.name}</span>?
-                        {userToToggle?.status === 'ativo' && (
-                            <span className="block mt-2 text-red-500">
-                            O usuário perderá acesso ao sistema imediatamente.
-                            </span>
-                        )}
+                            Você tem certeza que deseja
+                            <span className="font-bold"> {userToToggle?.status === 'ativo' ? 'inativar' : 'ativar'} </span>
+                            o acesso de <span className="font-semibold text-foreground">{userToToggle?.name}</span>?
+                            {userToToggle?.status === 'ativo' && (
+                                <span className="block mt-2 text-red-500">
+                                    O usuário perderá acesso ao sistema imediatamente.
+                                </span>
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isUpdating}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                        onClick={handleConfirmStatusChange}
-                        disabled={isUpdating}
-                        className={clsx(
-                            userToToggle?.status === 'ativo' 
-                            ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
-                            : ""
-                        )}
+                        <AlertDialogAction
+                            onClick={handleConfirmStatusChange}
+                            disabled={isUpdating}
+                            className={clsx(
+                                userToToggle?.status === 'ativo'
+                                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    : ""
+                            )}
                         >
-                        {isUpdating ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando</>
-                        ) : (
-                            "Confirmar"
-                        )}
+                            {isUpdating ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando</>
+                            ) : (
+                                "Confirmar"
+                            )}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            
-            {/* --- MODAL DE EDIÇÃO DE USUÁRIO (FORMULÁRIO) --- */}
+
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="w-[95%] sm:max-w-[425px] rounded-lg">
                     <DialogHeader>
                         <DialogTitle>Editar Usuário</DialogTitle>
                         <DialogDescription>
@@ -462,13 +464,12 @@ export function ListUsers() {
                                 <Label htmlFor="role" className="text-right">
                                     Função
                                 </Label>
-                                <Select 
-                                    value={editFormData.role} 
-                                    onValueChange={handleRoleChange} 
+                                <Select
+                                    value={editFormData.role}
+                                    onValueChange={handleRoleChange}
                                     disabled={isUpdating}
                                 >
                                     <SelectTrigger className="col-span-3">
-                                        {/* Exibe o valor selecionado capitalizado */}
                                         <SelectValue placeholder="Selecione a função">
                                             {capitalize(editFormData.role) || "Selecione a função"}
                                         </SelectValue>
@@ -476,7 +477,6 @@ export function ListUsers() {
                                     <SelectContent>
                                         {availableRoles.map(role => (
                                             <SelectItem key={role} value={role}>
-                                                {/* Aplicando capitalize() */}
                                                 {capitalize(role)}
                                             </SelectItem>
                                         ))}
@@ -484,19 +484,18 @@ export function ListUsers() {
                                 </Select>
                             </div>
                         </div>
-                        <DialogFooter>
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                onClick={() => setIsEditModalOpen(false)} 
+                        <DialogFooter className="flex-col sm:flex-row gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsEditModalOpen(false)}
                                 disabled={isUpdating}
                             >
                                 Cancelar
                             </Button>
-                            <Button 
-                                type="submit" 
-                                // O botão é desabilitado se estiver atualizando OU se nome/função estiverem vazios.
-                                disabled={isUpdating || !editFormData.name.trim() || !editFormData.role.trim()} 
+                            <Button
+                                type="submit"
+                                disabled={isUpdating || !editFormData.name.trim() || !editFormData.role.trim()}
                             >
                                 {isUpdating ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando</>
