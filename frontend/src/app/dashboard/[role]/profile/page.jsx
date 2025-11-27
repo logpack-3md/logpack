@@ -198,7 +198,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div className="w-full bg-card text-card-foreground rounded-(--radius) border border-border shadow-sm overflow-hidden flex flex-col">
+          <div className="w-full bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden flex flex-col">
             {/* Banner */}
             <div className="h-48 w-full bg-linear-to-r from-muted to-primary/20 relative">
               <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
@@ -250,15 +250,15 @@ export default function ProfilePage() {
                 <div className="md:mb-4 flex gap-3">
                   {isEditing ? (
                     <>
-                      <button onClick={handleCancel} disabled={saving} className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-muted-foreground rounded-(--radius) font-medium transition-colors border border-border flex items-center gap-2 cursor-pointer">
+                      <button onClick={handleCancel} disabled={saving} className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg font-medium transition-colors border border-border flex items-center gap-2 cursor-pointer">
                         <CloseOutlined /> Cancelar
                       </button>
-                      <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 bg-primary hover:opacity-90 text-primary-foreground rounded-(--radius) font-medium transition-colors shadow-md flex items-center gap-2 cursor-pointer">
+                      <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 bg-primary hover:opacity-90 text-primary-foreground rounded-lg font-medium transition-colors shadow-md flex items-center gap-2 cursor-pointer">
                         {saving ? <Spin size="small" /> : <SaveOutlined />} Salvar
                       </button>
                     </>
                   ) : (
-                    <button onClick={() => setIsEditing(true)} className="px-6 py-2.5 bg-primary hover:opacity-90 text-primary-foreground rounded-(--radius) font-medium transition-colors shadow-md flex items-center gap-2 cursor-pointer">
+                    <button onClick={() => setIsEditing(true)} className="px-6 py-2.5 bg-primary hover:opacity-90 text-primary-foreground rounded-lg font-medium transition-colors shadow-md flex items-center gap-2 cursor-pointer">
                       <EditOutlined /> Editar Perfil
                     </button>
                   )}
