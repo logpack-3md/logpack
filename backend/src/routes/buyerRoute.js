@@ -9,7 +9,6 @@ const router = express.Router()
 router.get('/compras',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
-    // AuthMiddleware.isManager,
     AuthMiddleware.isBuyer,
     BuyerController.getCompras
 )
@@ -21,13 +20,13 @@ router.get('/orcamentos',
     ManagerController.getOrcamentos
 )
 
-// // buscar um orçamento
-// router.get('/orcamentos/:orcamentoId', 
-//     AuthMiddleware.verifyToken,
-//     AuthMiddleware.isActiveUser,
-//         AuthMiddleware.isBuyer,
-//     ManagerController.getOrcamento
-// )
+// buscar um orçamento
+router.get('/orcamentos/:orcamentoId', 
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.isActiveUser,
+    AuthMiddleware.isBuyer,
+    ManagerController.getOrcamento
+)
 
 // buscar uma compra
 router.get('/compras/:id',
