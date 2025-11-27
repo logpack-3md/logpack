@@ -41,28 +41,47 @@ export default function EmployeeDashboard() {
   useEffect(() => {
     carregarPedidos();
   }, []);
+const handleSolicitacao = async (data) => {
+  try {
+    const res = await api.post('employee/request', { 
+      insumoSKU: data.sku.trim().toUpperCase() 
+    });
 
-  const handleSolicitacao = async (data) => {
-    try {
-      const res = await api.post('employee/request', {
-        insumoSKU: data.sku.trim().toUpperCase()
-      });
-
-      if (res?.success === false || res?.error) {
-        toast.error(res?.message || 'Erro na solicitação');
-        return false;
-      }
-
-      toast.success('Solicitação enviada com sucesso!');
-      setSearchSku('');
-      carregarPedidos(); // Atualiza a lista
-      return true;
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Erro ao enviar solicitação');
+    if (res?.success === false || res?.error) {
+      toast.error(res?.message || res?.error || 'Erro na solicitação');
       return false;
     }
-  };
 
+    toast.success('Solicitação enviada com sucesso!');
+    setSearchSku('');
+    carregarPedidos();
+
+    // PEGA NOME DO USUÁRIO LOGADO
+    const usuarioLogado = JSON.parse(localStorage.getItem('user') || '{}');
+    const nomeUsuario = usuarioLogado.nome || usuarioLogado.name || 'Funcionário';
+
+    // CORRIGIDO: era data.s2325.sku → é data.sku!!!
+    if (typeof window !== 'undefined') {
+      window.adicionarNotificacaoPendente({
+        usuario: nomeUsuario,
+        sku: data.sku.trim().toUpperCase(),  // ← CORRIGIDO AQUI
+        insumo: 'Insumo solicitado'
+      });
+
+      // Mostra em tempo real também
+      window.notificarNovoPedido({
+        usuario: nomeUsuario,
+        sku: data.sku.trim().toUpperCase()
+      });
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Erro:', err);
+    toast.error(err.response?.data?.message || 'Erro ao enviar solicitação');
+    return false;
+  }
+};
   const getStatusInfo = (status) => {
     const s = (status || '').toString().toLowerCase();
     if (s.includes('solicitado') || s.includes('pendente'))
