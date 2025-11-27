@@ -197,7 +197,7 @@ class BuyerController {
             const orcamentoAtualizado = await Orcamento.findByPk(id);
 
             await Compra.update(
-                { status: 'fase_de_orçamento' },
+                { status: 'fase_de_orcamento' },
                 { where: { id: orcamentoAtualizado.compraId } }
             )
 
@@ -235,11 +235,21 @@ class BuyerController {
         try {
             const validatedSchema = BuyerController.renegociarSchema.parse(req.body);
 
-            const oldDataJson = await Orcamento.findByPk(id)
+            const orcamento = await Orcamento.findByPk(id)
+            const oldDataJson = orcamento
 
-            const [rowsAffected] = await Orcamento.update(validatedSchema, {
-                where: { id: id }
-            })
+            const [rowsAffected] = await Orcamento.update(
+                { 
+                    ...validatedSchema,
+                    status: 'pendente'
+                },
+                { where: { id: id } }
+            )
+
+            await Compra.update(
+                { status: 'fase_de_orcamento' },
+                { where: { id: orcamento.compraId } }
+            )
 
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Orçamento não encontrado." })
@@ -251,7 +261,7 @@ class BuyerController {
                 buyerId: orcamentoAtualizado.buyerId,
                 orcamentoId: id,
                 actionType: "UPDATE",
-                contextDetails: "Renegociação de orçamento efetuada e enviada para gerente de produção.",
+                contextDetails: "Renegociação de orçamento efetuada e enviada para gerente de produção. Status de compra retornado para fase de orçamento",
                 oldData: oldDataJson.toJSON(),
                 newData: orcamentoAtualizado.toJSON()
             })
@@ -262,7 +272,11 @@ class BuyerController {
             })
 
         } catch (error) {
-
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({ message: "Valor inválido", issues: error.issues });
+            }
+            console.error("Erro ao renegociar:", error);
+            return res.status(500).json({ error: "Erro interno ao renegociar." });
         }
     }
 

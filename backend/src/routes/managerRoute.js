@@ -137,7 +137,7 @@ router.put('/orcamentos/contestar/:orcamentoId',
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     AuthMiddleware.isManager,
-    AuthMiddleware.isBuyApproved,
+    AuthMiddleware.canManagerDecide,
     ManagerController.contestarOrcamento
 )
 

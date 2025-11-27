@@ -452,7 +452,7 @@ class ManagerController {
             userId: managerId,
             pedidoId: pedido.id,
             contextDetails: novoStatus === 'negado' ? 'Pedido negado pelo gerente' : 'Pedido aprovado pelo gerente',
-            actionType: 'STATUS_CHANGE',
+            actionType: 'UPDATE',
             oldData: { status: oldStatus },
             newData: { status: novoStatus }
           });
@@ -533,168 +533,117 @@ class ManagerController {
         })
 
         try {
-            const { status } = approveSchema.parse(req.body)
+            const { status } = approveSchema.parse(req.body);
 
-            const oldDataOrcamento = await Orcamento.findByPk(orcamentoId)
-            const oldDataOrcamentoJson = oldDataOrcamento ? oldDataOrcamento.toJSON() : null
+            const oldDataOrcamento = await Orcamento.findByPk(orcamentoId);
+            if (!oldDataOrcamento) return res.status(404).json({ message: "Orçamento não encontrado" });
+            
+            const oldDataOrcamentoJson = oldDataOrcamento.toJSON();
+            const compraId = oldDataOrcamento.compraId;
 
-            const compraId = oldDataOrcamento.compraId
-            const oldDataCompra = await Compra.findByPk(compraId)
-            const oldDataCompraJson = oldDataCompra ? oldDataCompra.toJSON() : null
+            const oldDataCompra = await Compra.findByPk(compraId);
+            const oldDataCompraJson = oldDataCompra ? oldDataCompra.toJSON() : null;
 
-            const pedidoId = oldDataCompra.pedidoId
-            const oldDataPedido = await Pedidos.findByPk(pedidoId)
-            const oldDataPedidoJson = oldDataPedido ? oldDataPedido.toJSON() : null
-
-            if (!oldDataOrcamento) {
-                return res.status(404).json({ message: "Orçamento não encontrado" })
-            }
-
-            const [rowsAffected] = await Orcamento.update(
+            await Orcamento.update(
                 { status: status },
-                { where: { id: orcamentoId } },
-            )
-
-            if (rowsAffected === 0 && oldDataOrcamento.status === status) {
-                return res.status(200).json({ message: `Status de orçamento já era: ${status}` })
-            }
-
-            const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId)
-            const newDataOrcamentoJson = orcamentoAtualizado.toJSON()
-
-            if (rowsAffected === 0) {
-                return res.status(404).json({ message: 'Orçamento não encontrado.' })
-            }
-
-
-            const compraInfo = await Compra.findOne({
-                where: { id: compraId },
-                attributes: ['pedidoId', 'status', 'data_de_decisao', 'responsavel_pela_decisao_id']
-            });
+                { where: { id: orcamentoId } }
+            );
+            
+            const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId);
+            const newDataOrcamentoJson = orcamentoAtualizado.toJSON();
 
             switch (status) {
                 case 'aprovado':
-                    if (pedidoId) {
-
+                    if (oldDataCompra.pedidoId) {
+                        const oldPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
+                        
                         await Pedidos.update(
                             { status: 'compra_efetuada' },
-                            { where: { id: pedidoId } }
+                            { where: { id: oldDataCompra.pedidoId } }
                         );
-
-                        const newDataPedido = await Pedidos.findByPk(pedidoId)
-
+                        
+                        const newPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
+                        
                         await PedidosLog.create({
                             userId: gerenteId,
-                            pedidoId: pedidoId,
+                            pedidoId: oldDataCompra.pedidoId,
                             actionType: 'UPDATE',
-                            contextDetails: "Compra feita por gerente de produção.",
-                            oldData: oldDataPedidoJson,
-                            newData: newDataPedido.toJSON()
-                        })
+                            contextDetails: "Compra efetuada/aprovada pelo gerente.",
+                            oldData: oldPedido ? oldPedido.toJSON() : null,
+                            newData: newPedido.toJSON()
+                        });
                     }
 
-                    await Compra.update(
-                        {
-                            data_de_decisao: new Date(),
-                            status: 'concluído',
-                            responsavel_pela_decisao_id: gerenteId
-                        },
-                        { where: { id: compraId } }
-                    )
-
-                    const newDataCompra = await Compra.findByPk(compraId)
-
-                    await CompraLog.create({
-                        gerenteId: gerenteId,
-                        compraId: compraId,
-                        actionType: 'UPDATE',
-                        contextDetails: "Orçamento aceito por gerente de produção.",
-                        oldData: oldDataCompraJson,
-                        newData: newDataCompra.toJSON()
-                    })
+                    await Compra.update({
+                        data_de_decisao: new Date(),
+                        status: 'concluido',
+                        responsavel_pela_decisao_id: gerenteId
+                    }, { where: { id: compraId } });
 
                     break;
 
                 case 'negado':
-                    if (!compraInfo || !compraInfo.pedidoId) {
-                        console.warn(`Compra ${compraId} não tem Pedido associado.`);
-                    } else {
-                        const pedidoId = compraInfo.pedidoId;
-
+                    if (oldDataCompra.pedidoId) {
+                        const oldPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
+                        
                         await Pedidos.update(
                             { status: 'negado' },
-                            { where: { id: pedidoId } }
+                            { where: { id: oldDataCompra.pedidoId } }
                         );
-
-                        const newDataPedido = await Pedidos.findByPk(pedidoId)
-
+                        
+                        const newPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
+                        
                         await PedidosLog.create({
                             userId: gerenteId,
-                            pedidoId: pedidoId,
+                            pedidoId: oldDataCompra.pedidoId,
                             actionType: 'UPDATE',
-                            contextDetails: "Compra negada por gerente de produção.",
-                            oldData: oldDataPedidoJson,
-                            newData: newDataPedido.toJSON()
-                        })
+                            contextDetails: "Compra negada pelo gerente.",
+                            oldData: oldPedido ? oldPedido.toJSON() : null,
+                            newData: newPedido.toJSON()
+                        });
                     }
 
-                    await Compra.update(
-                        {
-                            data_de_decisao: new Date(),
-                            status: 'negado',
-                            responsavel_pela_decisao_id: gerenteId
-                        },
-                        { where: { id: compraId } }
-                    )
-
-                    await CompraLog.create({
-                        gerenteId: gerenteId,
-                        compraId: compraId,
-                        actionType: 'UPDATE',
-                        contextDetails: "Orçamento negado por gerente de produção.",
-                        oldData: oldDataCompraJson,
-                        newData: newDataCompra.toJSON()
-                    })
+                    await Compra.update({
+                        data_de_decisao: new Date(),
+                        status: 'negado',
+                        responsavel_pela_decisao_id: gerenteId
+                    }, { where: { id: compraId } });
 
                     break;
 
                 case 'renegociacao':
                     await Compra.update({
                         data_de_decisao: new Date(),
-                        status: 'renegociacao_solicitada',
+                        status: 'renegociacao_solicitada', 
                         responsavel_pela_decisao_id: gerenteId
-                    },
-                        { where: { id: compraId } }
-                    )
-
-                    await CompraLog.create({
-                        gerenteId: gerenteId,
-                        compraId: compraId,
-                        actionType: 'UPDATE',
-                        contextDetails: "Renegociação de orçamento solicitada por gerente de produção.",
-                        oldData: oldDataCompraJson,
-                        newData: newDataCompra.toJSON()
-                    })
-
-                    await Orcamento.update({
-                        status: 'renegociacao'
-                    },
-                        { where: { id: orcamentoId } }
-                    )
+                    }, { where: { id: compraId } });
 
                     await OrcamentoLog.create({
                         buyerId: oldDataOrcamento.buyerId,
                         orcamentoId: orcamentoId,
                         actionType: 'UPDATE',
-                        contextDetails: "Renegociação de orçamento solicitada por gerente de produção.",
+                        contextDetails: "Solicitação de renegociação enviada pelo gerente.",
                         oldData: oldDataOrcamentoJson,
                         newData: newDataOrcamentoJson
-                    })
-
+                    });
                     break;
             }
 
-            return res.status(200).json({ message: `Status do orçamento alterado para: ${status}`, orcamento: orcamentoAtualizado })
+            const newDataCompra = await Compra.findByPk(compraId);
+            
+            await CompraLog.create({
+                gerenteId: gerenteId,
+                compraId: compraId,
+                actionType: 'UPDATE',
+                contextDetails: `Decisão de orçamento: ${status}`,
+                oldData: oldDataCompraJson,
+                newData: newDataCompra.toJSON()
+            });
+
+            return res.status(200).json({
+                message: `Status atualizado para: ${status}`,
+                orcamento: orcamentoAtualizado
+            });
 
         } catch (error) {
             if (error instanceof z.ZodError) {
