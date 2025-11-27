@@ -4,100 +4,86 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, Search, Menu } from 'lucide-react';
 import clsx from 'clsx';
 
-// Componentes UI (Shadcn)
+// UI Imports (agrupados para limpeza visual)
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
+    Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
 } from "@/components/ui/pagination";
 
-// Seus Componentes
 import SidebarBuyer from "@/components/layout/sidebar-buyer";
-import ListCompras from "@/components/ListCompras"; // Certifique-se que o caminho está correto
+import ListCompras from "@/components/ListCompras"; 
 import { useBuyerOperations } from "@/hooks/useBuyerOperations";
 
 export default function BuyerDashboard() {
-    // Hook contendo lógica e estado
     const { 
-        compras, 
-        loading, 
-        error, 
-        meta, 
-        fetchCompras, 
-        createOrcamento, 
-        renegociarOrcamento, 
-        updateDescricao, 
-        cancelarOrcamento 
+        compras, loading, meta, fetchCompras, 
+        createOrcamento, renegociarOrcamento, updateDescricao, cancelarOrcamento 
     } = useBuyerOperations();
 
-    // Estados locais da Dashboard
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState('');
-    const [modalType, setModalType] = useState(null); 
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [amountInput, setAmountInput] = useState("");
-    const [descInput, setDescInput] = useState("");
+    
+    // Controle do Modal
+    const [modalConfig, setModalConfig] = useState({ type: null, item: null });
+    const [formData, setFormData] = useState({ amount: "", desc: "" });
 
-    // Busca inicial
     useEffect(() => {
         fetchCompras(1, 10, statusFilter);
     }, [fetchCompras, statusFilter]);
 
-    // Prepara o modal com os dados do item clicado na tabela
+    // Handler para abrir modais e pré-popular dados
     const handleOpenModal = (type, item) => {
-        setSelectedItem(item);
-        setModalType(type);
-        setAmountInput(item.amount ? String(item.amount) : "");
-        setDescInput(item.description || ""); 
+        setModalConfig({ type, item });
+        setFormData({
+            amount: item.amount ? String(item.amount) : "",
+            desc: item.description || ""
+        });
     };
 
+    const handleCloseModal = () => {
+        setModalConfig({ type: null, item: null });
+        setFormData({ amount: "", desc: "" });
+    };
+
+    // Helper para extrair o ID do orçamento de forma segura
+    const getOrcamentoId = (item) => item?.orcamento?.id || item?.orcamentoId || item?.id;
+
     const handleSubmit = async () => {
-        if (!selectedItem) return;
+        const { type, item } = modalConfig;
+        if (!item) return;
 
         try {
-            if (modalType === 'create') {
-                await createOrcamento(selectedItem.id, { 
-                    valor_total: parseFloat(amountInput), 
-                    description: descInput 
-                });
-            } 
-            else if (modalType === 'renegotiate') {
-                // Ajuste aqui se o ID do orçamento vier com outro nome no objeto compra
-                const orcId = selectedItem.orcamento?.id || selectedItem.orcamentoId || selectedItem.id;
-                await renegociarOrcamento(orcId, { 
-                    valor_total: parseFloat(amountInput) 
-                });
-            } 
-            else if (modalType === 'edit_desc') {
-                const orcId = selectedItem.orcamento?.id || selectedItem.orcamentoId || selectedItem.id;
-                await updateDescricao(orcId, { description: descInput });
-            } 
-            else if (modalType === 'cancel') {
-                const orcId = selectedItem.orcamento?.id || selectedItem.orcamentoId || selectedItem.id;
-                await cancelarOrcamento(orcId);
+            switch (type) {
+                case 'create':
+                    await createOrcamento(item.id, { 
+                        valor_total: parseFloat(formData.amount), 
+                        description: formData.desc 
+                    });
+                    break;
+                case 'renegotiate':
+                    await renegociarOrcamento(getOrcamentoId(item), { 
+                        valor_total: parseFloat(formData.amount) 
+                    });
+                    break;
+                case 'edit_desc':
+                    await updateDescricao(getOrcamentoId(item), { 
+                        description: formData.desc 
+                    });
+                    break;
+                case 'cancel':
+                    await cancelarOrcamento(getOrcamentoId(item));
+                    break;
             }
-            
-            setModalType(null);
-            setSelectedItem(null);
-            setAmountInput("");
-            setDescInput("");
+            handleCloseModal();
         } catch (error) {
             console.error("Erro na operação:", error);
+            // Aqui você pode adicionar um Toast de erro
         }
     };
 
@@ -116,8 +102,7 @@ export default function BuyerDashboard() {
                 </div>
 
                 <div className="p-6 md:p-8 space-y-8 flex-1 overflow-y-auto">
-                    
-                    {/* Header Desktop */}
+                    {/* Header Desktop & Filtros */}
                     <div className="flex flex-col md:flex-row justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight text-slate-900">Central de Orçamentos</h1>
@@ -142,12 +127,7 @@ export default function BuyerDashboard() {
                         </div>
                     </div>
 
-                    {/* Tabela Importada */}
-                    <ListCompras 
-                        compras={compras} 
-                        loading={loading} 
-                        onAction={handleOpenModal} 
-                    />
+                    <ListCompras compras={compras} loading={loading} onAction={handleOpenModal} />
 
                     {/* Paginação */}
                     {meta && meta.totalPages > 1 && (
@@ -176,81 +156,62 @@ export default function BuyerDashboard() {
                 </div>
             </main>
 
-            {/* --- MODAIS DE AÇÃO --- */}
-
-            {/* Modal: Criar Orçamento */}
-            <Dialog open={modalType === 'create'} onOpenChange={() => setModalType(null)}>
+            {/* --- ÁREA DE MODAIS --- */}
+            
+            {/* Modal Genérico para Inputs (Criar/Renegociar/Editar) */}
+            <Dialog open={modalConfig.type !== null && modalConfig.type !== 'cancel'} onOpenChange={handleCloseModal}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Novo Orçamento</DialogTitle>
-                        <DialogDescription>Inicie o orçamento para o pedido.</DialogDescription>
+                        <DialogTitle>
+                            {modalConfig.type === 'create' && "Novo Orçamento"}
+                            {modalConfig.type === 'renegotiate' && "Renegociar Valor"}
+                            {modalConfig.type === 'edit_desc' && "Editar Descrição"}
+                        </DialogTitle>
+                        <DialogDescription>Preencha os dados abaixo.</DialogDescription>
                     </DialogHeader>
+                    
                     <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label>Valor (R$)</Label>
-                            <Input type="number" placeholder="0.00" value={amountInput} onChange={e => setAmountInput(e.target.value)} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label>Descrição</Label>
-                            <Textarea placeholder="Detalhes..." value={descInput} onChange={e => setDescInput(e.target.value)} />
-                        </div>
+                        {['create', 'renegotiate'].includes(modalConfig.type) && (
+                            <div className="grid gap-2">
+                                <Label>Valor (R$)</Label>
+                                <Input 
+                                    type="number" 
+                                    placeholder="0.00" 
+                                    value={formData.amount} 
+                                    onChange={e => setFormData({...formData, amount: e.target.value})} 
+                                />
+                            </div>
+                        )}
+                        
+                        {['create', 'edit_desc'].includes(modalConfig.type) && (
+                            <div className="grid gap-2">
+                                <Label>Descrição</Label>
+                                <Textarea 
+                                    placeholder="Detalhes..." 
+                                    value={formData.desc} 
+                                    onChange={e => setFormData({...formData, desc: e.target.value})} 
+                                />
+                            </div>
+                        )}
                     </div>
+
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setModalType(null)}>Cancelar</Button>
-                        <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700">Enviar</Button>
+                        <Button variant="outline" onClick={handleCloseModal}>Cancelar</Button>
+                        <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700">Confirmar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Modal: Renegociar */}
-            <Dialog open={modalType === 'renegotiate'} onOpenChange={() => setModalType(null)}>
+            {/* Modal Específico: Cancelar */}
+            <Dialog open={modalConfig.type === 'cancel'} onOpenChange={handleCloseModal}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Renegociar</DialogTitle>
-                        <DialogDescription>Atualize o valor conforme solicitado.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label>Novo Valor (R$)</Label>
-                            <Input type="number" value={amountInput} onChange={e => setAmountInput(e.target.value)} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setModalType(null)}>Cancelar</Button>
-                        <Button onClick={handleSubmit} className="bg-purple-600 hover:bg-purple-700">Atualizar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Modal: Editar Descrição */}
-            <Dialog open={modalType === 'edit_desc'} onOpenChange={() => setModalType(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Editar Descrição</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <div className="grid gap-2">
-                            <Label>Descrição</Label>
-                            <Textarea value={descInput} onChange={e => setDescInput(e.target.value)} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setModalType(null)}>Cancelar</Button>
-                        <Button onClick={handleSubmit}>Salvar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Modal: Cancelar */}
-            <Dialog open={modalType === 'cancel'} onOpenChange={() => setModalType(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="text-red-600">Cancelar?</DialogTitle>
-                        <DialogDescription>O pedido voltará para o status "Solicitado".</DialogDescription>
+                        <DialogTitle className="text-red-600">Cancelar Orçamento?</DialogTitle>
+                        <DialogDescription>Esta ação não pode ser desfeita. O status voltará ao anterior.</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setModalType(null)}>Voltar</Button>
-                        <Button variant="destructive" onClick={handleSubmit}>Confirmar</Button>
+                        <Button variant="outline" onClick={handleCloseModal}>Voltar</Button>
+                        <Button variant="destructive" onClick={handleSubmit}>Sim, Cancelar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

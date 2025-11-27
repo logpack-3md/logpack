@@ -45,14 +45,6 @@ router.post('/orcamento/:compraId',
     BuyerController.createOrcamento
 )
 
-router.put('/orcamentos/contestar/:orcamentoId',
-    AuthMiddleware.verifyToken,
-    AuthMiddleware.isActiveUser,
-    AuthMiddleware.isBuyer,
-    AuthMiddleware.isBuyApproved,
-    ManagerController.contestarOrcamento
-)
-
 // atualizar descrição de orçamento
 router.put('/orcamento/descricao/:id',
     AuthMiddleware.verifyToken,

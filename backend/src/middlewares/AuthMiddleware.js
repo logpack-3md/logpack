@@ -102,12 +102,12 @@ class AuthMiddleware {
             const status = insumo.get('status_solicitacao')
 
             if (status !== 'Solicitar Reposição') {
-                return res.status(400).json({ 
-                    message: "Estoque acima do limite de 35%", 
+                return res.status(400).json({
+                    message: "Estoque acima do limite de 35%",
                     details: `Só é permitido solicitar quando o estoque estiver abaixo de 35%. Estoque atual: ${status}`  // V
                 });
-            } 
-            
+            }
+
 
             req.insumo = insumo
             next()
@@ -184,42 +184,93 @@ class AuthMiddleware {
         }
     }
 
-    async isBuyApproved(req, res, next) {
+    // async isBuyApproved(req, res, next) {
+    //     const { orcamentoId } = req.params;
+
+    //     try {
+
+    //         const orcamento = await Orcamento.findByPk(orcamentoId, {
+    //             attributes: ['compraId']
+    //         });
+
+    //         const compraId = orcamento.compraId;
+
+    //         if (!compraId) {
+    //             return res.status(400).json({ message: "O orçamento não está associado a nenhuma compra válida." });
+    //         }
+
+    //         const compra = await Compra.findOne({
+    //             where: { id: compraId },
+    //             attributes: ['status']
+    //         });
+
+    //         if (!compra) {
+    //             return res.status(404).json({ message: "Compra associada não encontrada." });
+    //         }
+
+    //         if (compra.status == 'pendente') {
+    //             return res.status(403).json({ message: "Acesso negado: A Compra ainda está pendente de orçamento." });
+    //         }
+
+    //         if (compra.status == 'concluido') {
+    //             return res.status(403).json({ message: "Acesso negado: Essa Compra já foi aprovada e concluída." });
+    //         }
+
+    //         next();
+    //     } catch (error) {
+    //         console.error("Erro no middleware isBuyApproved", error);
+    //         return res.status(500).json({ message: "Erro interno no servidor ao verificar o status da Compra." });
+    //     }
+    // }
+
+    async canManagerDecide(req, res, next) {
         const { orcamentoId } = req.params;
 
         try {
+            // 1. Busca apenas o orçamento (sem include, para evitar o erro)
+            const orcamento = await Orcamento.findByPk(orcamentoId);
 
-            const orcamento = await Orcamento.findByPk(orcamentoId, {
-                attributes: ['compraId']
-            });
-
-            const compraId = orcamento.compraId;
-
-            if (!compraId) {
-                return res.status(400).json({ message: "O orçamento não está associado a nenhuma compra válida." });
+            if (!orcamento) {
+                return res.status(404).json({ message: "Orçamento não encontrado." });
             }
 
-            const compra = await Compra.findOne({
-                where: { id: compraId },
-                attributes: ['status']
+            if (!orcamento.compraId) {
+                return res.status(404).json({ message: "Erro crítico: Orçamento sem ID de compra vinculado." });
+            }
+
+            // 2. Busca a compra separadamente usando o ID que pegamos acima
+            const compra = await Compra.findByPk(orcamento.compraId, {
+                attributes: ['id', 'status']
             });
 
             if (!compra) {
-                return res.status(404).json({ message: "Compra associada não encontrada." });
+                return res.status(404).json({
+                    message: "Erro de integridade: Compra vinculada não encontrada."
+                });
             }
 
-            if (compra.status == 'pendente') {
-                return res.status(403).json({ message: "Acesso negado: A Compra ainda está pendente de orçamento." });
+            // --- LÓGICA DE TRAVA (IGUAL A ANTES) ---
+
+            if (compra.status === 'pendente') {
+                return res.status(400).json({
+                    message: "Ação negada: A compra ainda consta como pendente de orçamento."
+                });
             }
 
-            if (compra.status == 'concluído') {
-                return res.status(403).json({ message: "Acesso negado: Essa Compra já foi aprovada e concluída." });
+            // Normalizamos para minúsculo para garantir
+            const statusFinalizados = ['concluido', 'negado', 'cancelado', 'compra_efetuada'];
+
+            if (statusFinalizados.includes(compra.status.toLowerCase())) {
+                return res.status(403).json({
+                    message: `Ação negada: O processo já foi encerrado (Status atual: ${compra.status}).`
+                });
             }
 
             next();
+
         } catch (error) {
-            console.error("Erro no middleware isBuyApproved", error);
-            return res.status(500).json({ message: "Erro interno no servidor ao verificar o status da Compra." });
+            console.error("Erro no middleware canManagerDecide:", error);
+            return res.status(500).json({ message: "Erro interno ao verificar status da compra." });
         }
     }
 
@@ -250,8 +301,15 @@ class AuthMiddleware {
                 attributes: ['status']
             })
 
-            if (orcamento.status !== "renegociação") {
-                return res.status(403).json({ message: "Ação indevida: você só pode alterar o valor do orçamento se for aberto um pedido de renegociação." })
+            if (!orcamento) {
+                return res.status(404).json({ message: "Orçamento não encontrado para este ID." });
+            }
+
+            if (orcamento.status !== "renegociacao") {
+                return res.status(403).json({ 
+                    message: "Ação indevida: você só pode alterar o valor do orçamento se for aberto um pedido de renegociação.",
+                    currentStatus: orcamento.status
+                })
             }
 
             next()
