@@ -324,7 +324,7 @@ class BuyerController {
             const newDataCompraJson = compraAtualizada ? compraAtualizada.toJSON() : null;
 
 
-            if (pedidoId) {
+            if (pedidoId) { // pode parecer confuso, mas é para o employee nao se dar o trabalho de ter que pedir de novo
                 await Pedidos.update(
                     { status: 'solicitado' },
                     { where: { id: pedidoId } }
