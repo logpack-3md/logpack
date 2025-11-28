@@ -1,237 +1,226 @@
-// src/app/dashboard/employee/components/EmployeeDashboard/page.jsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Sidebar from '@/components/layout/sidebar';
-import { Menu, Plus, Package, FileText, Clock, CheckCircle, XCircle, Warehouse, RefreshCw } from 'lucide-react';
+import { 
+    Menu, Package, FileText, Clock, CheckCircle2, XCircle, 
+    Warehouse, Search, Plus, LayoutDashboard, AlertCircle 
+} from 'lucide-react';
+import clsx from 'clsx';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+// SHADCN UI
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Componentes do Projeto
+import Sidebar from '@/components/layout/sidebar'; // Mantive seu import original
 import InsumosSection from "@/components/Blocks/Insumos/InsumosSection";
 import EstoqueSection from '@/components/Blocks/Estoque/SetoresSection';
-import CreateButton from '@/components/ui/create-button';
-import { api } from '@/lib/api';
-import { toast } from 'sonner';
+import { useEmployeeOperations } from '@/hooks/useEmployeeOperations';
 
 export default function EmployeeDashboard() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [searchSku, setSearchSku] = useState('');
-  const [pedidos, setPedidos] = useState([]);
-  const [loading, setLoading] = useState(true);
+    // 1. Hook de Lógica
+    const { pedidos, loading, isSubmitting, fetchPedidos, criarSolicitacao } = useEmployeeOperations();
+    
+    // 2. Estados Locais de UI
+    const [skuInput, setSkuInput] = useState('');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile control
 
-  // ENDPOINT CORRETO DO SEU BACK-END (testado e funcionando!)
-  const carregarPedidos = async () => {
-    try {
-      setLoading(true);
-      // Esta é a rota que realmente existe no seu back-end
-      const res = await api.get('employee/my-requests');
-      
-      console.log('Resposta da API:', res.data); // <-- DEIXE ISSO PARA DEBUG
+    // 3. Carregar dados ao montar
+    useEffect(() => {
+        fetchPedidos();
+    }, [fetchPedidos]);
 
-      // Ajuste conforme a estrutura exata que seu back-end retorna
-      const lista = res.data?.data || res.data?.requests || res.data || [];
-      setPedidos(Array.isArray(lista) ? lista : []);
-      
-    } catch (err) {
-      console.error('Erro ao carregar pedidos:', err);
-      toast.error('Erro ao carregar seus pedidos');
-      setPedidos([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 4. Handler de Submit
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const sucesso = await criarSolicitacao(skuInput);
+        if (sucesso) {
+            setSkuInput(''); // Limpa o input apenas se deu certo
+        }
+    };
 
-  useEffect(() => {
-    carregarPedidos();
-  }, []);
-const handleSolicitacao = async (data) => {
-  try {
-    const res = await api.post('employee/request', { 
-      insumoSKU: data.sku.trim().toUpperCase() 
-    });
+    // Helper de Status Visual
+    const getStatusBadge = (status) => {
+        const s = (status || '').toString().toLowerCase();
+        
+        if (s.includes('aprovado')) 
+            return <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 gap-1"><CheckCircle2 size={12}/> Aprovado</Badge>;
+        
+        if (s.includes('rejeitado') || s.includes('negado')) 
+            return <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200 gap-1"><XCircle size={12}/> Rejeitado</Badge>;
+        
+        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200 gap-1"><Clock size={12}/> Pendente</Badge>;
+    };
 
-    if (res?.success === false || res?.error) {
-      toast.error(res?.message || res?.error || 'Erro na solicitação');
-      return false;
-    }
-
-    toast.success('Solicitação enviada com sucesso!');
-    setSearchSku('');
-    carregarPedidos();
-
-    // PEGA NOME DO USUÁRIO LOGADO
-    const usuarioLogado = JSON.parse(localStorage.getItem('user') || '{}');
-    const nomeUsuario = usuarioLogado.nome || usuarioLogado.name || 'Funcionário';
-
-    // CORRIGIDO: era data.s2325.sku → é data.sku!!!
-    if (typeof window !== 'undefined') {
-      window.adicionarNotificacaoPendente({
-        usuario: nomeUsuario,
-        sku: data.sku.trim().toUpperCase(),  // ← CORRIGIDO AQUI
-        insumo: 'Insumo solicitado'
-      });
-
-      // Mostra em tempo real também
-      window.notificarNovoPedido({
-        usuario: nomeUsuario,
-        sku: data.sku.trim().toUpperCase()
-      });
-    }
-
-    return true;
-  } catch (err) {
-    console.error('Erro:', err);
-    toast.error(err.response?.data?.message || 'Erro ao enviar solicitação');
-    return false;
-  }
-};
-  const getStatusInfo = (status) => {
-    const s = (status || '').toString().toLowerCase();
-    if (s.includes('solicitado') || s.includes('pendente'))
-      return { label: 'Solicitado', color: 'text-amber-600 bg-amber-50', icon: Clock };
-    if (s.includes('aprovado'))
-      return { label: 'Aprovado', color: 'text-green-600 bg-green-50', icon: CheckCircle };
-    if (s.includes('rejeitado'))
-      return { label: 'Rejeitado', color: 'text-red-600 bg-red-50', icon: XCircle };
-    return { label: 'Desconhecido', color: 'text-gray-500 bg-gray-50', icon: Clock };
-  };
-
-  return (
-    <div className="flex h-screen bg-gray-50">
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
-      )}
-
-      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-
-      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}`}>
-        <button onClick={() => setIsSidebarOpen(true)} className="fixed top-4 left-4 z-50 p-3 bg-white rounded-xl shadow-lg lg:hidden">
-          <Menu className="w-6 h-6" />
-        </button>
-
-        <div className="p-6 lg:p-10 max-w-7xl mx-auto">
-          <div className="mb-10">
-            <h1 className="text-4xl font-bold text-gray-900">Bem-vindo, Funcionário</h1>
-            <p className="text-lg text-gray-600 mt-2">Solicite insumos, acompanhe pedidos e visualize o estoque.</p>
-          </div>
-
-          {/* Card de Solicitação */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-3xl p-8 mb-10 shadow-xl">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              <div>
-                <h2 className="text-2xl lg:text-3xl font-bold mb-2">Solicitar Reposição de Insumo</h2>
-                <p className="opacity-90">Digite o SKU do insumo que está acabando</p>
-              </div>
-              <div className="flex items-center gap-4 w-full lg:w-auto">
-                <input
-                  type="text"
-                  value={searchSku}
-                  onChange={(e) => setSearchSku(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => e.key === 'Enter' && document.dispatchEvent(new CustomEvent('open-create-modal'))}
-                  placeholder="INS-2025-001"
-                  className="px-6 py-5 rounded-xl text-gray-900 text-lg w-full lg:w-96 focus:outline-none shadow-inner"
-                />
-                <button
-                  onClick={() => document.dispatchEvent(new CustomEvent('open-create-modal'))}
-                  className="bg-white text-blue-600 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all"
-                >
-                  <Plus className="w-9 h-9" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Meus Pedidos */}
-          <div className="bg-white rounded-3xl shadow-xl p-8 mb-10">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <FileText className="w-7 h-7 text-blue-600" />
-                Meus Pedidos de Reposição
-              </h3>
-              <button onClick={carregarPedidos} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition">
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
+    return (
+        <div className="min-h-screen bg-muted/40 font-sans text-slate-900">
+            
+            {/* Sidebar Desktop (Wrapper para layout fixo) */}
+            <div className="hidden lg:block fixed inset-y-0 left-0 w-64 border-r bg-background z-30">
+                <Sidebar />
             </div>
 
-            {loading ? (
-              <div className="text-center py-12">
-                <RefreshCw className="w-10 h-10 text-blue-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Carregando pedidos...</p>
-              </div>
-            ) : pedidos.length === 0 ? (
-              <div className="text-center py-16">
-                <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl font-medium text-gray-500">Nenhum pedido realizado</p>
-                <p className="text-gray-400 mt-2">Seus pedidos aparecerão aqui após a solicitação.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {pedidos.map((pedido) => {
-                  const { label, color, icon: StatusIcon } = getStatusInfo(pedido.status || pedido.estado);
-                  return (
-                    <div key={pedido._id || pedido.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition">
-                      <div className="flex items-center gap-5">
-                        <div className="bg-blue-100 p-3 rounded-xl">
-                          <Package className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-lg text-gray-900">
-                            {pedido.insumo?.nome || pedido.insumoNome || pedido.sku || 'Insumo sem nome'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            SKU: {pedido.insumoSKU || pedido.sku}
-                            {' • '}
-                            {new Date(pedido.createdAt || pedido.data).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-full ${color}`}>
-                        <StatusIcon className="w-5 h-5" />
-                        {label}
-                      </div>
+            {/* Conteúdo Principal */}
+            <main className="flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
+                
+                {/* Header Mobile & Desktop */}
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
+                    <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon" className="lg:hidden shrink-0">
+                                <Menu className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="p-0 w-64">
+                            <Sidebar />
+                        </SheetContent>
+                    </Sheet>
+                    
+                    <div className="flex items-center gap-2">
+                        <LayoutDashboard className="h-5 w-5 text-blue-600" />
+                        <h1 className="font-semibold text-lg">Painel do Funcionário</h1>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                </header>
 
-          {/* Insumos e Estoque */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <Package className="w-8 h-8 text-blue-600" />
-                <h3 className="text-2xl font-bold text-gray-900">Insumos Disponíveis</h3>
-              </div>
-              <InsumosSection />
-            </div>
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <Warehouse className="w-8 h-8 text-blue-600" />
-                <h3 className="text-2xl font-bold text-gray-900">Estoque por Setor</h3>
-              </div>
-              <EstoqueSection />
-            </div>
-          </div>
+                <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto">
+                    
+                    {/* Seção 1: Boas vindas e Ação Rápida */}
+                    <div className="grid gap-6 md:grid-cols-2">
+                        
+                        {/* Welcome */}
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-bold tracking-tight">Olá, Colaborador</h2>
+                            <p className="text-muted-foreground">
+                                Acompanhe o estoque e solicite insumos quando necessário.
+                            </p>
+                        </div>
+
+                        {/* Card de Solicitação Rápida (Substitui o botão flutuante/modal antigo) */}
+                        <Card className="border-blue-100 bg-blue-50/50 shadow-sm">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg text-blue-700 flex items-center gap-2">
+                                    <Plus className="h-5 w-5" /> Solicitação Rápida
+                                </CardTitle>
+                                <CardDescription>Digite o SKU do item para pedir reposição.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleSubmit} className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            placeholder="Ex: INS-2024-001" 
+                                            className="pl-9 bg-white border-blue-200 focus-visible:ring-blue-500"
+                                            value={skuInput}
+                                            onChange={(e) => setSkuInput(e.target.value.toUpperCase())}
+                                        />
+                                    </div>
+                                    <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                        {isSubmitting ? "Enviando..." : "Solicitar"}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Seção 2: Meus Pedidos Recentes */}
+                    <Card>
+                        <CardHeader className="px-6 py-4 border-b">
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-muted-foreground" />
+                                <CardTitle className="text-lg">Meus Pedidos Recentes</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {loading ? (
+                                <div className="p-6 space-y-3">
+                                    <Skeleton className="h-10 w-full" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            ) : pedidos.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+                                    <Package className="h-10 w-10 mb-2 opacity-20" />
+                                    <p>Nenhuma solicitação realizada ainda.</p>
+                                </div>
+                            ) : (
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow>
+                                            <TableHead className="pl-6 w-[140px]">Data</TableHead>
+                                            <TableHead>Item / SKU</TableHead>
+                                            <TableHead className="text-right pr-6">Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {pedidos.slice(0, 5).map((pedido) => (
+                                            <TableRow key={pedido.id || pedido._id}>
+                                                <TableCell className="pl-6 text-muted-foreground text-sm">
+                                                    {pedido.createdAt 
+                                                        ? format(new Date(pedido.createdAt), "dd MMM, HH:mm", { locale: ptBR }) 
+                                                        : '-'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-slate-900">
+                                                            {pedido.insumo?.nome || pedido.insumoNome || 'Insumo Geral'}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground font-mono">
+                                                            {pedido.insumoSKU || pedido.sku || 'SKU N/A'}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    <div className="flex justify-end">
+                                                        {getStatusBadge(pedido.status || pedido.estado)}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Seção 3: Grid de Informações (Insumos e Estoque) */}
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        {/* Insumos Disponíveis */}
+                        <Card className="overflow-hidden">
+                            <CardHeader className="bg-slate-50/50 border-b px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                    <Package className="h-5 w-5 text-blue-600" />
+                                    <CardTitle className="text-base font-semibold">Catálogo de Insumos</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                {/* Componente Existente Importado */}
+                                <InsumosSection />
+                            </CardContent>
+                        </Card>
+
+                        {/* Visão de Setores/Estoque */}
+                        <Card className="overflow-hidden">
+                            <CardHeader className="bg-slate-50/50 border-b px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                    <Warehouse className="h-5 w-5 text-blue-600" />
+                                    <CardTitle className="text-base font-semibold">Estoque por Setor</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                {/* Componente Existente Importado */}
+                                <EstoqueSection />
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                </div>
+            </main>
         </div>
-      </div>
-
-      <CreateButton title="Confirmar Solicitação" onSubmit={handleSolicitacao}>
-        {({ formData, handleChange }) => (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-lg font-semibold mb-3">SKU do Insumo</label>
-              <input
-                name="sku"
-                value={formData.sku || searchSku}
-                onChange={handleChange}
-                placeholder="INS-2025-001"
-                className="w-full px-6 py-4 border-2 rounded-xl focus:border-blue-500 outline-none text-lg"
-                required
-                autoFocus
-              />
-            </div>
-            <p className="text-center text-gray-600">O gerente será notificado automaticamente.</p>
-          </div>
-        )}
-      </CreateButton>
-    </div>
-  );
+    );
 }
