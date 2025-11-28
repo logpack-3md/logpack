@@ -14,6 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 // --- Utilitários ---
 
@@ -77,7 +85,7 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-export default function ListCompras({ compras = [], loading = false, onAction }) {
+export default function ListCompras({ compras = [], loading = false, meta = {}, onPageChange, onAction }) {
     
     const sortedCompras = useMemo(() => {
         const lista = Array.isArray(compras) ? [...compras] : [];
@@ -129,143 +137,162 @@ export default function ListCompras({ compras = [], loading = false, onAction })
     }
 
     return (
-        <div className="relative rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-            
-            {/* Overlay sutil de carregamento ao revalidar */}
-            {isRevalidating && (
-                <div className="absolute inset-0 bg-background/50 z-10 flex items-start justify-center pt-20 backdrop-blur-[1px] transition-all duration-300">
-                    <div className="bg-background/80 px-4 py-2 rounded-full shadow-sm border flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        <span className="text-xs font-medium text-muted-foreground">Atualizando...</span>
+        <div className="flex flex-col gap-4">
+            <div className="relative rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                
+                {/* Overlay sutil de carregamento ao revalidar */}
+                {isRevalidating && (
+                    <div className="absolute inset-0 bg-background/50 z-10 flex items-start justify-center pt-20 backdrop-blur-[1px] transition-all duration-300">
+                        <div className="bg-background/80 px-4 py-2 rounded-full shadow-sm border flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            <span className="text-xs font-medium text-muted-foreground">Atualizando...</span>
+                        </div>
                     </div>
+                )}
+
+                <Table className={clsx("transition-opacity duration-300", isRevalidating && "opacity-60")}>
+                    <TableHeader className="bg-muted/50">
+                        <TableRow className="hover:bg-transparent border-border">
+                            <TableHead className="w-[140px] pl-6 font-medium text-muted-foreground">Data</TableHead>
+                            <TableHead className="min-w-[200px] font-medium text-muted-foreground">Descrição do Insumo</TableHead>
+                            <TableHead className="font-medium text-muted-foreground">Status</TableHead>
+                            <TableHead className="text-center font-medium text-muted-foreground">Quantidade</TableHead>
+                            <TableHead className="text-right font-medium text-muted-foreground">Orçamento (R$)</TableHead>
+                            <TableHead className="text-right pr-6 font-medium text-muted-foreground">Ações</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sortedCompras.map((item) => {
+                            // --- Extração Segura de Valores ---
+                            const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
+                            const rawValue = orcamentoObj?.valor_total ?? item.valor_total;
+                            const hasValue = rawValue !== undefined && rawValue !== null;
+                            const hasOrcamentoLinked = !!orcamentoObj?.id;
+
+                            const isPending = item.status === 'pendente';
+                            const isRenegotiation = item.status === 'renegociacao';
+                            
+                            const rowClass = clsx(
+                                "hover:bg-muted/50 border-border transition-colors group",
+                                isPending && "bg-blue-50/30 hover:bg-blue-50/50",
+                                isRenegotiation && "bg-orange-50/30 hover:bg-orange-50/50"
+                            );
+
+                            return (
+                                <TableRow key={item.id} className={rowClass}>
+                                    <TableCell className="pl-6 py-4 align-top">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2 text-foreground font-medium text-sm">
+                                                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                                                {formatDate(item.createdAt)}
+                                            </div>
+                                            <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
+                                                #{item.id.toString().slice(0, 8)}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="py-4 align-top">
+                                        <div className="flex items-start gap-2">
+                                            <PackageOpen className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                                            <p className="text-sm text-foreground/90 leading-snug line-clamp-2 max-w-[300px]" title={item.description}>
+                                                {item.description}
+                                            </p>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="py-4 align-top">
+                                        <StatusBadge status={item.status} />
+                                    </TableCell>
+                                    <TableCell className="text-center py-4 align-top">
+                                        <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-muted font-mono text-sm font-medium text-foreground">
+                                            {item.amount || 0}
+                                            <span className="ml-1 text-xs text-muted-foreground">unid.</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right py-4 align-top">
+                                        <span className={clsx(
+                                            "font-medium",
+                                            hasValue ? "text-emerald-600 font-semibold" : "text-muted-foreground/40"
+                                        )}>
+                                            {hasValue ? formatCurrency(rawValue) : '---'}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-right py-4 pr-6 align-top">
+                                        <div className="flex justify-end items-center gap-2">
+                                            {item.status === 'pendente' && (
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="default"
+                                                    className="bg-primary hover:bg-primary/90 h-8 px-3 text-xs shadow-sm" 
+                                                    onClick={() => onAction && onAction('create', item)}
+                                                >
+                                                    <DollarSign className="mr-1.5 h-3.5 w-3.5" /> Orçar
+                                                </Button>
+                                            )}
+                                            {item.status === 'renegociacao' && (
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary"
+                                                    className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200 h-8 px-3 text-xs shadow-sm" 
+                                                    onClick={() => onAction && onAction('renegotiate', item)}
+                                                >
+                                                    <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5" /> Renegociar
+                                                </Button>
+                                            )}
+                                            {hasOrcamentoLinked && !['concluido', 'negado', 'cancelado'].includes(item.status) && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
+                                                            <MoreHorizontal className="h-4 w-4"/>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={() => onAction && onAction('edit_desc', item)}>
+                                                            <FileText className="mr-2 h-4 w-4 text-muted-foreground" /> Editar Descrição
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => onAction && onAction('cancel', item)}>
+                                                            <Ban className="mr-2 h-4 w-4" /> Cancelar
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* --- PAGINAÇÃO INTEGRADA --- */}
+            {meta && meta.totalPages > 1 && (
+                <div className="flex justify-end">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious 
+                                    className={clsx("cursor-pointer", meta.currentPage <= 1 && "pointer-events-none opacity-50")}
+                                    onClick={() => onPageChange && onPageChange(meta.currentPage - 1)} 
+                                />
+                            </PaginationItem>
+                            
+                            <PaginationItem>
+                                <PaginationLink isActive>{meta.currentPage}</PaginationLink>
+                            </PaginationItem>
+                            
+                            <PaginationItem>
+                                <PaginationNext 
+                                    className={clsx("cursor-pointer", meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")}
+                                    onClick={() => onPageChange && onPageChange(meta.currentPage + 1)} 
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             )}
-
-            <Table className={clsx("transition-opacity duration-300", isRevalidating && "opacity-60")}>
-                <TableHeader className="bg-muted/50">
-                    <TableRow className="hover:bg-transparent border-border">
-                        <TableHead className="w-[140px] pl-6 font-medium text-muted-foreground">Data</TableHead>
-                        <TableHead className="min-w-[200px] font-medium text-muted-foreground">Descrição do Insumo</TableHead>
-                        <TableHead className="font-medium text-muted-foreground">Status</TableHead>
-                        <TableHead className="text-center font-medium text-muted-foreground">Quantidade</TableHead>
-                        <TableHead className="text-right font-medium text-muted-foreground">Orçamento (R$)</TableHead>
-                        <TableHead className="text-right pr-6 font-medium text-muted-foreground">Ações</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {sortedCompras.map((item) => {
-                        // --- Extração Segura de Valores ---
-                        
-                        // 1. Tenta pegar o objeto orçamento (trata array se vier de hasMany)
-                        const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
-                        
-                        // 2. Tenta pegar o valor total (prioridade: dentro do orcamento > direto no item > null)
-                        const rawValue = orcamentoObj?.valor_total ?? item.valor_total;
-                        
-                        // 3. Verifica se temos um valor válido (diferente de null/undefined) para exibir
-                        const hasValue = rawValue !== undefined && rawValue !== null;
-                        
-                        // 4. Verifica se existe vínculo de orçamento para habilitar menus (precisa de ID)
-                        const hasOrcamentoLinked = !!orcamentoObj?.id;
-
-                        const isPending = item.status === 'pendente';
-                        const isRenegotiation = item.status === 'renegociacao';
-                        
-                        const rowClass = clsx(
-                            "hover:bg-muted/50 border-border transition-colors group",
-                            isPending && "bg-blue-50/30 hover:bg-blue-50/50",
-                            isRenegotiation && "bg-orange-50/30 hover:bg-orange-50/50"
-                        );
-
-                        return (
-                            <TableRow key={item.id} className={rowClass}>
-                                <TableCell className="pl-6 py-4 align-top">
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2 text-foreground font-medium text-sm">
-                                            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-                                            {formatDate(item.createdAt)}
-                                        </div>
-                                        <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
-                                            #{item.id.toString().slice(0, 8)}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="py-4 align-top">
-                                    <div className="flex items-start gap-2">
-                                        <PackageOpen className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                                        <p className="text-sm text-foreground/90 leading-snug line-clamp-2 max-w-[300px]" title={item.description}>
-                                            {item.description}
-                                        </p>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="py-4 align-top">
-                                    <StatusBadge status={item.status} />
-                                </TableCell>
-                                <TableCell className="text-center py-4 align-top">
-                                    <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-muted font-mono text-sm font-medium text-foreground">
-                                        {item.amount || 0}
-                                        <span className="ml-1 text-xs text-muted-foreground">unid.</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right py-4 align-top">
-                                    <span className={clsx(
-                                        "font-medium",
-                                        // Se tiver valor, destaca em verde (ou cor de dinheiro)
-                                        hasValue ? "text-emerald-600 font-semibold" : "text-muted-foreground/40"
-                                    )}>
-                                        {hasValue ? formatCurrency(rawValue) : '---'}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-right py-4 pr-6 align-top">
-                                    <div className="flex justify-end items-center gap-2">
-                                        {item.status === 'pendente' && (
-                                            <Button 
-                                                size="sm" 
-                                                variant="default"
-                                                className="bg-primary hover:bg-primary/90 h-8 px-3 text-xs shadow-sm" 
-                                                onClick={() => onAction && onAction('create', item)}
-                                            >
-                                                <DollarSign className="mr-1.5 h-3.5 w-3.5" /> Orçar
-                                            </Button>
-                                        )}
-                                        {item.status === 'renegociacao' && (
-                                            <Button 
-                                                size="sm" 
-                                                variant="secondary"
-                                                className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200 h-8 px-3 text-xs shadow-sm" 
-                                                onClick={() => onAction && onAction('renegotiate', item)}
-                                            >
-                                                <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5" /> Renegociar
-                                            </Button>
-                                        )}
-                                        {/* Menu só aparece se tiver vínculo de orçamento (ID) */}
-                                        {hasOrcamentoLinked && !['concluido', 'negado', 'cancelado'].includes(item.status) && (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
-                                                        <MoreHorizontal className="h-4 w-4"/>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={() => onAction && onAction('edit_desc', item)}>
-                                                        <FileText className="mr-2 h-4 w-4 text-muted-foreground" /> Editar Descrição
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => onAction && onAction('cancel', item)}>
-                                                        <Ban className="mr-2 h-4 w-4" /> Cancelar
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        )}
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
         </div>
     );
 }
