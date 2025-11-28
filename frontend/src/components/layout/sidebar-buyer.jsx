@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Package, FileText, Settings, ChevronDown, ChevronUp, User, LogOut, LayoutDashboard
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// --- Definição do Menu ---
+// Menu Definition
 const menuItems = [
   { id: 'pedidos', label: 'Painel', icon: LayoutDashboard, href: '/dashboard/buyer' },
   { id: 'compras', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
@@ -21,13 +21,15 @@ const menuItems = [
     subItems: [
       { id: 'profile', label: 'Meu Perfil', icon: User, href: '/dashboard/buyer/profile' },
       { id: 'config', label: 'Configurações', icon: Settings, href: '/dashboard/buyer/configuracoes' },
+      // O ID 'sair' será interceptado na renderização
+      { id: 'sair', label: 'Sair', icon: LogOut, href: '/' },
     ],
   },
 ];
 
-// --- Conteúdo Interno da Sidebar (Reutilizável no Mobile) ---
 export function SidebarContent() {
   const pathname = usePathname();
+  const router = useRouter();
   const [openSubmenus, setOpenSubmenus] = useState({});
 
   const handleSubmenuToggle = (id) => {
@@ -35,6 +37,22 @@ export function SidebarContent() {
   };
 
   const isActive = (href) => pathname === href || pathname.startsWith(href);
+
+  // --- LÓGICA DE LOGOUT ---
+  const handleLogout = (e) => {
+    // Previne a navegação padrão do Link (se houver)
+    if (e) e.preventDefault();
+
+    // 1. Mata o cookie do token definindo validade no passado
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    
+    // 2. Limpa dados de sessão do navegador
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // 3. Redireciona forçando refresh para garantir limpeza de estado
+    window.location.href = '/';
+  };
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -48,7 +66,7 @@ export function SidebarContent() {
         </Link>
       </div>
 
-      {/* Navegação Scrollável */}
+      {/* Navegação */}
       <div className="flex-1 overflow-auto py-4">
         <nav className="grid items-start px-4 text-sm font-medium">
           {menuItems.map((item) => (
@@ -71,19 +89,36 @@ export function SidebarContent() {
                   
                   {openSubmenus[item.id] && (
                     <div className="ml-4 mt-1 border-l pl-2 space-y-1">
-                      {item.subItems.map((sub) => (
-                        <Link
-                          key={sub.id}
-                          href={sub.href}
-                          className={clsx(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-                            isActive(sub.href) ? "bg-muted text-primary font-semibold" : "text-muted-foreground"
-                          )}
-                        >
-                          <sub.icon className="h-4 w-4" />
-                          {sub.label}
-                        </Link>
-                      ))}
+                      {item.subItems.map((sub) => {
+                        // VERIFICA SE É O BOTÃO DE SAIR
+                        if (sub.id === 'sair') {
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={handleLogout}
+                              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <sub.icon className="h-4 w-4" />
+                              {sub.label}
+                            </button>
+                          );
+                        }
+
+                        // Renderização padrão para outros links
+                        return (
+                          <Link
+                            key={sub.id}
+                            href={sub.href}
+                            className={clsx(
+                              "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+                              isActive(sub.href) ? "bg-muted text-primary font-semibold" : "text-muted-foreground"
+                            )}
+                          >
+                            <sub.icon className="h-4 w-4" />
+                            {sub.label}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </>
@@ -115,7 +150,13 @@ export function SidebarContent() {
             <span className="text-sm font-medium truncate">Comprador</span>
             <span className="text-xs text-muted-foreground truncate">LogPack Inc.</span>
           </div>
-          <button className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
+          
+          {/* Botão de Sair do Footer */}
+          <button 
+            onClick={handleLogout}
+            className="ml-auto text-muted-foreground hover:text-destructive transition-colors p-1 rounded-md hover:bg-background"
+            title="Sair do sistema"
+          >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
@@ -124,11 +165,9 @@ export function SidebarContent() {
   );
 }
 
-// --- Componente Wrapper Desktop ---
+// Wrapper Desktop
 export default function SidebarBuyer() {
   return (
-    // FIXO na esquerda, altura total, borda na direita.
-    // hidden no mobile, block no desktop (md)
     <div className="hidden border-r bg-background md:block fixed inset-y-0 left-0 w-[240px] lg:w-[260px] z-30">
       <SidebarContent />
     </div>
