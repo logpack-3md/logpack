@@ -1,137 +1,136 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link'; // Use o Link real do Next.js
-import { usePathname } from 'next/navigation'; // Hook essencial para saber onde estamos
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
-  Package, FileText, Settings, ChevronLeft, ChevronDown, ChevronUp, User, LogOut
+  Package, FileText, Settings, ChevronDown, ChevronUp, User, LogOut, LayoutDashboard
 } from 'lucide-react';
 import clsx from 'clsx';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// LogoSite Component (mantive como estava)
-const LogoSite = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
-    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
+// --- Definição do Menu ---
 const menuItems = [
-  { id: 'pedidos', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
+  { id: 'pedidos', label: 'Painel', icon: LayoutDashboard, href: '/dashboard/buyer' },
+  { id: 'compras', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
   { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/buyer/orcamentos' },
   {
-    id: 'perfil-usuario',
+    id: 'conta',
     label: 'Minha Conta',
     icon: User,
     subItems: [
       { id: 'profile', label: 'Meu Perfil', icon: User, href: '/dashboard/buyer/profile' },
-      { id: 'configuracoes', label: 'Configurações', icon: Settings, href: '/dashboard/buyer/configuracoes' },
-      { id: 'sair', label: 'Sair', icon: LogOut, href: '/' },
+      { id: 'config', label: 'Configurações', icon: Settings, href: '/dashboard/buyer/configuracoes' },
     ],
   },
 ];
 
-export default function SidebarBuyer({ isOpen = true, onToggle = () => {} }) {
-  const pathname = usePathname(); // Obtém a URL atual
+// --- Conteúdo Interno da Sidebar (Reutilizável no Mobile) ---
+export function SidebarContent() {
+  const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState({});
 
-  const handleSubmenuToggle = (submenuId) => {
-    setOpenSubmenus((prev) => ({ ...prev, [submenuId]: !prev[submenuId] }));
+  const handleSubmenuToggle = (id) => {
+    setOpenSubmenus(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Função para verificar se o item está ativo baseado na URL
   const isActive = (href) => pathname === href || pathname.startsWith(href);
 
   return (
-    <aside className={clsx(
-        'fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col',
-        'bg-white text-slate-900 border-r border-slate-200 shadow-md',
-        'transition-transform duration-300 lg:translate-x-0',
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      )}>
-      
-      {/* Header */}
-      <div className="flex items-center justify-between h-16 px-5 border-b border-slate-200 shrink-0">
-        <Link href="/dashboard/buyer" className="flex items-center gap-3 group outline-none">
-          <div className="transition-transform duration-300 group-hover:scale-105">
-            <LogoSite />
+    <div className="flex flex-col h-full bg-background">
+      {/* Header Logo */}
+      <div className="flex h-14 items-center border-b px-6 lg:h-[60px]">
+        <Link href="/dashboard/buyer" className="flex items-center gap-2 font-semibold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Package className="h-4 w-4" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">LogPack</h1>
+          <span className="text-lg font-bold">LogPack</span>
         </Link>
-        <button onClick={onToggle} className="p-1.5 rounded-md hover:bg-slate-100 lg:hidden">
-          <ChevronLeft size={20} />
-        </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-2 py-5 overflow-y-auto">
-        <ul className="space-y-1">
+      {/* Navegação Scrollável */}
+      <div className="flex-1 overflow-auto py-4">
+        <nav className="grid items-start px-4 text-sm font-medium">
           {menuItems.map((item) => (
-            <li key={item.id}>
+            <div key={item.id} className="mb-1">
               {item.subItems ? (
-                <div className="space-y-1 mt-4 border-t border-slate-200 pt-4">
-                  <div className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                    Área do Cliente
-                  </div>
+                <>
                   <button
                     onClick={() => handleSubmenuToggle(item.id)}
                     className={clsx(
-                      'flex items-center justify-between w-full px-3 py-2 text-md font-medium rounded-md transition-colors outline-none group',
-                      'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      "flex w-full items-center justify-between rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted",
+                      openSubmenus[item.id] && "bg-muted text-primary"
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <item.icon size={18} className="shrink-0" />
-                      <span>{item.label}</span>
+                    <div className="flex items-center gap-3">
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
                     </div>
-                    <div className="text-slate-400 group-hover:text-slate-600">
-                      {openSubmenus[item.id] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                    </div>
+                    {openSubmenus[item.id] ? <ChevronUp className="h-4 w-4"/> : <ChevronDown className="h-4 w-4"/>}
                   </button>
-
-                  {/* Submenu */}
+                  
                   {openSubmenus[item.id] && (
-                    <div className="relative pl-4 ml-4 border-l border-slate-200">
-                      <ul className="space-y-1">
-                        {item.subItems.map((subItem) => (
-                          <li key={subItem.id}>
-                            <Link
-                              href={subItem.href}
-                              className={clsx(
-                                'flex items-center px-3 py-2 text-md font-medium rounded-md transition-all',
-                                isActive(subItem.href)
-                                  ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm translate-x-1'
-                                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 hover:translate-x-1'
-                              )}
-                            >
-                              <subItem.icon size={16} className="mr-3 opacity-70 shrink-0" />
-                              <span>{subItem.label}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="ml-4 mt-1 border-l pl-2 space-y-1">
+                      {item.subItems.map((sub) => (
+                        <Link
+                          key={sub.id}
+                          href={sub.href}
+                          className={clsx(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+                            isActive(sub.href) ? "bg-muted text-primary font-semibold" : "text-muted-foreground"
+                          )}
+                        >
+                          <sub.icon className="h-4 w-4" />
+                          {sub.label}
+                        </Link>
+                      ))}
                     </div>
                   )}
-                </div>
+                </>
               ) : (
                 <Link
                   href={item.href}
                   className={clsx(
-                    'flex items-center px-3 py-2 text-md font-medium rounded-md transition-all',
-                    isActive(item.href)
-                      ? 'bg-blue-50 text-blue-700 shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary hover:bg-muted",
+                    isActive(item.href) ? "bg-muted text-primary font-semibold" : "text-muted-foreground"
                   )}
                 >
-                  <item.icon size={18} className={clsx("mr-3 shrink-0", isActive(item.href) ? "text-blue-600" : "")} />
-                  <span>{item.label}</span>
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
                 </Link>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
-      </nav>
-    </aside>
+        </nav>
+      </div>
+
+      {/* Footer Usuário */}
+      <div className="mt-auto p-4 border-t">
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+          <Avatar className="h-9 w-9">
+            <AvatarImage src="/placeholder-user.jpg" />
+            <AvatarFallback>CP</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-medium truncate">Comprador</span>
+            <span className="text-xs text-muted-foreground truncate">LogPack Inc.</span>
+          </div>
+          <button className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Componente Wrapper Desktop ---
+export default function SidebarBuyer() {
+  return (
+    // FIXO na esquerda, altura total, borda na direita.
+    // hidden no mobile, block no desktop (md)
+    <div className="hidden border-r bg-background md:block fixed inset-y-0 left-0 w-[240px] lg:w-[260px] z-30">
+      <SidebarContent />
+    </div>
   );
 }

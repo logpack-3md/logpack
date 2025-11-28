@@ -1,23 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Search, Menu } from 'lucide-react';
+import { Loader2, Search, Menu, CircleUser, Bell, Filter } from 'lucide-react';
 import clsx from 'clsx';
 
-// UI Imports (agrupados para limpeza visual)
+// SHADCN UI COMPONENTS
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import {
-    Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
-import SidebarBuyer from "@/components/layout/sidebar-buyer";
-import ListCompras from "@/components/ListCompras"; 
+// Imports Locais
+import SidebarBuyer, { SidebarContent } from "@/components/layout/sidebar-buyer";
+import ListCompras from "@/components/ListCompras";
 import { useBuyerOperations } from "@/hooks/useBuyerOperations";
 
 export default function BuyerDashboard() {
@@ -26,192 +26,241 @@ export default function BuyerDashboard() {
         createOrcamento, renegociarOrcamento, updateDescricao, cancelarOrcamento 
     } = useBuyerOperations();
 
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [statusFilter, setStatusFilter] = useState('');
-    
-    // Controle do Modal
+    const [statusFilter, setStatusFilter] = useState('todos');
     const [modalConfig, setModalConfig] = useState({ type: null, item: null });
     const [formData, setFormData] = useState({ amount: "", desc: "" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchCompras(1, 10, statusFilter);
+        const filterToSend = statusFilter === 'todos' ? '' : statusFilter;
+        fetchCompras(1, 10, filterToSend);
     }, [fetchCompras, statusFilter]);
 
-    // Handler para abrir modais e pré-popular dados
+    // --- Handlers ---
     const handleOpenModal = (type, item) => {
         setModalConfig({ type, item });
-        setFormData({
-            amount: item.amount ? String(item.amount) : "",
-            desc: item.description || ""
-        });
+        
+        // Extração segura do orçamento (igual à lista)
+        const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
+        
+        const valorInicial = orcamentoObj?.valor_total 
+            ? String(orcamentoObj.valor_total) 
+            : (item.amount ? String(item.amount) : ""); // item.amount é quantidade, mas usamos como placeholder se necessário
+            
+        const descInicial = orcamentoObj?.description || item.description || "";
+        
+        setFormData({ amount: valorInicial, desc: descInicial });
     };
 
     const handleCloseModal = () => {
         setModalConfig({ type: null, item: null });
         setFormData({ amount: "", desc: "" });
+        setIsSubmitting(false);
     };
-
-    // Helper para extrair o ID do orçamento de forma segura
-    const getOrcamentoId = (item) => item?.orcamento?.id || item?.orcamentoId || item?.id;
 
     const handleSubmit = async () => {
         const { type, item } = modalConfig;
         if (!item) return;
+        setIsSubmitting(true);
+        
+        // --- CORREÇÃO PRINCIPAL: Extração do ID do Orçamento ---
+        const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
+        const orcamentoId = orcamentoObj?.id;
 
         try {
             switch (type) {
                 case 'create':
                     await createOrcamento(item.id, { 
                         valor_total: parseFloat(formData.amount), 
-                        description: formData.desc 
+                        description: formData.desc || "Orçamento inicial"
                     });
                     break;
+
                 case 'renegotiate':
-                    await renegociarOrcamento(getOrcamentoId(item), { 
+                    if (!orcamentoId) throw new Error("ID do orçamento não encontrado.");
+                    await renegociarOrcamento(orcamentoId, { 
                         valor_total: parseFloat(formData.amount) 
                     });
                     break;
+
                 case 'edit_desc':
-                    await updateDescricao(getOrcamentoId(item), { 
-                        description: formData.desc 
-                    });
+                    if (!orcamentoId) throw new Error("ID do orçamento não encontrado.");
+                    // Validação de Frontend Básica para evitar erro do Zod
+                    if (formData.desc.length < 10) {
+                        throw new Error("A descrição deve ter no mínimo 10 caracteres.");
+                    }
+                    await updateDescricao(orcamentoId, { description: formData.desc });
                     break;
+
                 case 'cancel':
-                    await cancelarOrcamento(getOrcamentoId(item));
+                    if (!orcamentoId) throw new Error("ID do orçamento não encontrado.");
+                    await cancelarOrcamento(orcamentoId);
                     break;
             }
             handleCloseModal();
         } catch (error) {
             console.error("Erro na operação:", error);
-            // Aqui você pode adicionar um Toast de erro
+            // Exibe o erro real (ex: "Mínimo 10 caracteres")
+            alert(error.message || "Erro ao processar solicitação.");
+            setIsSubmitting(false);
+        }
+    };
+
+    const getModalTitle = () => {
+        switch(modalConfig.type) {
+            case 'create': return 'Novo Orçamento';
+            case 'renegotiate': return 'Renegociar Valor';
+            case 'edit_desc': return 'Editar Detalhes';
+            case 'cancel': return 'Cancelar Pedido';
+            default: return '';
         }
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
-            <SidebarBuyer isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-
-            <main className={clsx("flex-1 transition-all duration-300 flex flex-col min-h-screen", sidebarOpen ? "lg:ml-64" : "lg:ml-0")}>
+        <div className="min-h-screen w-full bg-muted/40">
+            <SidebarBuyer />
+            <div className="flex flex-col md:pl-[240px] lg:pl-[260px]">
                 
-                {/* Header Mobile */}
-                <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
-                    <span className="font-bold text-slate-700">LogPack</span>
-                    <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)}>
-                        <Menu className="h-6 w-6" />
-                    </Button>
-                </div>
-
-                <div className="p-6 md:p-8 space-y-8 flex-1 overflow-y-auto">
-                    {/* Header Desktop & Filtros */}
-                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Central de Orçamentos</h1>
-                            <p className="text-slate-500 mt-2">Gerencie solicitações de compra e negociações.</p>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                            <select 
-                                className="h-10 rounded-md border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                                value={statusFilter} 
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                            >
-                                <option value="">Todos</option>
-                                <option value="pendente">Pendente</option>
-                                <option value="renegociacao">Renegociação</option>
-                                <option value="fase_de_orcamento">Em Orçamento</option>
-                            </select>
-                            
-                            <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => fetchCompras(1, 10, statusFilter)}>
-                                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Search className="mr-2 h-4 w-4"/>} 
-                                Atualizar
+                {/* Header */}
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+                                <Menu className="h-5 w-5" />
+                                <span className="sr-only">Menu</span>
                             </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="flex flex-col p-0 w-[260px]">
+                           <SidebarContent />
+                        </SheetContent>
+                    </Sheet>
+
+                    <div className="w-full flex-1">
+                        <form>
+                            <div className="relative">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input type="search" placeholder="Buscar pedidos..." className="w-full bg-background pl-8 md:w-2/3 lg:w-1/3" />
+                            </div>
+                        </form>
+                    </div>
+
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                        <Bell className="h-5 w-5" />
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="icon" className="rounded-full">
+                                <CircleUser className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>Sair</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </header>
+
+                {/* Main Content */}
+                <main className="flex flex-1 flex-col gap-6 p-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight">Painel de Compras</h1>
+                            <p className="text-sm text-muted-foreground">Visualize e responda às solicitações de orçamento.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-[200px] bg-background">
+                                    <Filter className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                    <SelectValue placeholder="Filtrar por Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="todos">Todos os Pedidos</SelectItem>
+                                    <SelectItem value="pendente">Novos (Pendente)</SelectItem>
+                                    <SelectItem value="fase_de_orcamento">Em Análise</SelectItem>
+                                    <SelectItem value="renegociacao">Renegociação</SelectItem>
+                                    <SelectItem value="concluido">Concluídos</SelectItem>
+                                    <SelectItem value="negado">Negados</SelectItem>
+                                    <SelectItem value="cancelado">Cancelados</SelectItem>
+                                </SelectContent>
+                             </Select>
                         </div>
                     </div>
 
-                    <ListCompras compras={compras} loading={loading} onAction={handleOpenModal} />
+                    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                         <ListCompras compras={compras} loading={loading} onAction={handleOpenModal} />
+                    </div>
 
-                    {/* Paginação */}
                     {meta && meta.totalPages > 1 && (
-                        <div className="flex justify-center mt-4">
+                        <div className="mt-auto py-4">
                             <Pagination>
                                 <PaginationContent>
                                     <PaginationItem>
                                         <PaginationPrevious 
-                                            className={clsx("cursor-pointer", meta.currentPage <= 1 && "pointer-events-none opacity-50")}
-                                            onClick={() => fetchCompras(meta.currentPage - 1, 10, statusFilter)} 
+                                            href="#"
+                                            onClick={(e) => { e.preventDefault(); if(meta.currentPage > 1) fetchCompras(meta.currentPage - 1, 10, statusFilter === 'todos' ? '' : statusFilter); }}
+                                            className={clsx(meta.currentPage <= 1 && "pointer-events-none opacity-50")}
                                         />
                                     </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink isActive>{meta.currentPage}</PaginationLink>
-                                    </PaginationItem>
+                                    <PaginationItem><PaginationLink isActive>{meta.currentPage}</PaginationLink></PaginationItem>
                                     <PaginationItem>
                                         <PaginationNext 
-                                            className={clsx("cursor-pointer", meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")}
-                                            onClick={() => fetchCompras(meta.currentPage + 1, 10, statusFilter)} 
+                                             href="#"
+                                             onClick={(e) => { e.preventDefault(); if(meta.currentPage < meta.totalPages) fetchCompras(meta.currentPage + 1, 10, statusFilter === 'todos' ? '' : statusFilter); }}
+                                             className={clsx(meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")}
                                         />
                                     </PaginationItem>
                                 </PaginationContent>
                             </Pagination>
                         </div>
                     )}
-                </div>
-            </main>
+                </main>
+            </div>
 
-            {/* --- ÁREA DE MODAIS --- */}
-            
-            {/* Modal Genérico para Inputs (Criar/Renegociar/Editar) */}
-            <Dialog open={modalConfig.type !== null && modalConfig.type !== 'cancel'} onOpenChange={handleCloseModal}>
-                <DialogContent>
+            {/* --- Modais --- */}
+            <Dialog open={modalConfig.type !== null && modalConfig.type !== 'cancel'} onOpenChange={(open) => !open && handleCloseModal()}>
+                <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>
-                            {modalConfig.type === 'create' && "Novo Orçamento"}
-                            {modalConfig.type === 'renegotiate' && "Renegociar Valor"}
-                            {modalConfig.type === 'edit_desc' && "Editar Descrição"}
-                        </DialogTitle>
-                        <DialogDescription>Preencha os dados abaixo.</DialogDescription>
+                        <DialogTitle>{getModalTitle()}</DialogTitle>
+                        <DialogDescription>Preencha os dados necessários.</DialogDescription>
                     </DialogHeader>
-                    
                     <div className="grid gap-4 py-4">
                         {['create', 'renegotiate'].includes(modalConfig.type) && (
-                            <div className="grid gap-2">
-                                <Label>Valor (R$)</Label>
-                                <Input 
-                                    type="number" 
-                                    placeholder="0.00" 
-                                    value={formData.amount} 
-                                    onChange={e => setFormData({...formData, amount: e.target.value})} 
-                                />
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="amount" className="text-right">Valor</Label>
+                                <div className="col-span-3 relative">
+                                    <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">R$</span>
+                                    <Input id="amount" type="number" className="pl-9" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
+                                </div>
                             </div>
                         )}
-                        
                         {['create', 'edit_desc'].includes(modalConfig.type) && (
-                            <div className="grid gap-2">
-                                <Label>Descrição</Label>
-                                <Textarea 
-                                    placeholder="Detalhes..." 
-                                    value={formData.desc} 
-                                    onChange={e => setFormData({...formData, desc: e.target.value})} 
-                                />
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="desc" className="text-right">Descrição</Label>
+                                <Textarea id="desc" className="col-span-3" placeholder="Detalhes do orçamento..." value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} />
                             </div>
                         )}
                     </div>
-
                     <DialogFooter>
                         <Button variant="outline" onClick={handleCloseModal}>Cancelar</Button>
-                        <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700">Confirmar</Button>
+                        <Button onClick={handleSubmit} disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Modal Específico: Cancelar */}
-            <Dialog open={modalConfig.type === 'cancel'} onOpenChange={handleCloseModal}>
-                <DialogContent>
+            <Dialog open={modalConfig.type === 'cancel'} onOpenChange={(open) => !open && handleCloseModal()}>
+                <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-red-600">Cancelar Orçamento?</DialogTitle>
-                        <DialogDescription>Esta ação não pode ser desfeita. O status voltará ao anterior.</DialogDescription>
+                        <DialogTitle className="text-destructive">Cancelar Solicitação</DialogTitle>
+                        <DialogDescription>Tem certeza? O status será revertido e o orçamento cancelado.</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="outline" onClick={handleCloseModal}>Voltar</Button>
-                        <Button variant="destructive" onClick={handleSubmit}>Sim, Cancelar</Button>
+                        <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Confirmar
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
