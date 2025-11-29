@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Imports
-import SidebarManager, { SidebarContent } from "@/components/layout/sidebar-manager";
+// import SidebarManager, { SidebarContent } from "@/components/layout/sidebar-manager";
 import { useManagerOrders } from "@/hooks/useManagerOrders";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
