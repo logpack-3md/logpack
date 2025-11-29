@@ -4,23 +4,71 @@ import { toast } from 'sonner';
 
 export const useEmployeeOperations = () => {
     const [pedidos, setPedidos] = useState([]);
+    const [meta, setMeta] = useState({ totalItems: 0, totalPages: 0, currentPage: 1 });
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // --- BUSCAR PEDIDOS ---
-    const fetchPedidos = useCallback(async () => {
+    const fetchPedidos = useCallback(async (page = 1, limit = 10) => {
         setLoading(true);
         try {
-            const res = await api.get('employee/my-requests');
-            // Tratamento robusto para garantir array
-            const lista = Array.isArray(res) ? res : (res?.data || res?.requests || []);
-            setPedidos(lista);
-        } catch (err) {
-            console.error('Erro ao buscar pedidos:', err);
-            // Não mostramos toast de erro se for apenas 404/Vazio para não assustar o usuário
-            if (err.response?.status !== 404) {
-                toast.error('Não foi possível atualizar a lista de pedidos.');
+            const queryParams = new URLSearchParams({ 
+                page: page.toString(), 
+                limit: limit.toString() 
+            });
+
+            const res = await api.get(`manager/pedido?${queryParams.toString()}`);
+
+            if (res && res.success === false) {
+                 if (res.status === 404 || res.status === 403 || (res.message && res.message.includes('Nenhum'))) {
+                    setPedidos([]);
+                    setMeta({ totalItems: 0, totalPages: 0, currentPage: 1 });
+                    return;
+                 }
+                 throw new Error(res.error);
             }
+
+            const rawList = res?.data || res?.pedidos || res?.requests || (Array.isArray(res) ? res : []);
+            
+            // --- NORMALIZAÇÃO ROBUSTA ---
+            const normalizedList = rawList.map(p => {
+                // Busca Nome (várias possibilidades)
+                const nomeInsumo = 
+                    p.insumoNome ||          
+                    p.insumo?.name ||        
+                    p.insumo?.nome ||
+                    p.name ||
+                    '';
+
+                // Busca SKU (várias possibilidades)
+                const rawSku = 
+                    p.insumoSKU || 
+                    p.sku || 
+                    p.insumo?.sku || 
+                    p.insumo?.SKU || 
+                    '---';
+                
+                // Limpeza do SKU (Trim + Upper)
+                const cleanSku = String(rawSku).trim().toUpperCase();
+
+                return {
+                    id: p.id || p._id,
+                    createdAt: p.createdAt || p.data_criacao || new Date().toISOString(),
+                    status: p.status || p.estado || 'pendente',
+                    displayInsumoName: nomeInsumo,
+                    displaySku: cleanSku
+                };
+            });
+
+            normalizedList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            const metaData = res?.meta || { totalItems: normalizedList.length, totalPages: 1, currentPage: page };
+
+            setPedidos(normalizedList);
+            setMeta(metaData);
+
+        } catch (err) {
+            console.error('Erro fetchPedidos:', err);
             setPedidos([]);
         } finally {
             setLoading(false);
@@ -29,53 +77,39 @@ export const useEmployeeOperations = () => {
 
     // --- CRIAR SOLICITAÇÃO ---
     const criarSolicitacao = async (sku) => {
-        if (!sku || sku.trim().length < 3) {
-            toast.warning("Por favor, digite um SKU válido.");
+        const cleanSku = String(sku || '').trim().toUpperCase();
+        
+        if (cleanSku.length < 2) {
+            toast.warning("SKU inválido.");
             return false;
         }
 
         setIsSubmitting(true);
         try {
-            const skuFormatado = sku.trim().toUpperCase();
-            
             const res = await api.post('employee/request', { 
-                insumoSKU: skuFormatado 
+                insumoSKU: cleanSku 
             });
 
-            if (res?.success === false || res?.error) {
-                throw new Error(res?.message || res?.error || 'Erro desconhecido');
+            if (res && res.success === false) {
+                const msg = res.error || res.message || "";
+                
+                if (res.status === 409 || msg.includes('já existe')) {
+                    toast.info("Já existe uma solicitação aberta para este SKU.");
+                } else if (res.status === 400 || msg.includes('Estoque')) {
+                    toast.warning("Estoque acima do limite de reposição (35%).");
+                } else {
+                    toast.error(msg || "Erro ao solicitar.");
+                }
+                return false;
             }
 
             toast.success('Solicitação enviada com sucesso!');
-            
-            // Atualiza a lista imediatamente
-            await fetchPedidos();
-
-            // --- LÓGICA LEGADA DE NOTIFICAÇÃO (Janela/Sistema Antigo) ---
-            // Mantida para compatibilidade, mas encapsulada aqui
-            if (typeof window !== 'undefined') {
-                const usuarioLogado = JSON.parse(localStorage.getItem('user') || '{}');
-                const nomeUsuario = usuarioLogado.nome || usuarioLogado.name || 'Funcionário';
-
-                if (window.adicionarNotificacaoPendente) {
-                    window.adicionarNotificacaoPendente({
-                        usuario: nomeUsuario,
-                        sku: skuFormatado,
-                        insumo: 'Solicitação de Reposição'
-                    });
-                }
-                if (window.notificarNovoPedido) {
-                    window.notificarNovoPedido({
-                        usuario: nomeUsuario,
-                        sku: skuFormatado
-                    });
-                }
-            }
-
+            await fetchPedidos(1); 
             return true;
+
         } catch (err) {
-            console.error('Erro ao criar solicitação:', err);
-            toast.error(err.response?.data?.message || err.message || 'Erro ao enviar solicitação.');
+            console.error("Erro criarSolicitacao:", err);
+            toast.error("Erro de conexão.");
             return false;
         } finally {
             setIsSubmitting(false);
@@ -84,6 +118,7 @@ export const useEmployeeOperations = () => {
 
     return {
         pedidos,
+        meta,
         loading,
         isSubmitting,
         fetchPedidos,
