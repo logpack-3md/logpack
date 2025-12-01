@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,25 +11,27 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { LogoSite } from "@/components/ui/icons-geral";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6, "Password must be at least 8 characters long"),
+  email: z.string().email("Insira um e-mail válido"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 });
 
 const Login = () => {
-  const router = useRouter()
+  const router = useRouter();
+  const [globalError, setGlobalError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -38,14 +41,18 @@ const Login = () => {
     resolver: zodResolver(formSchema),
   });
 
-  const { loginSuccess } = useAuth()
+  const { loginSuccess } = useAuth();
 
+  // Removido o tipo (data: any) -> (data)
   const onSubmit = async (data) => {
+    setIsLoading(true);
+    setGlobalError(null);
+
     try {
       const res = await api.post("users/login", data);
 
       if (!res || res.error) {
-        throw new Error(res?.message || 'Erro ao comunicar com o servidor.');
+        throw new Error(res?.message || 'Credenciais inválidas ou erro no servidor.');
       }
 
       if (res.token) {
@@ -57,26 +64,54 @@ const Login = () => {
         });
 
         loginSuccess(res.token);
-        toast.success(res.message || "Login realizado.");
+        
+        // Toast de Sucesso estilizado
+        toast.success("Login realizado com sucesso!", {
+          description: "Redirecionando para o dashboard...",
+          icon: <CheckCircle2 className="h-5 w-5 text-primary" />,
+        });
+        
         router.push('/dashboard');
       }
     } catch (error) {
-      toast.error(error.message || 'Erro inesperado no login.');
+      // Removido tipagem do erro
+      const msg = error.message || 'Erro inesperado no login.';
+      
+      // Aviso Visual acima do form
+      setGlobalError(msg);
+      
+      // Toast de erro
+      toast.error("Falha na autenticação", {
+        description: msg,
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 
-
   return (
-    <div className="min-h-screen w-full flex">
-      <div className="w-full grid h-screen">
-        <div className="flex items-center justify-center p-8">
-          <div className="mx-auto w-full max-w-sm flex flex-col justify-center space-y-6 border rounded-xl bg-card text-card-foreground shadow-sm p-8">
+    <div className="min-h-screen w-full flex bg-background text-foreground transition-colors duration-300">
+      <div className="w-full grid h-screen place-items-center">
+        <div className="flex flex-col items-center justify-center w-full p-4 sm:p-8">
+          
+          <div className="mx-auto w-full max-w-sm flex flex-col justify-center space-y-6 border border-border rounded-xl bg-card text-card-foreground shadow-sm p-8">
            
             <div className="flex flex-col space-y-2 text-center">
-              <div className="flex justify-center mb-2"> <LogoSite className="h-10 w-10" /></div>
+              <div className="flex justify-center mb-2"> 
+                <LogoSite className="h-10 w-10 text-primary" />
+              </div>
               <h1 className="text-2xl font-semibold tracking-tight">Bem vindo ao LogPack!</h1>
               <p className="text-sm text-muted-foreground">Faça login na sua conta para continuar.</p>
             </div>
+
+            {/* SEÇÃO DE AVISOS (ALERTS) */}
+            {/* Usa var(--destructive) para fundo e texto */}
+            {globalError && (
+              <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
+                <AlertCircle className="h-5 w-5" />
+                <span>{globalError}</span>
+              </div>
+            )}
 
             {/* Formulário */}
             <Form {...form}>
@@ -92,10 +127,11 @@ const Login = () => {
                         <Input
                           type="email"
                           placeholder="nome@example.com"
+                          className="bg-background placeholder:text-muted-foreground"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-destructive font-medium" />
                     </FormItem>
                   )}
                 />
@@ -109,7 +145,7 @@ const Login = () => {
                         <FormLabel>Senha</FormLabel>
                         <Link
                           href="#"
-                          className="text-sm font-medium text-muted-foreground hover:underline"
+                          className="text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
                         >
                           Esqueceu senha?
                         </Link>
@@ -118,16 +154,21 @@ const Login = () => {
                         <Input
                           type="password"
                           placeholder="••••••••"
+                          className="bg-background placeholder:text-muted-foreground"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-destructive font-medium" />
                     </FormItem>
                   )}
                 />
 
-                <Button type="submit" className="w-full">
-                  Login
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Entrando..." : "Login"}
                 </Button>
 
               </form>
@@ -136,7 +177,7 @@ const Login = () => {
             {/* Rodapé da Box */}
             <p className="px-8 text-center text-sm text-muted-foreground">
               Não tem conta?{" "}
-              <Link href="/cadastro" className="underline underline-offset-4 hover:text-primary">
+              <Link href="/cadastro" className="underline underline-offset-4 hover:text-primary transition-colors">
                 Cadastre-se
               </Link>
             </p>

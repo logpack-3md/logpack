@@ -3,21 +3,12 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard,
-  Package,
-  FileText,
   Settings,
   ChevronLeft,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
-  Box,
-  BarChart2,
-  FileCheck2,
-  Bell,
   User,
-  LogOut,
-  Wallet,
-  PackageOpen
+  LogOut
 } from 'lucide-react';
 import clsx from 'clsx';
 import { LogoSite } from "@/components/ui/icons-geral";
@@ -55,7 +46,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
   return (
     <aside
       className={clsx(
-        'fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col',
+        'fixed inset-y-0 left-0 z-5000 w-64 h-full flex flex-col',
         'bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-md',
         'transition-transform duration-300 lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'

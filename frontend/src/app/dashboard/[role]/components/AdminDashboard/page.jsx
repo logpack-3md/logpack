@@ -10,6 +10,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
+      
       <div
         className={clsx(
           "fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-300",
