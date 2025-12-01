@@ -20,43 +20,43 @@ export default function PedidosManagerPage() {
   }, []);
 
   const handleCreatePedido = async (data) => {
-        try {
-          // ROTA CORRETA DO FUNCIONÁRIO/COMPRADOR
-          const resposta = await api.post('employee/request', { insumoSKU: data.sku });
-      
-          // AQUI VOCÊ VÊ TUDO QUE A API RETORNOU
-          console.log('Resposta completa da API:', resposta);
-      
-          // VERIFICAÇÃO CHAVE DE ERRO (STATUS 400 RETORNADO PELO APIFETCH)
-          if (resposta && resposta.success === false) {
-              // Se for um erro formatado, retorne-o imediatamente para o CreateButton
-              return resposta; 
-          }
-          
-          // --------------------
-          // LÓGICA DE SUCESSO
-          // --------------------
-          
-          // Se quiser mostrar algo específico na tela:
-          if (resposta?.message) {
-            toast.success(resposta.message);
-          } else if (resposta?.pedido?.id) {
-            toast.success(`Pedido #${resposta.pedido.id} criado com sucesso!`);
-          } else {
-            toast.success('Solicitação enviada com sucesso!');
-          }
-      
-          // Retorna true ou o objeto de sucesso para fechar o modal
-          return true;
-        } catch (err) {
-          // Este bloco só será acionado em caso de exceção (ex: falha de rede/conexão)
-          console.error('Erro completo (exceção):', err);
-          toast.error('Falha de conexão ou erro inesperado.');
-          
-          // Em caso de exceção de rede, retorna o objeto de erro para o CreateButton
-          return { success: false, error: 'Falha de conexão com o servidor.' };
-        }
-      };
+    try {
+      // ROTA CORRETA DO FUNCIONÁRIO/COMPRADOR
+      const resposta = await api.post('employee/request', { insumoSKU: data.sku });
+
+      // AQUI VOCÊ VÊ TUDO QUE A API RETORNOU
+      console.log('Resposta completa da API:', resposta);
+
+      // VERIFICAÇÃO CHAVE DE ERRO (STATUS 400 RETORNADO PELO APIFETCH)
+      if (resposta && resposta.success === false) {
+        // Se for um erro formatado, retorne-o imediatamente para o CreateButton
+        return resposta;
+      }
+
+      // --------------------
+      // LÓGICA DE SUCESSO
+      // --------------------
+
+      // Se quiser mostrar algo específico na tela:
+      if (resposta?.message) {
+        toast.success(resposta.message);
+      } else if (resposta?.pedido?.id) {
+        toast.success(`Pedido #${resposta.pedido.id} criado com sucesso!`);
+      } else {
+        toast.success('Solicitação enviada com sucesso!');
+      }
+
+      // Retorna true ou o objeto de sucesso para fechar o modal
+      return true;
+    } catch (err) {
+      // Este bloco só será acionado em caso de exceção (ex: falha de rede/conexão)
+      console.error('Erro completo (exceção):', err);
+      toast.error('Falha de conexão ou erro inesperado.');
+
+      // Em caso de exceção de rede, retorna o objeto de erro para o CreateButton
+      return { success: false, error: 'Falha de conexão com o servidor.' };
+    }
+  };
 
   const openModal = () => {
     document.dispatchEvent(new CustomEvent('open-create-modal'));
@@ -81,7 +81,7 @@ export default function PedidosManagerPage() {
         <Box sx={{ maxWidth: '1400px', mx: 'auto', p: { xs: 3, lg: 4 } }}>
           <Box sx={{ mb: 6 }}>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-lg">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-br from-blue-600 to-indigo-700 text-white shadow-lg">
                 <RiTruckLine className="w-7 h-7" />
               </span>
               Gestão de Pedidos

@@ -8,37 +8,66 @@ import {
   User,
   LogOut,
   ChevronLeft,
-  Moon,
-  Sun,
+  ChevronDown,
+  ChevronUp,
+  Box,
+  Package,
+  FileText,
+  PackageOpen, // Para Setores
+  Briefcase, // Para o ícone pai de Operações
   Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
 
 // UI Components
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que existe ou remova
-import { SwitchTheme } from "@/components/SwitchThemes"; // Certifique-se que existe
+import { LogoSite } from "@/components/ui/icons-geral"; 
+import { SwitchTheme } from "@/components/SwitchThemes"; 
 
 // API
 import { api } from "@/lib/api";
 
-// MENU SIMPLIFICADO
+// MENU ATUALIZADO COM OPERAÇÕES
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
-  { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/manager' },
+  {
+    id: 'operacoes',
+    label: 'Operações',
+    icon: Briefcase, // Ícone pai
+    subItems: [
+      { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' },
+      { id: 'setores', label: 'Setores', icon: PackageOpen, href: '/dashboard/manager/setores' },
+      { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
+      { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/manager/orcamentos' },
+    ],
+  },
+  { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/manager/profile' },
 ];
 
-export default function SidebarAdmin({ isOpen, onToggle }) {
+export default function SidebarManager({ isOpen, onToggle }) {
   const pathname = usePathname();
-  const [user, setUser] = useState({ name: 'Administrador', image: null });
+  
+  // Controle de Submenus (Inicia fechado ou aberto dependendo da preferência)
+  const [openSubmenus, setOpenSubmenus] = useState({});
+
+  const handleSubmenuToggle = (submenuId) => {
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [submenuId]: !prev[submenuId],
+    }));
+  };
+
+  // Dados do Usuário
+  const [user, setUser] = useState({ name: 'Gerente', image: null });
   const [loadingUser, setLoadingUser] = useState(true);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await api.get('users/profile');
         if (res) {
             setUser({
-                name: res.name || res.user?.name || 'Administrador',
+                name: res.name || res.user?.name || 'Gerente',
                 image: res.image || res.user?.image || null
             });
         }
@@ -71,7 +100,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
         .map((n) => n[0])
         .join("")
         .toUpperCase()
-        .slice(0, 2) || "AD";
+        .slice(0, 2) || "GP";
   };
 
   return (
@@ -85,7 +114,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     >
       {/* --- HEADER --- */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-border shrink-0">
-        <Link href="/dashboard/admin" className="flex items-center gap-3 group outline-none">
+        <Link href="/dashboard/manager" className="flex items-center gap-3 group outline-none">
           <div className="text-primary transition-transform duration-300 group-hover:scale-110">
             {LogoSite ? <LogoSite className="h-8 w-8" /> : <LayoutDashboard className="h-8 w-8"/>}
           </div>
@@ -106,19 +135,66 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
       {/* --- NAVEGAÇÃO --- */}
       <nav className="flex-1 px-3 py-6 overflow-y-auto custom-scrollbar space-y-1">
         {menuItems.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={clsx(
-              'flex items-center px-3 py-2.5 text-md font-medium rounded-md transition-all outline-none mb-1',
-              isLinkActive(item.href)
-                ? 'bg-primary/10 text-primary font-semibold' 
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          <div key={item.id}>
+            {item.subItems ? (
+              // --- ITEM COM SUBMENU (OPERAÇÕES) ---
+              <div className="space-y-1 mb-1">
+                <button
+                  onClick={() => handleSubmenuToggle(item.id)}
+                  className={clsx(
+                    'flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors outline-none group',
+                    // Se algum filho estiver ativo, destaca o pai levemente
+                    Object.values(item.subItems).some(sub => isLinkActive(sub.href))
+                      ? 'text-foreground font-semibold' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon size={18} />
+                    <span>{item.label}</span>
+                  </div>
+                  <div className="text-muted-foreground/50 group-hover:text-foreground transition-colors">
+                    {openSubmenus[item.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
+                </button>
+
+                {/* Submenu Renderizado */}
+                {openSubmenus[item.id] && (
+                  <div className="relative pl-4 ml-4 border-l border-border space-y-1 animate-in slide-in-from-top-1 duration-200">
+                    {item.subItems.map((subItem) => (
+                      <Link
+                        key={subItem.id}
+                        href={subItem.href}
+                        className={clsx(
+                          'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all outline-none',
+                          isLinkActive(subItem.href)
+                            ? 'bg-primary/10 text-primary font-semibold' // Estilo Ativo
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <subItem.icon size={16} className={clsx("mr-3 shrink-0", isLinkActive(subItem.href) ? "text-primary" : "opacity-70")} />
+                        <span>{subItem.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // --- ITEM SEM SUBMENU (LINK DIRETO) ---
+              <Link
+                href={item.href}
+                className={clsx(
+                  'flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all outline-none mb-1',
+                  isLinkActive(item.href)
+                    ? 'bg-primary/10 text-primary font-semibold' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <item.icon size={18} className={clsx("mr-3 shrink-0", isLinkActive(item.href) ? "text-primary" : "")} />
+                <span>{item.label}</span>
+              </Link>
             )}
-          >
-            <item.icon size={18} className={clsx("mr-3 shrink-0", isLinkActive(item.href) ? "text-primary" : "")} />
-            <span>{item.label}</span>
-          </Link>
+          </div>
         ))}
       </nav>
 
@@ -163,7 +239,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                 {user.name}
             </span>
             <span className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
-                Administrador
+                Gerente de Produção
             </span>
           </div>
         </div>

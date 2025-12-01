@@ -13,16 +13,11 @@ import {
   Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
-
-// UI Components
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que existe ou remova
-import { SwitchTheme } from "@/components/SwitchThemes"; // Certifique-se que existe
-
-// API
+import { LogoSite } from "@/components/ui/icons-geral";
+import { SwitchTheme } from "@/components/SwitchThemes"; 
 import { api } from "@/lib/api";
 
-// MENU SIMPLIFICADO
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
@@ -32,6 +27,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
   const pathname = usePathname();
   const [user, setUser] = useState({ name: 'Administrador', image: null });
   const [loadingUser, setLoadingUser] = useState(true);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -51,7 +47,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     fetchUser();
   }, []);
 
-  // Lógica de Logout
+
   const handleLogout = (e) => {
     e.preventDefault();
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
@@ -63,8 +59,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
   };
 
   const isLinkActive = (href) => pathname === href;
-
-  // Helper para iniciais
+  
   const getInitials = (name) => {
       return name
         ?.split(" ")
@@ -110,7 +105,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
             key={item.id}
             href={item.href}
             className={clsx(
-              'flex items-center px-3 py-2.5 text-md font-medium rounded-md transition-all outline-none mb-1',
+              'flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all outline-none mb-1',
               isLinkActive(item.href)
                 ? 'bg-primary/10 text-primary font-semibold' 
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -122,7 +117,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
         ))}
       </nav>
 
-      {/* --- FOOTER --- */}
+      {/* --- FOOTER (Avatar + Logout) --- */}
       <div className="p-4 border-t border-border bg-muted/30">
         
         <div className="flex items-center justify-between mb-4 px-1">
@@ -163,7 +158,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                 {user.name}
             </span>
             <span className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
-                Administrador
+                Funcionário
             </span>
           </div>
         </div>

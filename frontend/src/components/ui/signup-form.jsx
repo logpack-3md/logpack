@@ -1,7 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-// import * as z from zod
 import {
   Card,
   CardContent,
@@ -13,23 +12,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { HelpCircle } from "lucide-react";
 import { LogoSite } from "@/components/ui/icons-geral";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
-
+import { Toaster, toast } from "sonner";
 // static createSchema = z.object({
 //     name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
 //     cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
@@ -39,16 +31,18 @@ import Cookies from "js-cookie";
 // });
 
 export function SignupForm({ className, ...props }) {
-  const router = useRouter()
+const router = useRouter()
   const [name, setName] = useState('')
   const [cpf, setCpf] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSingUp = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
 
     try {
       const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "users", {
@@ -60,138 +54,168 @@ export function SignupForm({ className, ...props }) {
       })
 
       const data = await response.json()
-      console.log(data)
-      if (!data.message) {
-        console.log("Pedido de Cadastro enviado")
-        router.push('/login')
-      }
 
-      if (data.message) {
-        alert(data.message)
+      // VERIFICAÇÃO DE SUCESSO
+      if (response.ok && !data.message) { // Ajuste conforme o retorno real da sua API (status 200/201)
+        
+        // 1. Primeiro Toast: Cadastro realizado
+        toast.success("Cadastro realizado com sucesso!", {
+            description: "Seus dados foram enviados para o sistema.",
+            duration: 2000,
+        });
+
+        // 2. Aguarda 2 segundos e solta o segundo Toast
+        setTimeout(() => {
+            toast.warning("Conta aguardando ativação.", {
+                description: "Somente o administrador pode ativar sua conta para acesso.",
+                duration: 5000, // Fica mais tempo na tela
+            });
+
+            // 3. Aguarda o usuário ler o aviso (3 segundos) e redireciona
+            setTimeout(() => {
+                router.push('/login');
+            }, 3000);
+
+        }, 2000);
+      } 
+      // VERIFICAÇÃO DE ERRO VINDO DA API
+      else if (data.message) {
+        toast.error("Erro no cadastro", {
+            description: data.message
+        });
+        setIsLoading(false);
       }
 
     } catch (error) {
       console.error("Erro na requisição:", error);
-      alert('Não foi possível se conectar ao servidor. Tente novamente.');
+      toast.error("Erro de Conexão", {
+        description: 'Não foi possível se conectar ao servidor. Tente novamente.'
+      });
+      setIsLoading(false);
     }
   }
 
 
   return (
-    <Card className={cn("w-full max-w-lg lg:w-200", className)} {...props}>
-      <CardHeader className="text-center">
+    <>
+      <Card className={cn("w-full max-w-lg lg:w-200", className)} {...props}>
+        <CardHeader className="text-center">
 
-        <div className="flex justify-center mb-4">
-          <a href="/" className="flex items-center gap-2 self-center font-bold">
-            <div className="text-primary-foreground flex size-6 items-center justify-center rounded-md px-4">
-              <LogoSite />
-            </div>
-          </a>
-        </div>
-
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Crie sua conta no LogPack!
-        </CardTitle>
-        <CardDescription>
-          Preencha o formulário para criar sua conta empresarial.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent>
-        <div className="grid gap-6">
-          <form className="grid gap-3" onSubmit={handleSingUp}>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-
-              {/* Nome */}
-              <div className="grid gap-2">
-                <Label htmlFor="full-name">Nome Completo</Label>
-                <Input id="full-name" placeholder="Seu nome completo" required
-                  value={name}
-                  onChange={(e) => { setName(e.target.value) }} />
+          <div className="flex justify-center mb-4">
+            <a href="/" className="flex items-center gap-2 self-center font-bold">
+              <div className="text-primary-foreground flex size-6 items-center justify-center rounded-md px-4">
+                <LogoSite />
               </div>
+            </a>
+          </div>
 
-              {/* CPF */}
-              <div className="grid gap-2">
-                <Label htmlFor="cpf">CPF</Label>
-                <Input
-                  id="cpf"
-                  type="text"
-                  placeholder="000.000.000-00"
-                  required
-                  value={cpf}
-                  onChange={(e) => { setCpf(e.target.value) }}
-                />
-              </div>
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Crie sua conta no LogPack!
+          </CardTitle>
+          <CardDescription>
+            Preencha o formulário para criar sua conta empresarial.
+          </CardDescription>
+        </CardHeader>
 
-              {/* Email */}
-              <div className="grid gap-2">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="email">Email</Label>
+        <CardContent>
+          <div className="grid gap-6">
+            <form className="grid gap-3" onSubmit={handleSingUp}>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+
+                {/* Nome */}
+                <div className="grid gap-2">
+                  <Label htmlFor="full-name">Nome Completo</Label>
+                  <Input id="full-name" placeholder="Seu nome completo" required
+                    value={name}
+                    onChange={(e) => { setName(e.target.value) }} />
                 </div>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seuemail@empresa.com"
-                  required
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value) }}
-                />
+
+                {/* CPF */}
+                <div className="grid gap-2">
+                  <Label htmlFor="cpf">CPF</Label>
+                  <Input
+                    id="cpf"
+                    type="text"
+                    placeholder="000.000.000-00"
+                    required
+                    value={cpf}
+                    onChange={(e) => { setCpf(e.target.value) }}
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="grid gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="email">Email</Label>
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seuemail@empresa.com"
+                    required
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value) }}
+                  />
+                </div>
+
+                {/* Cargo */}
+                <div className="grid gap-2 ">
+                  <Label htmlFor="role">Cargo</Label>
+                  <Select onValueChange={(value) => { setRole(value) }} >
+                    <SelectTrigger id="role" className="w-full">
+                      <SelectValue placeholder="Selecione um cargo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="employee">Funcionário</SelectItem>
+                      <SelectItem value="manager">Gerente de Produção</SelectItem>
+                      <SelectItem value="admin">Administrador</SelectItem>
+                      <SelectItem value="buyer">Gerente de Compras</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                </div>
+
+                {/* Senha e Confirm Senha */}
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input id="password" type="password" placeholder="••••••••" required
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value) }} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirm-password">Confirmar Senha</Label>
+                  <Input id="confirm-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value) }} type="password" placeholder="••••••••" required />
+                </div>
               </div>
 
-              {/* Cargo */}
-              <div className="grid gap-2 ">
-                <Label htmlFor="role">Cargo</Label>
-                <Select onValueChange={(value) => { setRole(value) }} >
-                  <SelectTrigger id="role" className="w-full">
-                    <SelectValue placeholder="Selecione um cargo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="employee">Funcionário</SelectItem>
-                    <SelectItem value="manager">Gerente de Produção</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="buyer">Gerente de Compras</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Cadastro e footerzin */}
+              <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+                {isLoading ? "Cadastrando..." : "Cadastrar"}
+              </Button>
+            </form>
+          </div>
+        </CardContent>
 
-              </div>
-
-              {/* Senha e Confirm Senha */}
-              <div className="grid gap-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" placeholder="••••••••" required
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value) }} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                <Input id="confirm-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value) }} type="password" placeholder="••••••••" required />
-              </div>
-            </div>
-
-            {/* Cadastro e footerzin */}
-            <Button type="submit" className="w-full font-semibold">
-              Cadastrar
-            </Button>
-          </form>
-        </div>
-      </CardContent>
-
-      <CardFooter className="flex flex-col text-center text-sm text-muted-foreground gap-1 lg:gap-4">
-        <p>
-          Já tem uma conta?
-          {" "}
-          <a href="/login" className="font-medium underline-offset-4 hover:text-primary hover:underline"> Login </a>
-        </p>
-        <p className="px-6 text-xs">Ao continuar, você concorda com nossos
-          {" "}
-          <a href="#" className="underline hover:text-primary"> Termos de Serviço </a>
-          {" "}
-          e
-          {" "}
-          <a href="#" className="underline hover:text-primary"> Política de Privacidade </a>
-          .
-        </p>
-      </CardFooter>
-    </Card>
+        <CardFooter className="flex flex-col text-center text-sm text-muted-foreground gap-1 lg:gap-4">
+          <p>
+            Já tem uma conta?
+            {" "}
+            <a href="/login" className="font-medium underline-offset-4 hover:text-primary hover:underline"> Login </a>
+          </p>
+          <p className="px-6 text-xs">Ao continuar, você concorda com nossos
+            {" "}
+            <a href="#" className="underline hover:text-primary"> Termos de Serviço </a>
+            {" "}
+            e
+            {" "}
+            <a href="#" className="underline hover:text-primary"> Política de Privacidade </a>
+            .
+          </p>
+        </CardFooter>
+      </Card>
+      
+      {/* Componente Toaster necessário para renderizar os avisos */}
+      <Toaster richColors position="top-center" /> 
+    </>
   );
 }
