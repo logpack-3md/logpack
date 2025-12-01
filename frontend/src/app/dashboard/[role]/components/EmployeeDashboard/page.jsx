@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     LayoutDashboard, Plus, Search, Package, 
     FileText, CheckCircle2, Clock, XCircle, Loader2, Menu, RefreshCw
@@ -28,16 +28,18 @@ import EmployeeInsumosGrid from '@/components/Blocks/Insumos/EmployeeInsumosGrid
 import { useEmployeeOperations } from '@/hooks/useEmployeeOperations';
 
 export default function EmployeeDashboard() {
-    const { pedidos, meta, loading, isSubmitting, fetchPedidos, criarSolicitacao } = useEmployeeOperations();
+    // Extraindo fetchActiveSkus e allActiveSkus do hook atualizado
+    const { pedidos, allActiveSkus, meta, loading, isSubmitting, fetchPedidos, fetchActiveSkus, criarSolicitacao } = useEmployeeOperations();
     
-    // Estados UI
     const [skuInput, setSkuInput] = useState('');
     const [activeTab, setActiveTab] = useState('pedidos');
     const [rowsPerPage, setRowsPerPage] = useState("5"); 
 
+    // Carregamento Inicial
     useEffect(() => {
         fetchPedidos(1, Number(rowsPerPage));
-    }, [fetchPedidos, rowsPerPage]);
+        fetchActiveSkus(); // Carrega a lista completa de bloqueios em background
+    }, [fetchPedidos, fetchActiveSkus, rowsPerPage]);
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= meta.totalPages) {
@@ -45,28 +47,11 @@ export default function EmployeeDashboard() {
         }
     };
 
-    // --- LÓGICA DE BLOQUEIO (AQUI ESTÁ O SEGREDO) ---
-    // Filtra todos os pedidos que NÃO estão finalizados (ou seja, pendentes/em compra)
-    const activeRequestsSkus = useMemo(() => {
-        if (!pedidos || pedidos.length === 0) return [];
-
-        return pedidos
-            .filter(p => {
-                const status = (p.status || '').toLowerCase();
-                const isFinished = [
-                    'concluido', 'concluído', 
-                    'negado', 'rejeitado', 
-                    'cancelado', 
-                    'compra_efetuada'
-                ].includes(status);
-                return !isFinished;
-            })
-            .map(p => {
-                const sku = p.displaySku || p.insumoSKU || '';
-                return String(sku).trim().toUpperCase();
-            })
-            .filter(sku => sku && sku !== '---');
-    }, [pedidos]);
+    // Atualização manual (botão refresh)
+    const handleRefresh = () => {
+        fetchPedidos(meta.currentPage, Number(rowsPerPage));
+        fetchActiveSkus();
+    };
 
     const handleQuickRequest = async (e) => {
         e.preventDefault();
@@ -77,7 +62,8 @@ export default function EmployeeDashboard() {
             return;
         }
 
-        if (activeRequestsSkus.includes(skuClean)) {
+        // Verifica na lista COMPLETA de bloqueios
+        if (allActiveSkus.includes(skuClean)) {
             toast.info(`Já existe um pedido aberto para ${skuClean}.`);
             return;
         }
@@ -157,7 +143,7 @@ export default function EmployeeDashboard() {
                                         </Select>
                                         <span className="hidden sm:inline">por página</span>
                                     </div>
-                                    <Button variant="outline" size="sm" onClick={() => fetchPedidos(meta.currentPage, Number(rowsPerPage))} className="h-9 gap-2">
+                                    <Button variant="outline" size="sm" onClick={handleRefresh} className="h-9 gap-2">
                                         <RefreshCw className={clsx("h-3.5 w-3.5", loading && "animate-spin")} />
                                         Atualizar
                                     </Button>
@@ -222,15 +208,14 @@ export default function EmployeeDashboard() {
                                     <CardTitle className="text-base font-medium">Catálogo Disponível</CardTitle>
                                 </CardHeader>
                                 <div className="p-6">
-                                    {/* O DASHBOARD PASSA OS SKUS BLOQUEADOS E A FUNÇÃO DE RELOAD */}
+                                    {/* AQUI ESTÁ A CORREÇÃO: Passamos allActiveSkus (lista completa) */}
                                     <EmployeeInsumosGrid 
-                                        activeRequests={activeRequestsSkus} 
-                                        onRequestSuccess={() => fetchPedidos(1, Number(rowsPerPage))} 
+                                        activeRequests={allActiveSkus} 
+                                        onRequestSuccess={handleRefresh} 
                                     /> 
                                 </div>
                             </Card>
                         </TabsContent>
-
                     </Tabs>
                 </main>
             </div>
@@ -244,11 +229,11 @@ const StatusBadge = ({ status }) => {
     let Icon = Clock;
     let label = status || "Desconhecido";
 
-    if (s.includes('aprovado')) { style = "bg-green-100 text-green-700 border-green-200"; Icon = CheckCircle2; label = "Aprovado"; }
-    else if (s.includes('negado')) { style = "bg-red-100 text-red-700 border-red-200"; Icon = XCircle; label = "Negado"; }
-    else if (s.includes('compra_efetuada')) { style = "bg-purple-100 text-purple-700 border-purple-200"; Icon = CheckCircle2; label = "Comprado"; }
-    else if (s.includes('compra_iniciada')) { style = "bg-blue-100 text-blue-700 border-blue-200"; Icon = RefreshCw; label = "Em Compra"; }
-    else { style = "bg-amber-100 text-amber-700 border-amber-200"; Icon = Clock; label = "Solicitado"; }
+    if (s.includes('aprovado')) { style = "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"; Icon = CheckCircle2; label = "Aprovado"; }
+    else if (s.includes('negado')) { style = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"; Icon = XCircle; label = "Negado"; }
+    else if (s.includes('compra_efetuada')) { style = "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800"; Icon = CheckCircle2; label = "Comprado"; }
+    else if (s.includes('compra_iniciada')) { style = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"; Icon = RefreshCw; label = "Em Compra"; }
+    else { style = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"; Icon = Clock; label = "Solicitado"; }
 
     return <Badge variant="outline" className={clsx("gap-1 py-0.5 px-2 shadow-none border", style)}><Icon size={12}/> <span className="capitalize">{label}</span></Badge>;
 };

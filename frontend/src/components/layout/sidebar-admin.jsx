@@ -176,7 +176,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
         </div>
         
         <div className="mt-2 text-[10px] text-center text-muted-foreground/60">
-            © 2024 LogPack Inc.
+            © 2025 LogPack Inc.
         </div>
       </div>
 
