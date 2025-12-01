@@ -13,16 +13,11 @@ import {
   Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
-
-// UI Components
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que existe ou remova
-import { SwitchTheme } from "@/components/SwitchThemes"; // Certifique-se que existe
-
-// API
+import { LogoSite } from "@/components/ui/icons-geral";
+import { SwitchTheme } from "@/components/SwitchThemes"; 
 import { api } from "@/lib/api";
 
-// MENU SIMPLIFICADO
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
@@ -30,12 +25,9 @@ const menuItems = [
 
 export default function SidebarAdmin({ isOpen, onToggle }) {
   const pathname = usePathname();
-  
-  // Estado do Usuário para o Avatar
   const [user, setUser] = useState({ name: 'Administrador', image: null });
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // Busca dados do usuário para preencher o rodapé
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -55,23 +47,19 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     fetchUser();
   }, []);
 
-  // Lógica de Logout
+
   const handleLogout = (e) => {
     e.preventDefault();
-    // 1. Expira o cookie
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    // 2. Limpa storage
     if (typeof window !== 'undefined') {
         localStorage.clear();
         sessionStorage.clear();
-        // 3. Redireciona
         window.location.href = '/'; 
     }
   };
 
   const isLinkActive = (href) => pathname === href;
-
-  // Helper para iniciais
+  
   const getInitials = (name) => {
       return name
         ?.split(" ")
