@@ -81,16 +81,16 @@ class MqttStorageController {
 
             const newDataJson = insumo.toJSON();
 
-            if (userId) {
+            // if (userId) {
                 await InsumosLog.create({
-                    userId: userId,
+                    userId: null,
                     insumoId: insumo.id,
                     actionType: 'UPDATE',
                     contextDetails: `Atualização de estoque via rota Storage (Setor: ${setorName}). Carga calculada: ${calculatedPercentage.toFixed(2)}%`,
                     oldData: oldDataJson,
                     newData: newDataJson
                 });
-            }
+            // }
 
             return res.status(200).json({
                 message: "Estoque e carga atualizados com sucesso.",
@@ -166,16 +166,16 @@ class MqttStorageController {
 
             const newDataJson = insumo.toJSON();
 
-            if (userId) {
+            // if (userId) {
                 await InsumosLog.create({
-                    userId: userId,
+                    userId: null,
                     insumoId: insumo.id,
                     actionType: 'UPDATE',
                     contextDetails: `Atualização de estoque MÁXIMO via rota Storage (Setor: ${setorName}).`,
                     oldData: oldDataJson,
                     newData: newDataJson
                 });
-            }
+            // }
 
             return res.status(200).json({
                 message: "Estoque máximo atualizado com sucesso.",

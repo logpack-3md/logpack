@@ -215,6 +215,7 @@ class UserController {
                     'name',
                     'email',
                     'role',
+                    'status',
                     'image'
                 ]
             })
