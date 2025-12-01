@@ -1,6 +1,14 @@
-// 'use client';
+'use client';
 
-import { AreaChart, BarChart, CategoryBar } from '@tremor/react';
+import React, { useState } from 'react';
+import { AreaChart, BarChart, LineChart } from '@tremor/react';
+import { 
+  BarChart3, 
+  Activity, 
+  LineChart as LineChartIcon, 
+  MoreHorizontal 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const chartdata = [
   { date: 'Jan 23', SolarPanels: 2890, Inverters: 2338 },
@@ -17,72 +25,167 @@ const chartdata = [
   { date: 'Dec 23', SolarPanels: 3239, Inverters: 3736 },
 ];
 
-export default function Example() {
+const chartColors = ["indigo", "rose"];
+
+export default function AnalyticsCard() {
+  const [activeChart, setActiveChart] = useState('area');
+
+  const formatter = (number) => {
+    return Intl.NumberFormat('us').format(number).toString();
+  };
+
   return (
-    <>
-      <div className="mx-auto w-full max-w-4xl px-3 py-20 sm:text-center">
-        <span className="block bg-gradient-to-b from-gray-700 to-gray-400 bg-clip-text text-lg font-semibold text-transparent dark:from-blue-200 dark:to-blue-400 sm:text-xl">
-          Análise de dados
-        </span>
-        <h2
-          id="features-title"
-          className="mt-2 inline-block bg-gradient-to-br from-gray-900 to-gray-800 bg-clip-text py-2 text-4xl font-bold tracking-tighter text-transparent dark:from-gray-50 dark:to-gray-300 sm:text-6xl"
-        >
-          Insumos em tempo real
-        </h2>
-        <div className="group relative mt-12 h-[30rem] transition">
-          {/* CAMADA 1: AreaChart (fundo) */}
-          <div className="absolute top-12 h-80 w-full scale-90 transform-gpu rounded-lg bg-white shadow-md shadow-black/5 ring-1 ring-black/5 transition-all delay-75 duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:top-52 group-hover:rotate-6">
-            <div className="relative flex size-full items-center">
-              <div className="absolute left-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute bottom-2.5 left-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <AreaChart
-                className="mx-auto h-60 px-3 sm:px-10"
-                data={chartdata}
-                index="date"
-                categories={['SolarPanels', 'Inverters']}
-                colors={['emerald', 'amber']} // ADICIONADO (v3+)
-              />
-            </div>
-          </div>
-
-          {/* CAMADA 2: CategoryBar (meio) */}
-          <div className="delay-50 absolute top-6 h-80 w-full scale-95 transform-gpu rounded-lg bg-white shadow-md shadow-black/5 ring-1 ring-black/5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:top-16 group-hover:-rotate-3">
-            <div className="relative flex size-full items-end">
-              <div className="absolute left-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute bottom-2.5 left-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <CategoryBar
-                values={[10, 10, 20]}
-                marker={{ value: 17, tooltip: '68' }} // REMOVIDO showAnimation
-                colors={['pink', 'amber', 'emerald']}
-                className="mb-12 w-full px-3 sm:px-10"
-              />
-            </div>
-          </div>
-
-          {/* CAMADA 3: BarChart (principal) */}
-          <div className="absolute top-0 flex h-80 w-full transform-gpu items-center rounded-lg bg-white shadow-xl shadow-black/5 ring-1 ring-black/5 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-top-6 group-hover:rotate-3 group-hover:scale-95">
-            <div className="relative flex size-full items-center">
-              <div className="absolute left-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute bottom-2.5 left-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <div className="absolute bottom-2.5 right-2.5 size-1.5 rounded-full bg-gray-200 shadow-inner dark:bg-gray-800" />
-              <BarChart
-                className="mx-auto h-60 px-3 sm:px-10"
-                data={chartdata}
-                index="date"
-                categories={['SolarPanels', 'Inverters']}
-                colors={['indigo', 'cyan']} // ADICIONADO (opcional, mas recomendado)
-                // REMOVIDO showTooltip={false}
-              />
-            </div>
-          </div>
+    <div className="w-full max-w-5xl mx-auto   sm:px-6">
+      
+      {/* Header com Título e Seletor */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-3 p-2">
+        <div>
+          <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            Análise de Dados
+          </span>
+          <h2 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+            Insumos em Tempo Real
+          </h2>
         </div>
       </div>
-    </>
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-3">
+        <div className="flex items-center p-1 space-x-1 rounded-lg bg-muted border border-border">
+          <ChartTypeButton 
+            isActive={activeChart === 'area'} 
+            onClick={() => setActiveChart('area')}
+            icon={<Activity className="w-4 h-4" />}
+            label="Área"
+          />
+          <ChartTypeButton 
+            isActive={activeChart === 'bar'} 
+            onClick={() => setActiveChart('bar')}
+            icon={<BarChart3 className="w-4 h-4" />}
+            label="Barras"
+          />
+          <ChartTypeButton 
+            isActive={activeChart === 'line'} 
+            onClick={() => setActiveChart('line')}
+            icon={<LineChartIcon className="w-4 h-4" />}
+            label="Linha"
+          />
+            </div>
+        </div>
+
+      {/* Container do Gráfico */}
+      <div className="relative w-full rounded-xl border border-border bg-card shadow-sm p-2 sm:p-6 transition-all duration-300">
+        
+        {/* Efeito visual decorativo no topo */}
+        <div className="absolute top-0 left-6 right-6 h-px bg-linear-to-r from-transparent via-border to-transparent opacity-50" />
+
+        <div className="h-[350px] sm:h-[400px] w-full mt-4">
+          <AnimatePresence mode="wait">
+            {activeChart === 'area' && (
+              <motion.div
+                key="area"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="h-full w-full"
+              >
+                <AreaChart
+                  className="h-full"
+                  data={chartdata}
+                  index="date"
+                  categories={['SolarPanels', 'Inverters']}
+                  colors={chartColors}
+                  valueFormatter={formatter}
+                  yAxisWidth={48}
+                  showAnimation={true}
+                />
+              </motion.div>
+            )}
+
+            {activeChart === 'bar' && (
+              <motion.div
+                key="bar"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3 }}
+                className="h-full w-full"
+              >
+                <BarChart
+                  className="h-full"
+                  data={chartdata}
+                  index="date"
+                  categories={['SolarPanels', 'Inverters']}
+                  colors={chartColors}
+                  valueFormatter={formatter}
+                  yAxisWidth={48}
+                  showAnimation={true}
+                />
+              </motion.div>
+            )}
+
+            {activeChart === 'line' && (
+              <motion.div
+                key="line"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="h-full w-full"
+              >
+                <LineChart
+                  className="h-full"
+                  data={chartdata}
+                  index="date"
+                  categories={['SolarPanels', 'Inverters']}
+                  colors={chartColors}
+                  valueFormatter={formatter}
+                  yAxisWidth={48}
+                  showAnimation={true}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Rodapé do Card com resumo ou legenda extra */}
+        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex gap-4">
+             <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm" />
+                <span>Painéis Solares</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm" />
+                <span>Inversores</span>
+             </div>
+          </div>
+          <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+            <MoreHorizontal className="w-4 h-4" />
+            <span className="hidden sm:inline">Detalhes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChartTypeButton({ isActive, onClick, icon, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200
+        focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background
+        ${
+          isActive
+            ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+        }
+      `}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
   );
 }

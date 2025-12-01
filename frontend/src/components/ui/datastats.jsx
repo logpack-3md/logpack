@@ -1,51 +1,68 @@
 "use client";
 
 import React from 'react';
-import { Package, Users, ShoppingBag, Store } from 'lucide-react';
+import { Package, Users, ShoppingBag, Store, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 
-const StatCard = ({ title, value, change, Icon, color }) => {
-  const isPositive = change >= 0;
-  const colorClasses = {
-    teal: { icon: 'text-teal-500', bar: 'bg-teal-500' },
-    blue: { icon: 'text-blue-500', bar: 'bg-blue-500' },
-    orange: { icon: 'text-orange-500', bar: 'bg-orange-500' },
-    purple: { icon: 'text-purple-500', bar: 'bg-purple-500' },
-  };
-  const c = colorClasses[color];
-
-  // Barra de progresso: % * 2 (pra ficar curta como na imagem)
+const StatCard = ({ title, value, change, Icon, colorVar, index }) => {
+  const isPositive = change > 0;
+  const isNeutral = change === 0;
   const barWidth = Math.min(Math.abs(change) * 20, 100);
 
   return (
-    <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow transition-shadow duration-200">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${c.icon} bg-opacity-10`}>
-            <Icon className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-900">{title}</h3>
-            <p className="text-xs text-gray-500">This week</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-baseline justify-between">
-        <div className="flex items-baseline space-x-1">
-          <span className="text-2xl font-bold text-gray-900">
+    <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+      
+      {/* Cabeçalho do Card */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <h3 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {value.toLocaleString()}
-          </span>
-          <span className={`text-sm font-medium flex items-center ${isPositive ? 'text-teal-600' : 'text-red-600'}`}>
-            {isPositive ? 'up' : 'down'} {Math.abs(change).toFixed(2)}%
-          </span>
+          </h3>
+        </div>
+        
+        {/* Icon Box */}
+        <div 
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 border border-border transition-colors group-hover:bg-muted"
+        >
+          <Icon 
+            className="w-5 h-5" 
+            style={{ color: `var(${colorVar})` }} 
+          />
         </div>
       </div>
 
-      {/* Barra de progresso */}
-      <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      {/* Seção de Status / Footer */}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex items-center gap-1 text-xs font-medium">
+            {isPositive ? (
+              <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-500">
+                <ArrowUpRight className="h-3 w-3" />
+                {change}%
+              </span>
+            ) : isNeutral ? (
+              <span className="flex items-center gap-0.5 text-muted-foreground">
+                <Minus className="h-3 w-3" />
+                0%
+              </span>
+            ) : (
+              <span className="flex items-center gap-0.5 text-red-600 dark:text-red-500">
+                <ArrowDownRight className="h-3 w-3" />
+                {Math.abs(change)}%
+              </span>
+            )}
+            <span className="text-muted-foreground ml-1">vs. semana anterior</span>
+        </div>
+      </div>
+
+      {/* Barra de Progresso Decorativa */}
+      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className={`h-full ${c.bar} rounded-full transition-all duration-700 ease-out`}
-          style={{ width: `${barWidth}%` }}
+          className="h-full rounded-full transition-all duration-1000 ease-out"
+          style={{ 
+            width: `${barWidth === 0 ? 5 : barWidth}%`,
+            backgroundColor: `var(${colorVar})`,
+            opacity: 0.8
+          }}
         />
       </div>
     </div>
@@ -53,36 +70,49 @@ const StatCard = ({ title, value, change, Icon, color }) => {
 };
 
 export default function DataStats() {
+  // Dados simulados
+  const stats = [
+    {
+      title: "Novos Pedidos",
+      value: 1368,
+      change: 4.3,
+      Icon: Package,
+      colorVar: "--color-chart-1"
+    },
+    {
+      title: "Novos Clientes",
+      value: 785,
+      change: 0.39,
+      Icon: Users,
+      colorVar: "--color-chart-2"
+    },
+    {
+      title: "Vendas Online",
+      value: 795,
+      change: -1.39,
+      Icon: ShoppingBag,
+      colorVar: "--color-chart-3"
+    },
+    {
+      title: "Vendas Loja Física",
+      value: 573,
+      change: 2.69,
+      Icon: Store,
+      colorVar: "--color-chart-4"
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
-      <StatCard
-        title="New Orders"
-        value={1368}
-        change={0.43}
-        Icon={Package}
-        color="teal"
-      />
-      <StatCard
-        title="New Customers"
-        value={785}
-        change={0.39}
-        Icon={Users}
-        color="blue"
-      />
-      <StatCard
-        title="Online Orders"
-        value={795}
-        change={-1.39}
-        Icon={ShoppingBag}
-        color="orange"
-      />
-      <StatCard
-        title="Offline Orders"
-        value={573}
-        change={2.69}
-        Icon={Store}
-        color="purple"
-      />
+    <div className="w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {stats.map((stat, index) => (
+          <StatCard
+            key={index}
+            index={index}
+            {...stat}
+          />
+        ))}
+      </div>
     </div>
   );
 }

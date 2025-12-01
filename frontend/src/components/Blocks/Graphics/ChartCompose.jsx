@@ -9,18 +9,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableRow,
-} from '@tremor/react';
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
+// Utilitário para formatação de moeda
+const valueFormatter = (value) => 
+  `$${Intl.NumberFormat('us', { notation: "compact", compactDisplay: "short" }).format(value)}`;
 
 const data = [
   { date: 'Aug 01', 'ETF Shares Vital': 2100.2, 'Vitainvest Core': 4434.1, 'iShares Tech Growth': 7943.2 },
@@ -33,52 +25,14 @@ const data = [
   { date: 'Aug 08', 'ETF Shares Vital': 6021.2, 'Vitainvest Core': 7834.4, 'iShares Tech Growth': 10290.2 },
   { date: 'Aug 09', 'ETF Shares Vital': 6279.8, 'Vitainvest Core': 8159.1, 'iShares Tech Growth': 10349.6 },
   { date: 'Aug 10', 'ETF Shares Vital': 6224.5, 'Vitainvest Core': 8260.6, 'iShares Tech Growth': 10415.4 },
-  { date: 'Aug 11', 'ETF Shares Vital': 6380.6, 'Vitainvest Core': 8965.3, 'iShares Tech Growth': 10636.3 },
   { date: 'Aug 12', 'ETF Shares Vital': 6414.4, 'Vitainvest Core': 7989.3, 'iShares Tech Growth': 10900.5 },
-  { date: 'Aug 13', 'ETF Shares Vital': 6540.1, 'Vitainvest Core': 7839.6, 'iShares Tech Growth': 11040.4 },
-  { date: 'Aug 14', 'ETF Shares Vital': 6634.4, 'Vitainvest Core': 7343.8, 'iShares Tech Growth': 11390.5 },
   { date: 'Aug 15', 'ETF Shares Vital': 7124.6, 'Vitainvest Core': 6903.7, 'iShares Tech Growth': 11423.1 },
-  { date: 'Aug 16', 'ETF Shares Vital': 7934.5, 'Vitainvest Core': 6273.6, 'iShares Tech Growth': 12134.4 },
-  { date: 'Aug 17', 'ETF Shares Vital': 10287.8, 'Vitainvest Core': 5900.3, 'iShares Tech Growth': 12034.4 },
   { date: 'Aug 18', 'ETF Shares Vital': 10323.2, 'Vitainvest Core': 5732.1, 'iShares Tech Growth': 11011.7 },
-  { date: 'Aug 19', 'ETF Shares Vital': 10511.4, 'Vitainvest Core': 5523.1, 'iShares Tech Growth': 11834.8 },
-  { date: 'Aug 20', 'ETF Shares Vital': 11043.9, 'Vitainvest Core': 5422.3, 'iShares Tech Growth': 12387.1 },
-  { date: 'Aug 21', 'ETF Shares Vital': 6700.7, 'Vitainvest Core': 5334.2, 'iShares Tech Growth': 11032.2 },
   { date: 'Aug 22', 'ETF Shares Vital': 6900.8, 'Vitainvest Core': 4943.4, 'iShares Tech Growth': 10134.2 },
-  { date: 'Aug 23', 'ETF Shares Vital': 7934.5, 'Vitainvest Core': 4812.1, 'iShares Tech Growth': 9921.2 },
-  { date: 'Aug 24', 'ETF Shares Vital': 9021.0, 'Vitainvest Core': 2729.1, 'iShares Tech Growth': 10549.8 },
-  { date: 'Aug 25', 'ETF Shares Vital': 9198.2, 'Vitainvest Core': 2178.0, 'iShares Tech Growth': 10968.4 },
   { date: 'Aug 26', 'ETF Shares Vital': 9557.1, 'Vitainvest Core': 2158.3, 'iShares Tech Growth': 11059.1 },
-  { date: 'Aug 27', 'ETF Shares Vital': 9959.8, 'Vitainvest Core': 2100.8, 'iShares Tech Growth': 11903.6 },
-  { date: 'Aug 28', 'ETF Shares Vital': 10034.6, 'Vitainvest Core': 2934.4, 'iShares Tech Growth': 12143.3 },
-  { date: 'Aug 29', 'ETF Shares Vital': 10243.8, 'Vitainvest Core': 3223.4, 'iShares Tech Growth': 12930.1 },
-  { date: 'Aug 30', 'ETF Shares Vital': 10078.5, 'Vitainvest Core': 3779.1, 'iShares Tech Growth': 13420.5 },
-  { date: 'Aug 31', 'ETF Shares Vital': 11134.6, 'Vitainvest Core': 4190.3, 'iShares Tech Growth': 14443.2 },
-  { date: 'Sep 01', 'ETF Shares Vital': 12347.2, 'Vitainvest Core': 4839.1, 'iShares Tech Growth': 14532.1 },
   { date: 'Sep 02', 'ETF Shares Vital': 12593.8, 'Vitainvest Core': 5153.3, 'iShares Tech Growth': 14283.5 },
-  { date: 'Sep 03', 'ETF Shares Vital': 12043.4, 'Vitainvest Core': 5234.8, 'iShares Tech Growth': 14078.9 },
-  { date: 'Sep 04', 'ETF Shares Vital': 12144.9, 'Vitainvest Core': 5478.4, 'iShares Tech Growth': 13859.7 },
-  { date: 'Sep 05', 'ETF Shares Vital': 12489.5, 'Vitainvest Core': 5741.1, 'iShares Tech Growth': 13539.2 },
-  { date: 'Sep 06', 'ETF Shares Vital': 12748.7, 'Vitainvest Core': 6743.9, 'iShares Tech Growth': 13643.2 },
-  { date: 'Sep 07', 'ETF Shares Vital': 12933.2, 'Vitainvest Core': 7832.8, 'iShares Tech Growth': 14629.2 },
-  { date: 'Sep 08', 'ETF Shares Vital': 13028.8, 'Vitainvest Core': 8943.2, 'iShares Tech Growth': 13611.2 },
-  { date: 'Sep 09', 'ETF Shares Vital': 13412.4, 'Vitainvest Core': 9932.2, 'iShares Tech Growth': 12515.2 },
   { date: 'Sep 10', 'ETF Shares Vital': 13649.0, 'Vitainvest Core': 10139.2, 'iShares Tech Growth': 11143.8 },
-  { date: 'Sep 11', 'ETF Shares Vital': 13748.5, 'Vitainvest Core': 10441.2, 'iShares Tech Growth': 8929.2 },
-  { date: 'Sep 12', 'ETF Shares Vital': 13148.1, 'Vitainvest Core': 10933.8, 'iShares Tech Growth': 8943.2 },
-  { date: 'Sep 13', 'ETF Shares Vital': 12839.6, 'Vitainvest Core': 11073.4, 'iShares Tech Growth': 7938.3 },
-  { date: 'Sep 14', 'ETF Shares Vital': 12428.2, 'Vitainvest Core': 11128.3, 'iShares Tech Growth': 7533.4 },
   { date: 'Sep 15', 'ETF Shares Vital': 12012.8, 'Vitainvest Core': 11412.3, 'iShares Tech Growth': 7100.4 },
-  { date: 'Sep 16', 'ETF Shares Vital': 11801.3, 'Vitainvest Core': 10501.1, 'iShares Tech Growth': 6532.1 },
-  { date: 'Sep 17', 'ETF Shares Vital': 10102.9, 'Vitainvest Core': 8923.3, 'iShares Tech Growth': 4332.8 },
-  { date: 'Sep 18', 'ETF Shares Vital': 12132.5, 'Vitainvest Core': 10212.1, 'iShares Tech Growth': 7847.4 },
-  { date: 'Sep 19', 'ETF Shares Vital': 12901.1, 'Vitainvest Core': 10101.7, 'iShares Tech Growth': 7223.3 },
-  { date: 'Sep 20', 'ETF Shares Vital': 13132.6, 'Vitainvest Core': 12132.3, 'iShares Tech Growth': 6900.2 },
-  { date: 'Sep 21', 'ETF Shares Vital': 14132.2, 'Vitainvest Core': 13212.5, 'iShares Tech Growth': 5932.2 },
-  { date: 'Sep 22', 'ETF Shares Vital': 14245.8, 'Vitainvest Core': 12163.4, 'iShares Tech Growth': 5577.1 },
-  { date: 'Sep 23', 'ETF Shares Vital': 14328.3, 'Vitainvest Core': 10036.1, 'iShares Tech Growth': 5439.2 },
-  { date: 'Sep 24', 'ETF Shares Vital': 14949.9, 'Vitainvest Core': 8985.1, 'iShares Tech Growth': 4463.1 },
-  { date: 'Sep 25', 'ETF Shares Vital': 15967.5, 'Vitainvest Core': 9700.1, 'iShares Tech Growth': 4123.2 },
   { date: 'Sep 26', 'ETF Shares Vital': 17349.3, 'Vitainvest Core': 10943.4, 'iShares Tech Growth': 3935.1 },
 ];
 
@@ -91,8 +45,8 @@ const summary = [
     gain: '+$11,012.39',
     realized: '+$177.48',
     dividends: '+$490.97',
-    bgColor: 'bg-blue-500',
     changeType: 'positive',
+    chartColor: 'var(--color-chart-1)' 
   },
   {
     name: 'Vitainvest Core',
@@ -102,8 +56,8 @@ const summary = [
     gain: '+$3,012.39',
     realized: '+$565.41',
     dividends: '+$290.97',
-    bgColor: 'bg-violet-500',
     changeType: 'positive',
+    chartColor: 'var(--color-chart-2)'
   },
   {
     name: 'iShares Tech Growth',
@@ -113,28 +67,29 @@ const summary = [
     gain: '-$5,012.39',
     realized: '-$634.42',
     dividends: '-$990.97',
-    bgColor: 'bg-fuchsia-500',
     changeType: 'negative',
+    chartColor: 'var(--color-chart-3)'
   },
 ];
-
-const valueFormatter = (value) => `$${Intl.NumberFormat('us').format(value)}`;
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-        <p className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+      <div className="rounded-lg border border-border bg-popover p-3 shadow-lg">
+        <p className="text-sm font-medium text-popover-foreground mb-2">
           {label}
         </p>
         {payload.map((entry, index) => (
-          <p
-            key={index}
-            className="text-sm"
-            style={{ color: entry.color }}
-          >
-            {entry.name}: {valueFormatter(entry.value)}
-          </p>
+          <div key={index} className="flex items-center gap-2 text-xs sm:text-sm">
+             <div 
+               className="w-2 h-2 rounded-full" 
+               style={{ backgroundColor: entry.stroke }}
+             />
+             <span className="text-muted-foreground">{entry.name}:</span>
+             <span className="font-semibold text-popover-foreground">
+               {valueFormatter(entry.value)}
+             </span>
+          </div>
         ))}
       </div>
     );
@@ -142,190 +97,140 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function Example() {
+export default function PerformanceDashboard() {
   return (
-    <>
-      <h3 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-        Portfolio performance
-      </h3>
-      <p className="mt-1 text-tremor-metric font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-        $32,227.40
-      </p>
-      <p className="mt-1 text-tremor-default font-medium">
-        <span className="text-emerald-700 dark:text-emerald-500">
-          +$430.90 (4.1%)
-        </span>{' '}
-        <span className="font-normal text-tremor-content dark:text-dark-tremor-content">
-          Past 24 hours
-        </span>
-      </p>
+    <div className="w-full bg-card rounded-xl border border-border shadow-sm p-4 sm:p-6 lg:p-8">
+      
+      {/* HEADER SECTION */}
+      <div className="mb-8">
+        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          Performance do Portfolio
+        </h3>
+        <div className="mt-2 flex flex-col sm:flex-row sm:items-baseline sm:gap-4">
+          <p className="text-3xl font-bold text-foreground">
+            $32,227.40
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-500 ring-1 ring-inset ring-emerald-600/20">
+              +$430.90 (4.1%)
+            </span>
+            <span className="text-sm text-muted-foreground">
+              últimas 24 horas
+            </span>
+          </div>
+        </div>
+      </div>
 
-      {/* Gráfico Desktop */}
-      <div className="mt-6 hidden h-96 sm:block">
+      {/* GRAPHIC SECTION */}
+      <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <LineChart
+            data={data}
+            margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+          >
+            
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
+            
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 12 }}
+              stroke="var(--muted-foreground)"
+              fontSize={12}
               tickLine={false}
               axisLine={false}
+              minTickGap={30}
             />
             <YAxis
-              tick={{ fontSize: 12 }}
+              stroke="var(--muted-foreground)"
+              fontSize={12}
               tickLine={false}
               axisLine={false}
               tickFormatter={valueFormatter}
-              width={70}
             />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
+            
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 1 }} />
+            
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }} 
+              iconType="circle"
+              formatter={(value) => <span className="text-sm text-foreground ml-1">{value}</span>} 
+            />
+            
             <Line
               type="monotone"
               dataKey="ETF Shares Vital"
-              stroke="#3b82f6"
-              strokeWidth={2}
+              stroke="var(--color-chart-1)"
+              strokeWidth={3}
               dot={false}
-              activeDot={{ r: 6 }}
-              animationDuration={0}
+              activeDot={{ r: 6, fill: "var(--color-chart-1)", strokeWidth: 0 }}
             />
             <Line
               type="monotone"
               dataKey="Vitainvest Core"
-              stroke="#8b5cf6"
-              strokeWidth={2}
+              stroke="var(--color-chart-2)"
+              strokeWidth={3}
               dot={false}
-              activeDot={{ r: 6 }}
-              animationDuration={0}
+              activeDot={{ r: 6, fill: "var(--color-chart-2)", strokeWidth: 0 }}
             />
             <Line
               type="monotone"
               dataKey="iShares Tech Growth"
-              stroke="#ec4899"
-              strokeWidth={2}
+              stroke="var(--color-chart-3)"
+              strokeWidth={3}
               dot={false}
-              activeDot={{ r: 6 }}
-              animationDuration={0}
+              activeDot={{ r: 6, fill: "var(--color-chart-3)", strokeWidth: 0 }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Gráfico Mobile */}
-      <div className="mt-6 h-72 sm:hidden">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="date" tick={false} axisLine={false} />
-            <YAxis hide />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="ETF Shares Vital"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot={false}
-              animationDuration={0}
-            />
-            <Line
-              type="monotone"
-              dataKey="Vitainvest Core"
-              stroke="#8b5cf6"
-              strokeWidth={2}
-              dot={false}
-              animationDuration={0}
-            />
-            <Line
-              type="monotone"
-              dataKey="iShares Tech Growth"
-              stroke="#ec4899"
-              strokeWidth={2}
-              dot={false}
-              animationDuration={0}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      {/* TABLE SECTION */}
+      <div className="mt-10 overflow-hidden rounded-lg border border-border">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted/50 text-muted-foreground font-medium">
+              <tr>
+                <th className="px-4 py-3 border-b border-border text-left">Nome</th>
+                <th className="px-4 py-3 border-b border-border text-right whitespace-nowrap">Valor Total</th>
+                <th className="px-4 py-3 border-b border-border text-right whitespace-nowrap">Investido</th>
+                <th className="px-4 py-3 border-b border-border text-right whitespace-nowrap">Fluxo</th>
+                <th className="px-4 py-3 border-b border-border text-right">Ganho</th>
+                <th className="px-4 py-3 border-b border-border text-right">Realizado</th>
+                <th className="px-4 py-3 border-b border-border text-right">Dividendos</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border bg-card">
+              {summary.map((item) => (
+                <tr key={item.name} className="hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-3 whitespace-nowrap">
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: item.chartColor }}
+                        aria-hidden={true}
+                      />
+                      <span className="font-medium text-foreground">{item.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right text-foreground">{item.value}</td>
+                  <td className="px-4 py-3 text-right text-muted-foreground">{item.invested}</td>
+                  <td className="px-4 py-3 text-right text-muted-foreground">{item.cashflow}</td>
+                  <td className="px-4 py-3 text-right">
+                    <span className={item.changeType === 'positive' ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'}>
+                      {item.gain}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-foreground">
+                    {item.realized}
+                  </td>
+                  <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-500">
+                    {item.dividends}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      {/* Tabela */}
-      <Table className="mt-8">
-        <TableHead>
-          <TableRow className="border-b border-tremor-border dark:border-dark-tremor-border">
-            <TableHeaderCell className="text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Name
-            </TableHeaderCell>
-            <TableHeaderCell className="text-right text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Value
-            </TableHeaderCell>
-            <TableHeaderCell className="text-right text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Invested
-            </TableHeaderCell>
-            <TableHeaderCell className="text-right text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Cashflow
-            </TableHeaderCell>
-            <TableHeaderCell className="text-right text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Gain
-            </TableHeaderCell>
-            <TableHeaderCell className="text-right text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Realized
-            </TableHeaderCell>
-            <TableHeaderCell className="text-right text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              Dividends
-            </TableHeaderCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {summary.map((item) => (
-            <TableRow key={item.name}>
-              <TableCell className="font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                <div className="flex space-x-3">
-                  <span
-                    className={classNames(item.bgColor, 'w-1 shrink-0 rounded')}
-                    aria-hidden={true}
-                  />
-                  <span>{item.name}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-right">{item.value}</TableCell>
-              <TableCell className="text-right">{item.invested}</TableCell>
-              <TableCell className="text-right">{item.cashflow}</TableCell>
-              <TableCell className="text-right">
-                <span
-                  className={classNames(
-                    item.changeType === 'positive'
-                      ? 'text-emerald-700 dark:text-emerald-500'
-                      : 'text-red-700 dark:text-red-500',
-                  )}
-                >
-                  {item.gain}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <span
-                  className={classNames(
-                    item.changeType === 'positive'
-                      ? 'text-emerald-700 dark:text-emerald-500'
-                      : 'text-red-700 dark:text-red-500',
-                  )}
-                >
-                  {item.realized}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <span
-                  className={classNames(
-                    item.changeType === 'positive'
-                      ? 'text-emerald-700 dark:text-emerald-500'
-                      : 'text-red-700 dark:text-red-500',
-                  )}
-                >
-                  {item.dividends}
-                </span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </>
+    </div>
   );
 }

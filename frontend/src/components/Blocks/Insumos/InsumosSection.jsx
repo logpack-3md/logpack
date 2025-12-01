@@ -1,9 +1,22 @@
-// src/components/Blocks/Insumos/InsumosSection.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { RiArrowRightUpLine, RiLayoutGridLine, RiListCheck, RiCloseLine } from '@remixicon/react';
-import { Package, Droplets, Box, FileText, Shield, Clock, AlertTriangle } from 'lucide-react';
+import { 
+  RiLayoutGridLine, 
+  RiListCheck, 
+  RiCloseLine, 
+  RiArrowRightUpLine 
+} from '@remixicon/react';
+import { 
+  Package, 
+  Droplets, 
+  Box, 
+  FileText, 
+  Shield, 
+  Clock, 
+  AlertTriangle,
+  Inbox
+} from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 
@@ -15,18 +28,7 @@ const iconMap = {
   proteção: Shield,
 };
 
-// Função auxiliar para gerar classes baseadas nas variáveis --chart do seu CSS
-const getChartColorClasses = (index) => {
-  // Mapeia para chart-1 até chart-5 baseado no index
-  const chartIndex = (index % 5) + 1; 
-  const colorName = `chart-${chartIndex}`;
-  
-  return {
-    bg: `bg-${colorName}/20`, // Fundo com transparência usando a cor do tema
-    text: `text-${colorName}`, // Cor do texto/ícone
-  };
-};
-
+// Utilitário para tempo relativo
 const timeAgo = (date) => {
   if (!date) return 'Nunca';
   const diff = Date.now() - new Date(date).getTime();
@@ -52,18 +54,17 @@ export default function InsumosSection() {
         let response = null;
 
         try {
-            response = await api.get('insumos?limit=6&page=1');
+          response = await api.get('insumos?limit=6&page=1');
         } catch (error) {
-            console.warn('Falha na paginação, tentando buscar todos:', error);
-            try {
-                response = await api.get('insumos');
-            } catch (innerError) {
-                console.error('Falha crítica ao buscar insumos:', innerError);
-                response = { data: [] };
-            }
+          console.warn('Falha na paginação, tentando buscar todos:', error);
+          try {
+            response = await api.get('insumos');
+          } catch (innerError) {
+            insumos = [];
+          }
         }
 
-        const rawData = response?.data ? response.data : [];
+        const rawData = response?.data || [];
         insumos = Array.isArray(rawData) ? rawData : [];
 
         if (insumos.length > 0 && !response?.meta) {
@@ -74,7 +75,7 @@ export default function InsumosSection() {
           id: insumo.id || insumo._id,
           name: insumo.name || 'Sem nome',
           description: insumo.SKU || 'Sem SKU',
-          colorIndex: index, // Guardamos o index para gerar a cor no render
+          colorVar: `--color-chart-${(index % 5) + 1}`,
           href: `/dashboard/admin/insumos`,
           details: [
             { type: 'Tipo', value: insumo.setorName?.toLowerCase() || 'insumo' },
@@ -83,10 +84,7 @@ export default function InsumosSection() {
         }));
 
         setData(mappedData);
-
-        if (mappedData.length === 0) {
-            setShowNoDataModal(true);
-        }
+        if (mappedData.length === 0) setShowNoDataModal(true);
 
       } catch (error) {
         console.error('Erro geral no componente Insumos:', error);
@@ -100,10 +98,10 @@ export default function InsumosSection() {
     fetchInsumos();
   }, []);
 
-  // Modal Component (Popup)
+
   const NoDataModal = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0000007a] backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
-      <div className="bg-popover border border-border rounded-lg shadow-2xl max-w-sm w-full p-6 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-popover border border-border rounded-xl shadow-2xl max-w-sm w-full p-6 relative">
         <button 
           onClick={() => setShowNoDataModal(false)}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
@@ -117,7 +115,7 @@ export default function InsumosSection() {
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">Atenção: Estoque Vazio</h3>
           <p className="text-sm text-muted-foreground mb-6">
-            Não foram encontrados insumos cadastrados ou disponíveis no momento. É necessário realizar o cadastro ou reposição.
+            Não foram encontrados insumos recentes. Cadastre novos itens ou verifique a conexão.
           </p>
           <div className="flex w-full gap-3">
              <button 
@@ -128,7 +126,7 @@ export default function InsumosSection() {
             </button>
             <Link 
               href="/dashboard/admin/insumos" 
-              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors text-center"
             >
               Gerenciar
             </Link>
@@ -139,37 +137,45 @@ export default function InsumosSection() {
   );
 
   if (loading) {
-    return <div className="text-center py-8 text-muted-foreground">Carregando insumos...</div>;
+    return (
+      <div className="bg-card border border-border rounded-xl p-8 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  // Renderização Principal
   return (
-    <div className="-mx-6 px-6 py-6 relative bg-background">
+    <div className="w-full bg-card border border-border rounded-xl shadow-sm p-4 sm:p-6 overflow-hidden">
       
       {showNoDataModal && <NoDataModal />}
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-foreground">Insumos</h3>
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+      {/* HEADER DA SEÇÃO */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <h3 className="text-lg font-bold tracking-tight text-foreground">
+            Insumos Recentes
+          </h3>
+          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-muted-foreground/10">
             {data.length}
           </span>
         </div>
 
-        <div className="flex space-x-1">
+        <div className="flex p-1 space-x-1 rounded-lg bg-muted/50 border border-border">
           <button 
             onClick={() => setView('grid')} 
-            className={`p-2 rounded-lg transition-colors ${view === 'grid' 
-              ? 'bg-card shadow-sm text-foreground border border-border' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+            aria-label="Visualização em grade"
+            className={`p-1.5 rounded-md transition-all ${view === 'grid' 
+              ? 'bg-background shadow-sm text-foreground' 
+              : 'text-muted-foreground hover:text-foreground'}`}
           >
             <RiLayoutGridLine className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setView('list')} 
-            className={`p-2 rounded-lg transition-colors ${view === 'list' 
-              ? 'bg-card shadow-sm text-foreground border border-border' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+            aria-label="Visualização em lista"
+            className={`p-1.5 rounded-md transition-all ${view === 'list' 
+              ? 'bg-background shadow-sm text-foreground' 
+              : 'text-muted-foreground hover:text-foreground'}`}
           >
             <RiListCheck className="w-4 h-4" />
           </button>
@@ -177,108 +183,176 @@ export default function InsumosSection() {
       </div>
 
       {data.length === 0 ? (
-        <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
-            <Package className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Nenhum insumo encontrado.</p>
-            <p className="text-sm text-muted-foreground/60 mt-1">Cadastre novos insumos para vê-los aqui.</p>
-        </div>
-      ) : view === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.map((member) => <MemberCard key={member.id} member={member} />)}
+        <div className="flex flex-col items-center justify-center py-16 bg-muted/10 border-2 border-dashed border-border rounded-lg">
+          <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
+            <Inbox className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h4 className="text-base font-semibold text-foreground">Nenhum insumo encontrado</h4>
+          <p className="text-sm text-muted-foreground mt-1 max-w-xs text-center">
+            Comece cadastrando novos insumos para monitorar o estoque.
+          </p>
         </div>
       ) : (
-        <div className="overflow-x-auto border border-border rounded-lg">
-          <table className="min-w-full divide-y divide-border">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Insumo</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Tipo</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Última reposição</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground uppercase">Ação</th>
-              </tr>
-            </thead>
-            <tbody className="bg-card divide-y divide-border">
-              {data.map((member) => <MemberRow key={member.id} member={member} />)}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {view === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.map((item) => (
+                <MemberCard key={item.id} member={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-lg border border-border shadow-xs">
+              <div className="overflow-x-auto scrollbar-thin">
+                <table className="w-full border-collapse text-left text-sm min-w-[600px]">
+                  <thead>
+                    <tr className="bg-muted/40">
+                      <th className="border-b border-r border-border py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Nome / SKU</th>
+                      <th className="border-b border-r border-border py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Tipo</th>
+                      <th className="border-b border-r border-border py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Atualização</th>
+                      <th className="border-b border-border py-3 px-4 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((item, idx) => (
+                      <MemberRow 
+                        key={item.id} 
+                        member={item} 
+                        isLast={idx === data.length - 1} 
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
-      <div className="mt-6 flex justify-end">
+      {/* RODAPÉ DO COMPONENTE */}
+      <div className="mt-6 pt-4 border-t border-border flex justify-end">
         <Link 
           href="/dashboard/admin/insumos" 
-          className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
         >
-          Ver mais
-          <RiArrowRightUpLine className="ml-1.5 w-4 h-4" />
+          Ver todos os insumos
+          <RiArrowRightUpLine className="w-4 h-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </Link>
       </div>
     </div>
   );
 }
 
+// ----------------------------------------
+// Componente CARD (Grid View)
+// ----------------------------------------
 const MemberCard = ({ member }) => {
-  // Usa as cores do tema (chart-1, chart-2, etc.)
-  const themeColors = getChartColorClasses(member.colorIndex);
   const Icon = iconMap[member.details[0].value] || Package;
 
   return (
-    <a href={member.href} className="block group">
-      <div className="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-all duration-200 relative h-full">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-lg ${themeColors.bg} ${themeColors.text}`}>
+    <Link href={member.href} className="group relative block h-full">
+      <div className="relative flex flex-col h-full rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:border-primary/20 overflow-hidden">
+        
+        {/* Barra lateral colorida para identidade visual */}
+        <div 
+          className="absolute left-0 top-0 bottom-0 w-1"
+          style={{ backgroundColor: `var(${member.colorVar})` }} 
+        />
+
+        <div className="flex items-start justify-between mb-4 pl-2">
+          <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center justify-center p-2.5 rounded-lg border border-border/50"
+              style={{ 
+                backgroundColor: `color-mix(in srgb, var(${member.colorVar}), transparent 90%)`,
+                color: `var(${member.colorVar})`
+              }}
+            >
               <Icon className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-sm font-medium text-card-foreground truncate max-w-[130px]">{member.name}</h3>
-              <p className="text-xs text-muted-foreground truncate max-w-[150px]">{member.description}</p>
+            
+            <div className="overflow-hidden">
+              <h4 className="font-semibold text-foreground truncate max-w-[140px]" title={member.name}>
+                {member.name}
+              </h4>
+              <p className="text-xs text-muted-foreground truncate" title={member.description}>
+                {member.description}
+              </p>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 text-xs border-t border-border pt-3">
+
+        {/* Informações detalhadas */}
+        <div className="mt-auto grid grid-cols-2 gap-2 border-t border-border pt-3 pl-2">
           <div>
-            <p className="text-muted-foreground">Tipo</p>
-            <p className="font-medium text-foreground flex items-center mt-0.5">
-              <Shield className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
-              {member.details[0].value}
-            </p>
+            <p className="text-[10px] font-medium text-muted-foreground uppercase">Categoria</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Shield className="w-3.5 h-3.5 text-muted-foreground/70" />
+              <span className="text-xs font-medium text-foreground capitalize">
+                {member.details[0].value}
+              </span>
+            </div>
           </div>
           <div>
-            <p className="text-muted-foreground">Última reposição</p>
-            <p className="font-medium text-foreground flex items-center mt-0.5">
-              <Clock className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
-              {member.details[1].value}
-            </p>
+            <p className="text-[10px] font-medium text-muted-foreground uppercase">Atualizado</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground/70" />
+              <span className="text-xs font-medium text-foreground">
+                {member.details[1].value}
+              </span>
+            </div>
           </div>
         </div>
-        <RiArrowRightUpLine className="absolute right-3 top-3 w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
-    </a>
+    </Link>
   );
 };
 
-const MemberRow = ({ member }) => {
-  const themeColors = getChartColorClasses(member.colorIndex);
+// ----------------------------------------
+// Componente ROW (Table View)
+// ----------------------------------------
+const MemberRow = ({ member, isLast }) => {
   const Icon = iconMap[member.details[0].value] || Package;
 
   return (
-    <tr className="hover:bg-muted/50 transition-colors">
-      <td className="px-4 py-3">
-        <div className="flex items-center space-x-3">
-          <div className={`p-1.5 rounded-lg ${themeColors.bg} ${themeColors.text}`}>
+    <tr className="group bg-card hover:bg-muted/30 transition-colors">
+      <td className={`border-r border-border px-4 py-3 ${!isLast ? 'border-b' : ''}`}>
+        <div className="flex items-center gap-3">
+          <div 
+            className="shrink-0 p-2 rounded-md"
+            style={{ 
+              backgroundColor: `color-mix(in srgb, var(${member.colorVar}), transparent 90%)`,
+              color: `var(${member.colorVar})`
+            }}
+          >
             <Icon className="w-4 h-4" />
           </div>
-          <div>
-            <p className="font-medium text-foreground">{member.name}</p>
-            <p className="text-sm text-muted-foreground">{member.description}</p>
+          <div className="min-w-0">
+            <p className="font-medium text-foreground text-sm truncate">{member.name}</p>
+            <p className="text-xs text-muted-foreground">{member.description}</p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-muted-foreground">{member.details[0].value}</td>
-      <td className="px-4 py-3 text-sm text-muted-foreground">{member.details[1].value}</td>
-      <td className="px-4 py-3 text-right">
-        <a href={member.href} className="text-sm font-medium text-primary hover:underline">Editar</a>
+
+      <td className={`border-r border-border px-4 py-3 ${!isLast ? 'border-b' : ''}`}>
+        <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground capitalize">
+          {member.details[0].value}
+        </span>
+      </td>
+
+      <td className={`border-r border-border px-4 py-3 ${!isLast ? 'border-b' : ''}`}>
+        <div className="flex items-center text-xs text-muted-foreground">
+          <Clock className="w-3.5 h-3.5 mr-1.5" />
+          {member.details[1].value}
+        </div>
+      </td>
+
+      <td className={`px-4 py-3 text-right ${!isLast ? 'border-b border-border' : ''}`}>
+        <Link 
+          href={member.href} 
+          className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+        >
+          Detalhes
+        </Link>
       </td>
     </tr>
   );
