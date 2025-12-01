@@ -20,6 +20,8 @@ import Cookies from 'js-cookie';
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+
+// Importações do Sonner
 import { toast, Toaster } from "sonner";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
@@ -43,7 +45,6 @@ const Login = () => {
 
   const { loginSuccess } = useAuth();
 
-  // Removido o tipo (data: any) -> (data)
   const onSubmit = async (data) => {
     setIsLoading(true);
     setGlobalError(null);
@@ -65,24 +66,23 @@ const Login = () => {
 
         loginSuccess(res.token);
         
-        // Toast de Sucesso estilizado
-        toast.success("Login realizado com sucesso!", {
-          description: "Redirecionando para o dashboard...",
-          icon: <CheckCircle2 className="h-5 w-5 text-primary" />,
+        // Toast estilizado
+        toast.success("Login realizado!", {
+          description: "Bem-vindo de volta ao LogPack.",
+          duration: 3000,
+          icon: <CheckCircle2 className="h-5 w-5" />, 
         });
         
         router.push('/dashboard');
       }
     } catch (error) {
-      // Removido tipagem do erro
       const msg = error.message || 'Erro inesperado no login.';
-      
-      // Aviso Visual acima do form
       setGlobalError(msg);
       
       // Toast de erro
-      toast.error("Falha na autenticação", {
+      toast.error("Acesso Negado", {
         description: msg,
+        duration: 4000,
       });
     } finally {
       setIsLoading(false);
@@ -91,9 +91,26 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full flex bg-background text-foreground transition-colors duration-300">
+      <Toaster 
+        richColors 
+        position="top-center" 
+        closeButton
+        theme="light"
+        toastOptions={{
+          style: {
+            border: '1px solid var(--border)',
+            padding: '16px',
+          },
+          classNames: {
+            title: "text-sm font-bold",
+            description: "text-xs opacity-90",
+          }
+        }}
+      />
+
       <div className="w-full grid h-screen place-items-center">
         <div className="flex flex-col items-center justify-center w-full p-4 sm:p-8">
-          <Toaster />
+          
           <div className="mx-auto w-full max-w-sm flex flex-col justify-center space-y-6 border border-border rounded-xl bg-card text-card-foreground shadow-sm p-8">
            
             <div className="flex flex-col space-y-2 text-center">
@@ -105,7 +122,6 @@ const Login = () => {
             </div>
 
             {/* SEÇÃO DE AVISOS (ALERTS) */}
-            {/* Usa var(--destructive) para fundo e texto */}
             {globalError && (
               <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <AlertCircle className="h-5 w-5" />

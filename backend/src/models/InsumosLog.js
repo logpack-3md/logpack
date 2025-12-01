@@ -12,37 +12,42 @@ InsumosLog.init({
 
     userId: {
         type: DataTypes.UUID,
-        allowNull: false,
-        comment: "ID do usuário responsável pela ação"
+        allowNull: true,      
+        references: {
+            model: 'users',
+            key: 'id'
+        },
+        onDelete: 'SET NULL', 
+        onUpdate: 'CASCADE',
+        comment: "ID do usuário (pode ser NULL se for ação do sistema/IoT)"
     },
 
     insumoId: {
         type: DataTypes.UUID,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: 'insumos', 
+            key: 'id'
+        },
+        onDelete: 'CASCADE', 
+        onUpdate: 'CASCADE'
     },
-
     contextDetails: {
         type: DataTypes.STRING(255),
-        allowNull: true,
-        comment: "Detalhes da ação executada (ex: Ajuste manual, Mudança de Preço)"
+        allowNull: true
     },
-
     actionType: {
         type: DataTypes.ENUM,
         values: ['INSERT', 'UPDATE'],
         allowNull: true
     },
-
     oldData: {
         type: DataTypes.JSON,
-        allowNull: true,
-        comment: "Dados antes de mudança"
+        allowNull: true
     },
-
     newData: {
         type: DataTypes.JSON,
-        allowNull: false,
-        comment: "Dados após a mudança"
+        allowNull: false
     }
 }, {
     sequelize,
@@ -53,4 +58,4 @@ InsumosLog.init({
     updatedAt: false
 })
 
-export default InsumosLog
+export default InsumosLog;

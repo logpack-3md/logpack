@@ -10,6 +10,7 @@ import employeeRoute from './routes/employeeRoute.js';
 import buyerRoute from './routes/buyerRoute.js';
 import contactRoute from './routes/contactRoute.js';
 import mqttRoute from './routes/mqttRoute.js'
+import logRoute from './routes/logRoutes.js'
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/setor', setorRoute) // apenas get
 app.use('/buyer', buyerRoute) // criação de orçamento
 app.use('/contato', contactRoute);
 app.use('/mqtt', mqttRoute) // Rota receber dados IOT
+app.use('/log', logRoute)
 
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
