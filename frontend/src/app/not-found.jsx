@@ -25,7 +25,7 @@ export default function NotFound() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <Link 
-            href="/" 
+            href="/dashboard" 
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-accent hover:text-accent-foreground transition-all active:scale-95"
           >
             <Home size={18} />

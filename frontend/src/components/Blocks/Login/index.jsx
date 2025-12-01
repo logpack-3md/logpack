@@ -20,7 +20,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -93,7 +93,7 @@ const Login = () => {
     <div className="min-h-screen w-full flex bg-background text-foreground transition-colors duration-300">
       <div className="w-full grid h-screen place-items-center">
         <div className="flex flex-col items-center justify-center w-full p-4 sm:p-8">
-          
+          <Toaster />
           <div className="mx-auto w-full max-w-sm flex flex-col justify-center space-y-6 border border-border rounded-xl bg-card text-card-foreground shadow-sm p-8">
            
             <div className="flex flex-col space-y-2 text-center">
