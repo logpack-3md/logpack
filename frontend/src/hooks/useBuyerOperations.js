@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
-import { toast } from "sonner"; // Se estiver usando sonner, senão remove
+import { toast } from "sonner"; 
 
 export const useBuyerOperations = () => {
     const [loading, setLoading] = useState(false);
@@ -23,6 +23,7 @@ export const useBuyerOperations = () => {
                 queryParams.append('status', status);
             }
             
+            // 1. Busca as Compras (Paginação principal)
             const resCompras = await api.get(`buyer/compras?${queryParams.toString()}`);
             
             // Tratamento de lista vazia
@@ -39,14 +40,24 @@ export const useBuyerOperations = () => {
             const listaCompras = Array.isArray(resCompras?.data) ? resCompras.data : [];
             const metaData = resCompras?.meta || { totalItems: 0, totalPages: 0, currentPage: 1 };
 
-            // JOIN MANUAL
-            const resOrcamentos = await api.get(`buyer/orcamentos?limit=100`); 
-            const listaOrcamentos = Array.isArray(resOrcamentos?.data) ? resOrcamentos.data : [];
+            // 2. JOIN MANUAL: Busca orçamentos para preencher o valor na tabela
+            // Como o backend na rota 'compras' não está trazendo o include corretamente,
+            // buscamos os orçamentos separadamente e cruzamos no front.
+            let listaOrcamentos = [];
+            try {
+                const resOrcamentos = await api.get(`buyer/orcamentos?limit=100`); 
+                listaOrcamentos = Array.isArray(resOrcamentos?.data) ? resOrcamentos.data : [];
+            } catch (err) {
+                console.warn("Não foi possível carregar detalhes dos orçamentos", err);
+            }
 
             const comprasComOrcamento = listaCompras.map(compra => {
+                // Tenta achar um orçamento que pertença a esta compra
                 const orcamentoEncontrado = listaOrcamentos.find(orc => orc.compraId === compra.id);
+                
                 return {
                     ...compra,
+                    // Prioriza o orçamento encontrado via join, ou mantém o que veio (se vier)
                     orcamento: orcamentoEncontrado || compra.orcamento || null
                 };
             });
@@ -68,14 +79,12 @@ export const useBuyerOperations = () => {
         }
     }, []);
 
-    // Helper genérico
+    // Helper genérico para requests de escrita
     const handleOperation = async (operationFn) => {
         setLoading(true);
         try {
             const res = await operationFn();
-            // Verifica se a API retornou erro lógico (mesmo com status 200/201 do fetch wrapper)
             if (res && res.success === false) {
-                // Se o backend mandou issues (Zod), formatamos a mensagem
                 if (res.issues) {
                     const zodErrors = res.issues.map(i => i.message).join(', ');
                     throw new Error(zodErrors);
@@ -86,7 +95,7 @@ export const useBuyerOperations = () => {
             return true;
         } catch (err) {
             console.error(err);
-            throw err; // Repassa o erro para o componente exibir
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -98,7 +107,6 @@ export const useBuyerOperations = () => {
     const renegociarOrcamento = (orcamentoId, payload) => 
         handleOperation(() => api.put(`buyer/orcamento/renegociar/${orcamentoId}`, payload));
 
-    // ROTA VERIFICADA: /buyer/orcamento/descricao/:id
     const updateDescricao = (orcamentoId, payload) => 
         handleOperation(() => api.put(`buyer/orcamento/descricao/${orcamentoId}`, payload));
 
@@ -106,7 +114,14 @@ export const useBuyerOperations = () => {
         handleOperation(() => api.put(`buyer/orcamento/cancelar/${orcamentoId}`));
 
     return {
-        compras, loading, error, meta,
-        fetchCompras, createOrcamento, renegociarOrcamento, updateDescricao, cancelarOrcamento
+        compras,
+        loading,
+        error,
+        meta,
+        fetchCompras,
+        createOrcamento,
+        renegociarOrcamento,
+        updateDescricao,
+        cancelarOrcamento
     };
 };

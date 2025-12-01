@@ -1,398 +1,330 @@
-// src/app/dashboard/[role]/insumos/page.jsx
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import { 
-  Search, Droplets, Package, Box as BoxIcon, FileText, Shield, Clock, Plus, Upload, ArrowUpRight, AlertCircle, ChevronDown 
+    Search, Package, Filter, Plus, Upload, MoreHorizontal, 
+    Droplets, Box as BoxIcon, FileText, Shield, AlertCircle 
 } from 'lucide-react';
-import CreateButton from '@/components/ui/create-button';
-import { FloatingActions } from '@/components/ui/floating-actions';
-import { api } from '@/lib/api';
-import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import clsx from 'clsx';
 
-const iconMap = {
-  insumo: Droplets,
-  embalagem: BoxIcon,
-  acessório: FileText,
-  suporte: Package,
-  proteção: Shield,
+// SHADCN UI
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Hook
+// import { useInsumosOperations } from '@/hooks/useInsumosOperations';
+
+// Mapa de Ícones por tipo (simulado pela cor/setor)
+const getIcon = (index) => {
+    const icons = [Droplets, BoxIcon, FileText, Package, Shield];
+    const Icon = icons[index % icons.length];
+    return <Icon className="h-6 w-6" />;
 };
 
-// SELECT CUSTOMIZADO QUE ABRE PRA BAIXO E ROLA SUAVE
-function CustomSelect({ options, value, onChange, placeholder }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full px-4 py-3 text-left border border-gray-300 rounded-lg bg-white flex justify-between items-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-      >
-        <span className={value ? "text-gray-900" : "text-gray-500"}>
-          {selectedLabel}
-        </span>
-        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-
-      {open && (
-        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                onChange({ target: { name: 'setor', value: opt.value } });
-                setOpen(false);
-              }}
-              className="w-full px-4 py-2.5 text-left hover:bg-blue-50 transition-colors text-gray-800 text-sm"
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+// Mapa de Cores Pastéis (Adaptado para Dark Mode)
+const colors = [
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+    "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
+    "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300"
+];
 
 export default function InsumosPage() {
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [filtro, setFiltro] = useState('todos');
-  const [statusFiltro, setStatusFiltro] = useState('todos');
-  const [loading, setLoading] = useState(false);
-  const [insumos, setInsumos] = useState([]);
-  const [allInsumos, setAllInsumos] = useState([]);
-  const [setores, setSetores] = useState([]);
-  const [errorModal, setErrorModal] = useState({ open: false, message: '' });
+    const { 
+        insumos, setores, loading, 
+        filters, setFilters, 
+        fetchData, createInsumo 
+    } = useInsumosOperations();
 
-  // Debounce
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Estado do Formulário
+    const [formData, setFormData] = useState({
+        name: '', sku: '', setor: '', description: '', measure: '', max_storage: '', status: 'ativo', file: null
+    });
 
-  // CARREGA TODOS OS SETORES (50+)
-  useEffect(() => {
-    const fetchAllSetores = async () => {
-      try {
-        let allSetores = [];
-        let page = 1;
-        let hasMore = true;
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
-        while (hasMore) {
-          const res = await api.get(`setor?page=${page}&limit=100`);
-          const data = res?.data || res?.setores || res || [];
-
-          if (!Array.isArray(data) || data.length === 0) break;
-
-          const formatted = data
-            .filter(s => s && (s.name || s.nome))
-            .map(s => ({
-              id: s.id || s._id,
-              name: s.name || s.nome || 'Sem nome',
-              status: s.status || 'ativo',
-            }));
-
-          allSetores = [...allSetores, ...formatted];
-          if (data.length < 100) hasMore = false;
-          else page++;
+    const handleCreateSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        const success = await createInsumo(formData);
+        setIsSubmitting(false);
+        if (success) {
+            setIsCreateOpen(false);
+            setFormData({ name: '', sku: '', setor: '', description: '', measure: '', max_storage: '', status: 'ativo', file: null });
         }
-
-        allSetores.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-        setSetores(allSetores);
-        console.log(`Total de setores carregados: ${allSetores.length}`);
-      } catch (err) {
-        console.error(err);
-        toast.error('Falha ao carregar setores');
-      }
     };
 
-    fetchAllSetores();
-  }, []);
-
-  // Carrega insumos
-  const loadInsumos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('insumos?limit=1000');
-      if (res?.error) throw new Error();
-
-      const formatted = (res.data || []).map(i => {
-        const sku = [i.SKU, i.sku, i.codigo, i.code, i.sku_code, i.Sku].find(s => s) || 'SEM SKU';
-        return {
-          id: i.id || i._id,
-          name: i.name || i.nome || 'Sem nome',
-          SKU: sku,
-          setorName: i.setorName || i.setor?.name || 'Geral',
-          status: i.status || 'ativo',
-          image: i.image || i.imagem,
-          createdAt: i.createdAt || i.updatedAt || new Date(),
-          bgColor: getRandomColor(),
-          tipo: (i.setorName || i.setor?.name || 'insumo').toLowerCase(),
-          ultima: formatLastCheck(i.createdAt || i.updatedAt),
-        };
-      });
-
-      const sorted = formatted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setAllInsumos(sorted);
-      setInsumos(sorted);
-    } catch {
-      toast.error('Falha ao carregar insumos');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { loadInsumos(); }, [loadInsumos]);
-
-  // Filtro
-  useEffect(() => {
-    let filtered = [...allInsumos];
-    if (debouncedSearch) {
-      const q = debouncedSearch.toLowerCase();
-      filtered = filtered.filter(i =>
-        i.name.toLowerCase().includes(q) || i.SKU.toLowerCase().includes(q)
-      );
-    }
-    if (filtro !== 'todos') filtered = filtered.filter(i => i.setorName === filtro);
-    if (statusFiltro !== 'todos') filtered = filtered.filter(i => i.status === statusFiltro);
-    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setInsumos(filtered);
-  }, [debouncedSearch, filtro, statusFiltro, allInsumos]);
-
-  // Criação
-  const handleCreateInsumo = async (formData, file) => {
-    const payload = {
-      name: formData.nome?.trim(),
-      SKU: formData.sku?.trim(),
-      setorName: formData.setor,
-      description: formData.descricao?.trim() || '',
-      measure: formData.medida,
-      max_storage: formData.max_storage ? Number(formData.max_storage) : undefined,
-      status: formData.status || 'ativo',
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFormData(prev => ({ ...prev, file: e.target.files[0] }));
+        }
     };
 
-    if (!payload.name || !payload.SKU || !payload.setorName || !payload.measure) {
-      toast.error('Preencha todos os campos obrigatórios');
-      return false;
-    }
-
-    try {
-      let result;
-      if (file) {
-        const form = new FormData();
-        form.append('file', file, file.name);
-        Object.entries(payload).forEach(([k, v]) => v !== undefined && v !== null && form.append(k, String(v)));
-        result = await api.post('manager/insumos', form);
-      } else {
-        result = await api.post('manager/insumos', payload);
-      }
-
-      if (result?.error || result?.success === false) {
-        setErrorModal({ open: true, message: result.error || result.message || 'Erro ao criar insumo' });
-        return false;
-      }
-
-      toast.success('Insumo criado com sucesso!');
-      await loadInsumos();
-      return true;
-    } catch (err) {
-      setErrorModal({ open: true, message: 'Erro de conexão com o servidor' });
-      return false;
-    }
-  };
-
-  // Opções pro select customizado
-  const setorOptions = setores.map(s => ({
-    value: s.name,
-    label: `${s.name} ${s.status === 'inativo' ? '(inativo)' : ''}`,
-  }));
-
-  return (
-    <Box sx={{ maxWidth: '1400px', mx: 'auto', p: { xs: 2, lg: 3 }, minHeight: '100vh' }}>
-      {/* Cabeçalho */}
-      <Box sx={{ mb: 4 }}>
-        <h1 className="text-2xl font-bold text-gray-900">Insumos</h1>
-        <p className="text-sm text-gray-600 mt-1">Gerencie todos os insumos, embalagens e materiais</p>
-      </Box>
-
-      {/* Filtros */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 6, flexWrap: 'wrap' }}>
-        <Box sx={{ position: 'relative', flex: 1, minWidth: '250px' }}>
-          <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar por nome ou SKU..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-        </Box>
-        <select value={filtro} onChange={e => setFiltro(e.target.value)} className="px-4 py-2.5 border border-gray-300 rounded-lg">
-          <option value="todos">Todos os setores</option>
-          {setores.map(s => (
-            <option key={s.id} value={s.name}>
-              {s.name} {s.status === 'inativo' ? '(inativo)' : ''}
-            </option>
-          ))}
-        </select>
-        <select value={statusFiltro} onChange={e => setStatusFiltro(e.target.value)} className="px-4 py-2.5 border border-gray-300 rounded-lg">
-          <option value="todos">Todos os status</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
-        </select>
-      </Box>
-
-      {/* Cards de insumos */}
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' },
-        gap: 4,
-        mb: 8
-      }}>
-        {insumos.map(insumo => {
-          const Icon = iconMap[insumo.tipo] || Droplets;
-          const colorKey = insumo.bgColor.match(/bg-([a-z]+)-100/)?.[1] || 'blue';
-          const textColor = `text-${colorKey}-600`;
-
-          return (
-            <Box key={insumo.id} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 group cursor-pointer">
-              {insumo.image && <img src={insumo.image} alt={insumo.name} className="w-full h-32 object-cover rounded-lg mb-3" />}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Box className={`p-3 rounded-xl ${insumo.bgColor} ${textColor}`}><Icon className="w-6 h-6" /></Box>
-                  <div className="flex flex-col gap-1.5">
-                    <h3 className="font-semibold text-gray-900 truncate max-w-[180px]">{insumo.name}</h3>
-                    <span className="inline-flex items-center justify-center min-w-[68px] max-w-[90px] px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 ring-1 ring-blue-700/10">
-                      <span className="truncate block leading-none">{insumo.SKU}</span>
-                    </span>
-                  </div>
-                </Box>
-                <ArrowUpRight className="w-5 h-5 text-gray-400 opacity-0 group-hover:opacity-100 transition" />
-              </Box>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, fontSize: '0.8rem', borderTop: '1px solid #e5e7eb', pt: 3 }}>
-                <Box><p className="text-gray-500 text-xs">Setor</p><p className="font-medium capitalize flex items-center mt-1"><Shield className="w-4 h-4 mr-1.5 text-gray-400" />{insumo.tipo}</p></Box>
-                <Box><p className="text-gray-500 text-xs">Última reposição</p><p className="font-medium flex items-center mt-1"><Clock className="w-4 h-4 mr-1.5 text-gray-400" />{insumo.ultima}</p></Box>
-              </Box>
-            </Box>
-          );
-        })}
-      </Box>
-
-      {/* Botão + */}
-      <button onClick={() => document.dispatchEvent(new CustomEvent('open-create-modal'))}
-        className="fixed bottom-6 right-6 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl z-50 border-4 border-white">
-        <Plus className="w-7 h-7" />
-      </button>
-
-      <FloatingActions />
-
-      {/* Modal de erro */}
-      {errorModal.open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-60 px-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 bg-red-100 rounded-full">
-                <AlertCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900">Erro ao criar insumo</h3>
+    return (
+        <div className="flex flex-col min-h-screen bg-muted/40 p-6 md:p-8 space-y-8 animate-in fade-in duration-500">
+            
+            {/* Header e Ações Principais */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Gerenciar Insumos</h1>
+                    <p className="text-muted-foreground mt-1">Visualize e cadastre materiais disponíveis no estoque.</p>
+                </div>
+                <Button onClick={() => setIsCreateOpen(true)} className="bg-primary hover:bg-primary/90 shadow-sm">
+                    <Plus className="mr-2 h-4 w-4" /> Novo Insumo
+                </Button>
             </div>
-            <p className="text-gray-700 text-base leading-relaxed mb-8">{errorModal.message}</p>
-            <button onClick={() => setErrorModal({ open: false, message: '' })}
-              className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition shadow-lg text-lg">
-              Entendido
-            </button>
-          </div>
+
+            {/* Barra de Filtros */}
+            <div className="flex flex-col md:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Buscar por nome ou SKU..." 
+                        className="pl-9 bg-background border-input"
+                        value={filters.search}
+                        onChange={(e) => setFilters.setSearch(e.target.value)}
+                    />
+                </div>
+                
+                <div className="flex gap-2 w-full md:w-auto">
+                    <Select value={filters.setorFilter} onValueChange={setFilters.setSetorFilter}>
+                        <SelectTrigger className="w-full md:w-[200px] bg-background border-input">
+                            <Filter className="mr-2 h-4 w-4 text-muted-foreground"/>
+                            <SelectValue placeholder="Setor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="todos">Todos os Setores</SelectItem>
+                            {setores.map(s => (
+                                <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={filters.statusFilter} onValueChange={setFilters.setStatusFilter}>
+                        <SelectTrigger className="w-full md:w-[150px] bg-background border-input">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="todos">Todos</SelectItem>
+                            <SelectItem value="ativo">Ativo</SelectItem>
+                            <SelectItem value="inativo">Inativo</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Grid de Cards */}
+            {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="flex flex-col space-y-3">
+                            <Skeleton className="h-[180px] w-full rounded-xl" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : insumos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center bg-card rounded-xl border border-dashed border-border">
+                    <div className="bg-muted p-4 rounded-full mb-3">
+                        <Package className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-medium text-foreground">Nenhum insumo encontrado</h3>
+                    <p className="text-muted-foreground max-w-sm mt-1">Tente ajustar os filtros ou cadastre um novo item.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {insumos.map((item) => (
+                        <Card key={item.id} className="group hover:shadow-md transition-all duration-300 overflow-hidden border-border bg-card">
+                            {/* Header do Card (Imagem ou Placeholder) */}
+                            <div className="h-40 w-full bg-muted/30 relative overflow-hidden flex items-center justify-center border-b border-border/50">
+                                {item.image ? (
+                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                ) : (
+                                    <div className={clsx("p-4 rounded-full", colors[item.colorIndex])}>
+                                        {getIcon(item.colorIndex)}
+                                    </div>
+                                )}
+                                <div className="absolute top-3 right-3">
+                                    <Badge variant="secondary" className="bg-background/90 backdrop-blur text-foreground shadow-sm">
+                                        {item.measure}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <CardHeader className="p-4 pb-2">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-semibold text-foreground truncate pr-2" title={item.name}>
+                                            {item.name}
+                                        </h3>
+                                        <p className="text-xs font-mono text-muted-foreground mt-1">{item.sku}</p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+
+                            <CardContent className="p-4 pt-0">
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    <Badge variant="outline" className="font-normal text-muted-foreground bg-muted/50 border-border">
+                                        {item.setorName}
+                                    </Badge>
+                                    {item.status === 'inativo' && (
+                                        <Badge variant="destructive" className="font-normal">Inativo</Badge>
+                                    )}
+                                </div>
+                            </CardContent>
+
+                            <CardFooter className="p-4 border-t border-border bg-muted/10 flex justify-between items-center text-xs text-muted-foreground">
+                                <span>Estoque máx: {item.max_storage}</span>
+                                <span>
+                                    Atualizado {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true, locale: ptBR })}
+                                </span>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            )}
+
+            {/* --- MODAL DE CRIAÇÃO --- */}
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Novo Insumo</DialogTitle>
+                        <DialogDescription>Preencha as informações para cadastrar um novo material.</DialogDescription>
+                    </DialogHeader>
+                    
+                    <form onSubmit={handleCreateSubmit} className="space-y-6 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Nome do Insumo *</Label>
+                                <Input 
+                                    value={formData.name} 
+                                    onChange={e => setFormData({...formData, name: e.target.value})} 
+                                    required 
+                                    placeholder="Ex: Papel A4" 
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>SKU / Código *</Label>
+                                <Input 
+                                    value={formData.sku} 
+                                    onChange={e => setFormData({...formData, sku: e.target.value})} 
+                                    required 
+                                    placeholder="Ex: PAP-001" 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Setor Responsável *</Label>
+                                <Select onValueChange={(val) => setFormData({...formData, setor: val})} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {setores.map(s => (
+                                            <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Unidade de Medida *</Label>
+                                <Select onValueChange={(val) => setFormData({...formData, measure: val})} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="UN">Unidade (UN)</SelectItem>
+                                        <SelectItem value="KG">Quilo (KG)</SelectItem>
+                                        <SelectItem value="LT">Litro (LT)</SelectItem>
+                                        <SelectItem value="CX">Caixa (CX)</SelectItem>
+                                        <SelectItem value="PCT">Pacote (PCT)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Descrição</Label>
+                            <Textarea 
+                                value={formData.description} 
+                                onChange={e => setFormData({...formData, description: e.target.value})} 
+                                placeholder="Detalhes adicionais sobre o item..."
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Estoque Máximo</Label>
+                                <Input 
+                                    type="number" 
+                                    value={formData.max_storage} 
+                                    onChange={e => setFormData({...formData, max_storage: e.target.value})} 
+                                    placeholder="0" 
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Status Inicial</Label>
+                                <Select defaultValue="ativo" onValueChange={(val) => setFormData({...formData, status: val})}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ativo">Ativo</SelectItem>
+                                        <SelectItem value="inativo">Inativo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Imagem de Capa</Label>
+                            <div className="border-2 border-dashed border-border rounded-lg p-6 hover:bg-muted/50 transition-colors text-center cursor-pointer relative">
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleFileChange}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                    <Upload className="h-8 w-8 text-muted-foreground/50" />
+                                    <span className="text-sm font-medium">
+                                        {formData.file ? formData.file.name : "Clique para selecionar uma imagem"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <DialogFooter className="pt-4">
+                            <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
+                            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
+                                {isSubmitting ? "Salvando..." : "Criar Insumo"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
-      )}
-
-      {/* FORMULÁRIO DE CRIAÇÃO COM SELECT PERFEITO */}
-      <CreateButton title="Criar Novo Insumo" onSubmit={handleCreateInsumo}>
-        {({ formData, handleChange, setFile }) => (
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Nome *</label>
-              <input name="nome" value={formData.nome || ''} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg" required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">SKU *</label>
-              <input name="sku" value={formData.sku || ''} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg" required />
-            </div>
-
-            {/* SELECT CUSTOMIZADO QUE ABRE PRA BAIXO */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Setor *</label>
-              <CustomSelect
-                options={setorOptions}
-                value={formData.setor || ''}
-                onChange={handleChange}
-                placeholder="Selecione o setor"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Descrição</label>
-              <textarea name="descricao" value={formData.descricao || ''} onChange={handleChange} rows={3} className="w-full px-4 py-3 border rounded-lg resize-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Medida *</label>
-              <select name="medida" value={formData.medida || ''} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg" required>
-                <option value="">Selecione</option>
-                <option value="KG">KG</option>
-                <option value="G">G</option>
-                <option value="ML">ML</option>
-                <option value="L">L</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Estoque Máx.</label>
-              <input name="max_storage" type="number" value={formData.max_storage || ''} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-              <select name="status" value={formData.status || 'ativo'} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg">
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Imagem</label>
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                <p className="text-xs text-gray-500">Clique para upload</p>
-                <input type="file" className="hidden" accept="image/*" onChange={e => setFile(e.target.files[0])} />
-              </label>
-            </div>
-          </div>
-        )}
-      </CreateButton>
-    </Box>
-  );
+    );
 }
-
-const getRandomColor = () => ['bg-blue-100', 'bg-orange-100', 'bg-green-100', 'bg-purple-100', 'bg-pink-100', 'bg-teal-100'][Math.floor(Math.random() * 6)];
-
-const formatLastCheck = date => {
-  if (!date) return 'Nunca';
-  const diff = Date.now() - new Date(date);
-  const m = Math.floor(diff / 60000);
-  const h = Math.floor(m / 60);
-  const d = Math.floor(h / 24);
-  return d > 0 ? `${d}d atrás` : h > 0 ? `${h}h atrás` : m > 0 ? `${m}min atrás` : 'agora';
-};
