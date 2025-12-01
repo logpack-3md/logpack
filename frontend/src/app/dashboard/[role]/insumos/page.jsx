@@ -317,7 +317,7 @@ export default function InsumosPage() {
                         </div>
 
                         <DialogFooter className="pt-4">
-                            <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
+                            <Button type="button" variant="outline" onClick={() =>   setIsCreateOpen(false)}>Cancelar</Button>
                             <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
                                 {isSubmitting ? "Salvando..." : "Criar Insumo"}
                             </Button>

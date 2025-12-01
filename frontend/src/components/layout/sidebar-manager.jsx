@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   User,
@@ -10,32 +10,45 @@ import {
   ChevronLeft,
   ChevronDown,
   ChevronUp,
-  Settings
+  Box,
+  Package,
+  FileText,
+  PackageOpen, // Para Setores
+  Briefcase, // Para o ícone pai de Operações
+  Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
-import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que este componente existe ou troque por um SVG
 
-// Menu simplificado para o Funcionário
+// UI Components
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogoSite } from "@/components/ui/icons-geral"; 
+import { SwitchTheme } from "@/components/SwitchThemes"; 
+
+// API
+import { api } from "@/lib/api";
+
+// MENU ATUALIZADO COM OPERAÇÕES
 const menuItems = [
-  { id: 'dashboard', label: 'Início', icon: LayoutDashboard, href: '/dashboard/employee' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/manager' },
   {
-    id: 'perfil-usuario',
-    label: 'Minha Conta',
-    icon: User,
+    id: 'operacoes',
+    label: 'Operações',
+    icon: Briefcase, // Ícone pai
     subItems: [
-      { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/employee/profile' },
-      // { id: 'configuracoes', label: 'Configurações', icon: Settings, href: '/dashboard/employee/settings' }, // Opcional
-      { id: 'sair', label: 'Sair', icon: LogOut, href: '/' },
+      { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' },
+      { id: 'setores', label: 'Setores', icon: PackageOpen, href: '/dashboard/manager/setores' },
+      { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
+      { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/manager/orcamentos' },
     ],
   },
+  { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/manager/profile' },
 ];
 
-export default function SidebarEmployee({ isOpen, onToggle }) {
-  const router = useRouter();
+export default function SidebarManager({ isOpen, onToggle }) {
   const pathname = usePathname();
   
-  const [activeMenu, setActiveMenu] = useState('dashboard');
-  const [openSubmenus, setOpenSubmenus] = useState({ 'perfil-usuario': true }); // Mantém menu de perfil aberto por padrão se quiser
+  // Controle de Submenus (Inicia fechado ou aberto dependendo da preferência)
+  const [openSubmenus, setOpenSubmenus] = useState({});
 
   const handleSubmenuToggle = (submenuId) => {
     setOpenSubmenus((prev) => ({
@@ -44,165 +57,198 @@ export default function SidebarEmployee({ isOpen, onToggle }) {
     }));
   };
 
-  // Lógica de Logout (Cópia da lógica robusta que criamos antes)
+  // Dados do Usuário
+  const [user, setUser] = useState({ name: 'Gerente', image: null });
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get('users/profile');
+        if (res) {
+            setUser({
+                name: res.name || res.user?.name || 'Gerente',
+                image: res.image || res.user?.image || null
+            });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar usuário na sidebar:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Lógica de Logout
   const handleLogout = (e) => {
     e.preventDefault();
-    
-    // 1. Limpa cookie
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    
-    // 2. Limpa storage
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // 3. Redireciona
-    window.location.href = '/';
+    if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/'; 
+    }
   };
 
-  // Helper para verificar rota ativa
   const isLinkActive = (href) => pathname === href;
+
+  // Helper para iniciais
+  const getInitials = (name) => {
+      return name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "GP";
+  };
 
   return (
     <aside
       className={clsx(
         'fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col',
-        'bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-md', // Classes do seu tema
+        'bg-background text-foreground border-r border-border shadow-xl lg:shadow-none',
         'transition-transform duration-300 lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       )}
     >
-      {/* Header da Sidebar */}
-      <div className="flex items-center justify-between h-16 px-5 border-b border-sidebar-border shrink-0">
-        <Link 
-          href="/dashboard/employee" 
-          onClick={() => setActiveMenu('dashboard')}
-          className="flex items-center gap-3 group outline-none"
-        >
-          <div className="transition-transform duration-300 group-hover:scale-105 text-primary">
-            {/* Fallback caso LogoSite não carregue */}
-            {LogoSite ? <LogoSite /> : <LayoutDashboard className="h-6 w-6" />}
+      {/* --- HEADER --- */}
+      <div className="flex items-center justify-between h-16 px-6 border-b border-border shrink-0">
+        <Link href="/dashboard/manager" className="flex items-center gap-3 group outline-none">
+          <div className="text-primary transition-transform duration-300 group-hover:scale-110">
+            {LogoSite ? <LogoSite className="h-8 w-8" /> : <LayoutDashboard className="h-8 w-8"/>}
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-sidebar-foreground group-hover:text-primary transition-colors">
+          <span className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
             LogPack
-          </h1>
+          </span>
         </Link>
 
         <button
           onClick={onToggle}
-          className="p-1.5 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors lg:hidden"
+          className="lg:hidden p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           aria-label="Fechar menu"
         >
           <ChevronLeft size={20} />
         </button>
       </div>
 
-      {/* Navegação */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar">
-        <ul className="space-y-1">
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              {item.subItems ? (
-                <div className="space-y-1">
-                  {/* Botão do Submenu (Pai) */}
-                  <button
-                    onClick={() => handleSubmenuToggle(item.id)}
-                    className={clsx(
-                      'flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors outline-none group',
-                      activeMenu.startsWith(item.id) 
-                        ? 'text-sidebar-primary font-semibold' 
-                        : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon size={18} className={clsx("shrink-0", activeMenu.startsWith(item.id) ? "text-sidebar-primary" : "")} />
-                      <span>{item.label}</span>
-                    </div>
-                    <div className="text-muted-foreground/70 group-hover:text-foreground transition-colors">
-                      {openSubmenus[item.id] ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                    </div>
-                  </button>
-
-                  {/* Itens do Submenu */}
-                  {openSubmenus[item.id] && (
-                    <div className="relative pl-4 ml-4 border-l border-sidebar-border/60">
-                      <ul className="space-y-1">
-                        {item.subItems.map((subItem) => {
-                          const isActive = isLinkActive(subItem.href);
-                          
-                          // Renderização especial para o botão SAIR
-                          if (subItem.id === 'sair') {
-                            return (
-                              <li key={subItem.id}>
-                                <button
-                                  onClick={handleLogout}
-                                  className={clsx(
-                                    'flex w-full items-center px-3 py-2 text-sm font-medium rounded-md transition-all outline-none',
-                                    'text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:translate-x-1'
-                                  )}
-                                >
-                                  <subItem.icon size={16} className="mr-3 opacity-70 shrink-0" />
-                                  <span>{subItem.label}</span>
-                                </button>
-                              </li>
-                            );
-                          }
-
-                          // Renderização padrão de links
-                          return (
-                            <li key={subItem.id}>
-                              <Link
-                                href={subItem.href}
-                                className={clsx(
-                                  'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all outline-none',
-                                  isActive
-                                    ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm translate-x-1 font-semibold'
-                                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1'
-                                )}
-                                onClick={() => setActiveMenu(item.id)}
-                              >
-                                <subItem.icon size={16} className="mr-3 opacity-70 shrink-0" />
-                                <span>{subItem.label}</span>
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                // Item sem submenu (Link Direto)
-                <Link
-                  href={item.href}
+      {/* --- NAVEGAÇÃO --- */}
+      <nav className="flex-1 px-3 py-6 overflow-y-auto custom-scrollbar space-y-1">
+        {menuItems.map((item) => (
+          <div key={item.id}>
+            {item.subItems ? (
+              // --- ITEM COM SUBMENU (OPERAÇÕES) ---
+              <div className="space-y-1 mb-1">
+                <button
+                  onClick={() => handleSubmenuToggle(item.id)}
                   className={clsx(
-                    'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all outline-none',
-                    isLinkActive(item.href)
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm font-semibold' 
-                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    'flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors outline-none group',
+                    // Se algum filho estiver ativo, destaca o pai levemente
+                    Object.values(item.subItems).some(sub => isLinkActive(sub.href))
+                      ? 'text-foreground font-semibold' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
-                  onClick={() => setActiveMenu(item.id)}
                 >
-                  <item.icon size={18} className={clsx("mr-3 shrink-0", isLinkActive(item.href) ? "text-sidebar-primary" : "")} />
-                  <span>{item.label}</span>
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
+                  <div className="flex items-center gap-3">
+                    <item.icon size={18} />
+                    <span>{item.label}</span>
+                  </div>
+                  <div className="text-muted-foreground/50 group-hover:text-foreground transition-colors">
+                    {openSubmenus[item.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
+                </button>
+
+                {/* Submenu Renderizado */}
+                {openSubmenus[item.id] && (
+                  <div className="relative pl-4 ml-4 border-l border-border space-y-1 animate-in slide-in-from-top-1 duration-200">
+                    {item.subItems.map((subItem) => (
+                      <Link
+                        key={subItem.id}
+                        href={subItem.href}
+                        className={clsx(
+                          'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all outline-none',
+                          isLinkActive(subItem.href)
+                            ? 'bg-primary/10 text-primary font-semibold' // Estilo Ativo
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <subItem.icon size={16} className={clsx("mr-3 shrink-0", isLinkActive(subItem.href) ? "text-primary" : "opacity-70")} />
+                        <span>{subItem.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // --- ITEM SEM SUBMENU (LINK DIRETO) ---
+              <Link
+                href={item.href}
+                className={clsx(
+                  'flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all outline-none mb-1',
+                  isLinkActive(item.href)
+                    ? 'bg-primary/10 text-primary font-semibold' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <item.icon size={18} className={clsx("mr-3 shrink-0", isLinkActive(item.href) ? "text-primary" : "")} />
+                <span>{item.label}</span>
+              </Link>
+            )}
+          </div>
+        ))}
       </nav>
-      
-      {/* Footer da Sidebar (Informação do Usuário) */}
-      <div className="p-4 border-t border-sidebar-border bg-sidebar-accent/10">
-        <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs border border-blue-200">
-              EP
+
+      {/* --- FOOTER --- */}
+      <div className="p-4 border-t border-border bg-muted/30">
+        
+        <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <span>Tema</span>
+                <SwitchTheme />
             </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-medium truncate text-sidebar-foreground">Colaborador</span>
-              <span className="text-xs text-muted-foreground truncate">Funcionário</span>
-            </div>
+            
+            <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 rounded-md transition-colors"
+                title="Sair do Sistema"
+            >
+                <LogOut size={14} />
+                <span>Sair</span>
+            </button>
+        </div>
+
+        {/* CARD DO USUÁRIO */}
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-background border border-border shadow-sm">
+          
+          {/* AVATAR COM FALLBACK */}
+          <Avatar className="h-10 w-10 border border-border">
+            {loadingUser ? (
+                 <AvatarFallback className="bg-muted"><Loader2 className="h-4 w-4 animate-spin" /></AvatarFallback>
+            ) : (
+                <>
+                    <AvatarImage src={user.image} alt={user.name} className="object-cover" />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                        {getInitials(user.name)}
+                    </AvatarFallback>
+                </>
+            )}
+          </Avatar>
+
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-semibold text-foreground truncate" title={user.name}>
+                {user.name}
+            </span>
+            <span className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
+                Gerente de Produção
+            </span>
+          </div>
+        </div>
+        
+        <div className="mt-2 text-[10px] text-center text-muted-foreground/60">
+            © 2025 LogPack Inc.
         </div>
       </div>
+
     </aside>
   );
 }
