@@ -1,237 +1,254 @@
-// src/app/dashboard/employee/components/EmployeeDashboard/page.jsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Sidebar from '@/components/layout/sidebar';
-import { Menu, Plus, Package, FileText, Clock, CheckCircle, XCircle, Warehouse, RefreshCw } from 'lucide-react';
-import InsumosSection from "@/components/Blocks/Insumos/InsumosSection";
-import EstoqueSection from '@/components/Blocks/Estoque/SetoresSection';
-import CreateButton from '@/components/ui/create-button';
-import { api } from '@/lib/api';
-import { toast } from 'sonner';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+    LayoutDashboard, Plus, Search, Package, 
+    FileText, CheckCircle2, Clock, XCircle, Loader2, Menu, RefreshCw
+} from 'lucide-react';
+import clsx from 'clsx';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { toast, Toaster } from 'sonner';
+
+// SHADCN UI
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+// Componentes
+import SidebarEmployee from '@/components/layout/sidebar-employee';
+import EmployeeInsumosGrid from '@/components/Blocks/Insumos/EmployeeInsumosGrid';
+import { useEmployeeOperations } from '@/hooks/useEmployeeOperations';
 
 export default function EmployeeDashboard() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [searchSku, setSearchSku] = useState('');
-  const [pedidos, setPedidos] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const { pedidos, meta, loading, isSubmitting, fetchPedidos, criarSolicitacao } = useEmployeeOperations();
+    
+    // Estados UI
+    const [skuInput, setSkuInput] = useState('');
+    const [activeTab, setActiveTab] = useState('pedidos');
+    const [rowsPerPage, setRowsPerPage] = useState("5"); 
 
-  // ENDPOINT CORRETO DO SEU BACK-END (testado e funcionando!)
-  const carregarPedidos = async () => {
-    try {
-      setLoading(true);
-      // Esta é a rota que realmente existe no seu back-end
-      const res = await api.get('employee/my-requests');
-      
-      console.log('Resposta da API:', res.data); // <-- DEIXE ISSO PARA DEBUG
+    useEffect(() => {
+        fetchPedidos(1, Number(rowsPerPage));
+    }, [fetchPedidos, rowsPerPage]);
 
-      // Ajuste conforme a estrutura exata que seu back-end retorna
-      const lista = res.data?.data || res.data?.requests || res.data || [];
-      setPedidos(Array.isArray(lista) ? lista : []);
-      
-    } catch (err) {
-      console.error('Erro ao carregar pedidos:', err);
-      toast.error('Erro ao carregar seus pedidos');
-      setPedidos([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= meta.totalPages) {
+            fetchPedidos(newPage, Number(rowsPerPage));
+        }
+    };
 
-  useEffect(() => {
-    carregarPedidos();
-  }, []);
-const handleSolicitacao = async (data) => {
-  try {
-    const res = await api.post('employee/request', { 
-      insumoSKU: data.sku.trim().toUpperCase() 
-    });
+    // --- LÓGICA DE BLOQUEIO (AQUI ESTÁ O SEGREDO) ---
+    // Filtra todos os pedidos que NÃO estão finalizados (ou seja, pendentes/em compra)
+    const activeRequestsSkus = useMemo(() => {
+        if (!pedidos || pedidos.length === 0) return [];
 
-    if (res?.success === false || res?.error) {
-      toast.error(res?.message || res?.error || 'Erro na solicitação');
-      return false;
-    }
+        return pedidos
+            .filter(p => {
+                const status = (p.status || '').toLowerCase();
+                const isFinished = [
+                    'concluido', 'concluído', 
+                    'negado', 'rejeitado', 
+                    'cancelado', 
+                    'compra_efetuada'
+                ].includes(status);
+                return !isFinished;
+            })
+            .map(p => {
+                const sku = p.displaySku || p.insumoSKU || '';
+                return String(sku).trim().toUpperCase();
+            })
+            .filter(sku => sku && sku !== '---');
+    }, [pedidos]);
 
-    toast.success('Solicitação enviada com sucesso!');
-    setSearchSku('');
-    carregarPedidos();
+    const handleQuickRequest = async (e) => {
+        e.preventDefault();
+        const skuClean = skuInput.trim().toUpperCase();
 
-    // PEGA NOME DO USUÁRIO LOGADO
-    const usuarioLogado = JSON.parse(localStorage.getItem('user') || '{}');
-    const nomeUsuario = usuarioLogado.nome || usuarioLogado.name || 'Funcionário';
+        if (!skuClean) {
+            toast.warning("Digite o SKU.");
+            return;
+        }
 
-    // CORRIGIDO: era data.s2325.sku → é data.sku!!!
-    if (typeof window !== 'undefined') {
-      window.adicionarNotificacaoPendente({
-        usuario: nomeUsuario,
-        sku: data.sku.trim().toUpperCase(),  // ← CORRIGIDO AQUI
-        insumo: 'Insumo solicitado'
-      });
+        if (activeRequestsSkus.includes(skuClean)) {
+            toast.info(`Já existe um pedido aberto para ${skuClean}.`);
+            return;
+        }
 
-      // Mostra em tempo real também
-      window.notificarNovoPedido({
-        usuario: nomeUsuario,
-        sku: data.sku.trim().toUpperCase()
-      });
-    }
+        const success = await criarSolicitacao(skuClean);
+        if (success) setSkuInput('');
+    };
 
-    return true;
-  } catch (err) {
-    console.error('Erro:', err);
-    toast.error(err.response?.data?.message || 'Erro ao enviar solicitação');
-    return false;
-  }
-};
-  const getStatusInfo = (status) => {
-    const s = (status || '').toString().toLowerCase();
-    if (s.includes('solicitado') || s.includes('pendente'))
-      return { label: 'Solicitado', color: 'text-amber-600 bg-amber-50', icon: Clock };
-    if (s.includes('aprovado'))
-      return { label: 'Aprovado', color: 'text-green-600 bg-green-50', icon: CheckCircle };
-    if (s.includes('rejeitado'))
-      return { label: 'Rejeitado', color: 'text-red-600 bg-red-50', icon: XCircle };
-    return { label: 'Desconhecido', color: 'text-gray-500 bg-gray-50', icon: Clock };
-  };
+    return (
+        <div className="min-h-screen bg-muted/40 font-sans text-foreground">
+            <Toaster position="top-right" richColors />
+            <SidebarEmployee />
 
-  return (
-    <div className="flex h-screen bg-gray-50">
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
-      )}
-
-      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-
-      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}`}>
-        <button onClick={() => setIsSidebarOpen(true)} className="fixed top-4 left-4 z-50 p-3 bg-white rounded-xl shadow-lg lg:hidden">
-          <Menu className="w-6 h-6" />
-        </button>
-
-        <div className="p-6 lg:p-10 max-w-7xl mx-auto">
-          <div className="mb-10">
-            <h1 className="text-4xl font-bold text-gray-900">Bem-vindo, Funcionário</h1>
-            <p className="text-lg text-gray-600 mt-2">Solicite insumos, acompanhe pedidos e visualize o estoque.</p>
-          </div>
-
-          {/* Card de Solicitação */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-3xl p-8 mb-10 shadow-xl">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              <div>
-                <h2 className="text-2xl lg:text-3xl font-bold mb-2">Solicitar Reposição de Insumo</h2>
-                <p className="opacity-90">Digite o SKU do insumo que está acabando</p>
-              </div>
-              <div className="flex items-center gap-4 w-full lg:w-auto">
-                <input
-                  type="text"
-                  value={searchSku}
-                  onChange={(e) => setSearchSku(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => e.key === 'Enter' && document.dispatchEvent(new CustomEvent('open-create-modal'))}
-                  placeholder="INS-2025-001"
-                  className="px-6 py-5 rounded-xl text-gray-900 text-lg w-full lg:w-96 focus:outline-none shadow-inner"
-                />
-                <button
-                  onClick={() => document.dispatchEvent(new CustomEvent('open-create-modal'))}
-                  className="bg-white text-blue-600 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all"
-                >
-                  <Plus className="w-9 h-9" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Meus Pedidos */}
-          <div className="bg-white rounded-3xl shadow-xl p-8 mb-10">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <FileText className="w-7 h-7 text-blue-600" />
-                Meus Pedidos de Reposição
-              </h3>
-              <button onClick={carregarPedidos} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition">
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-12">
-                <RefreshCw className="w-10 h-10 text-blue-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Carregando pedidos...</p>
-              </div>
-            ) : pedidos.length === 0 ? (
-              <div className="text-center py-16">
-                <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl font-medium text-gray-500">Nenhum pedido realizado</p>
-                <p className="text-gray-400 mt-2">Seus pedidos aparecerão aqui após a solicitação.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {pedidos.map((pedido) => {
-                  const { label, color, icon: StatusIcon } = getStatusInfo(pedido.status || pedido.estado);
-                  return (
-                    <div key={pedido._id || pedido.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition">
-                      <div className="flex items-center gap-5">
-                        <div className="bg-blue-100 p-3 rounded-xl">
-                          <Package className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-lg text-gray-900">
-                            {pedido.insumo?.nome || pedido.insumoNome || pedido.sku || 'Insumo sem nome'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            SKU: {pedido.insumoSKU || pedido.sku}
-                            {' • '}
-                            {new Date(pedido.createdAt || pedido.data).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-full ${color}`}>
-                        <StatusIcon className="w-5 h-5" />
-                        {label}
-                      </div>
+            <div className="flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur px-6 shadow-sm">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className="lg:hidden shrink-0"><Menu className="h-5 w-5" /></Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="p-0 w-64"><SidebarEmployee /></SheetContent>
+                    </Sheet>
+                    <div className="flex items-center gap-2 font-semibold text-lg">
+                        <LayoutDashboard className="h-5 w-5 text-primary" /> Visão Geral
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                </header>
 
-          {/* Insumos e Estoque */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <Package className="w-8 h-8 text-blue-600" />
-                <h3 className="text-2xl font-bold text-gray-900">Insumos Disponíveis</h3>
-              </div>
-              <InsumosSection />
+                <main className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto">
+                    
+                    {/* Solicitação Rápida */}
+                    <Card className="border-l-4 border-l-primary shadow-sm bg-card">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                                <Plus className="h-5 w-5 text-primary" /> Solicitação Direta
+                            </CardTitle>
+                            <CardDescription className="text-muted-foreground/80">
+                                Digite o SKU para pedir reposição.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={handleQuickRequest} className="flex gap-3 items-center max-w-2xl">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                        placeholder="Ex: PAP-A4" 
+                                        className="pl-9 bg-background h-11 text-base uppercase"
+                                        value={skuInput}
+                                        onChange={(e) => setSkuInput(e.target.value.toUpperCase())}
+                                    />
+                                </div>
+                                <Button type="submit" size="lg" disabled={isSubmitting} className="h-11 px-6 shadow-sm min-w-[120px]">
+                                    {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Enviar"}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+
+                    <Tabs defaultValue="pedidos" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                        
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4">
+                            <TabsList className="bg-muted/50 p-1">
+                                <TabsTrigger value="pedidos" className="px-4 py-2"><FileText className="mr-2 h-4 w-4" /> Pedidos Recentes</TabsTrigger>
+                                <TabsTrigger value="insumos" className="px-4 py-2"><Package className="mr-2 h-4 w-4" /> Catálogo Completo</TabsTrigger>
+                            </TabsList>
+                            
+                            {activeTab === 'pedidos' && (
+                                <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <span>Mostrar</span>
+                                        <Select value={rowsPerPage} onValueChange={setRowsPerPage}>
+                                            <SelectTrigger className="h-9 w-[70px] bg-background"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="5">5</SelectItem>
+                                                <SelectItem value="10">10</SelectItem>
+                                                <SelectItem value="20">20</SelectItem>
+                                                <SelectItem value="50">50</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <span className="hidden sm:inline">por página</span>
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => fetchPedidos(meta.currentPage, Number(rowsPerPage))} className="h-9 gap-2">
+                                        <RefreshCw className={clsx("h-3.5 w-3.5", loading && "animate-spin")} />
+                                        Atualizar
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* TAB PEDIDOS */}
+                        <TabsContent value="pedidos" className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2">
+                            <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow className="hover:bg-transparent border-b border-border">
+                                            <TableHead className="w-[120px] pl-6 font-medium text-muted-foreground">ID</TableHead>
+                                            <TableHead className="w-[180px] font-medium text-muted-foreground">Data</TableHead>
+                                            <TableHead className="font-medium text-muted-foreground">SKU do Insumo</TableHead>
+                                            <TableHead className="text-right pr-6 font-medium text-muted-foreground">Status Atual</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {loading ? (
+                                            Array.from({length: Number(rowsPerPage)}).map((_, i) => (
+                                                <TableRow key={i}><TableCell colSpan={4} className="pl-6 py-4"><Skeleton className="h-10 w-full" /></TableCell></TableRow>
+                                            ))
+                                        ) : pedidos.length === 0 ? (
+                                            <TableRow><TableCell colSpan={4} className="h-48 text-center text-muted-foreground"><div className="flex flex-col items-center justify-center gap-3"><FileText className="h-8 w-8 opacity-40" /><p className="text-sm font-medium">Nenhuma solicitação encontrada.</p></div></TableCell></TableRow>
+                                        ) : (
+                                            pedidos.map((pedido) => (
+                                                <TableRow key={pedido.id || pedido._id} className="hover:bg-muted/40 transition-colors border-b border-border last:border-0">
+                                                    <TableCell className="pl-6 py-4"><span className="font-mono text-xs text-muted-foreground">#{pedido.id ? pedido.id.slice(0,8) : '...'}</span></TableCell>
+                                                    <TableCell className="text-muted-foreground font-medium text-sm py-4">{pedido.createdAt ? format(new Date(pedido.createdAt), "dd/MM/yyyy HH:mm", {locale: ptBR}) : '-'}</TableCell>
+                                                    <TableCell className="py-4">
+                                                        <div className="flex flex-col items-start gap-1">
+                                                            <Badge variant="outline" className="font-mono text-xs text-foreground border-border bg-muted/50 px-2 py-1">{pedido.displaySku}</Badge>
+                                                            {pedido.displayInsumoName && <span className="text-xs text-muted-foreground truncate max-w-[200px]">{pedido.displayInsumoName}</span>}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6 py-4"><StatusBadge status={pedido.status} /></TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            {meta.totalPages > 1 && (
+                                <div className="flex justify-end pt-2">
+                                    <Pagination>
+                                        <PaginationContent>
+                                            <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(meta.currentPage - 1); }} className={clsx(meta.currentPage <= 1 && "pointer-events-none opacity-50")} /></PaginationItem>
+                                            <PaginationItem><PaginationLink isActive className="bg-primary text-primary-foreground">{meta.currentPage}</PaginationLink></PaginationItem>
+                                            <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(meta.currentPage + 1); }} className={clsx(meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")} /></PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* TAB CATÁLOGO */}
+                        <TabsContent value="insumos" className="animate-in fade-in-50 slide-in-from-bottom-2">
+                            <Card className="border shadow-sm overflow-hidden">
+                                <CardHeader className="bg-muted/50 py-4 border-b">
+                                    <CardTitle className="text-base font-medium">Catálogo Disponível</CardTitle>
+                                </CardHeader>
+                                <div className="p-6">
+                                    {/* O DASHBOARD PASSA OS SKUS BLOQUEADOS E A FUNÇÃO DE RELOAD */}
+                                    <EmployeeInsumosGrid 
+                                        activeRequests={activeRequestsSkus} 
+                                        onRequestSuccess={() => fetchPedidos(1, Number(rowsPerPage))} 
+                                    /> 
+                                </div>
+                            </Card>
+                        </TabsContent>
+
+                    </Tabs>
+                </main>
             </div>
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <Warehouse className="w-8 h-8 text-blue-600" />
-                <h3 className="text-2xl font-bold text-gray-900">Estoque por Setor</h3>
-              </div>
-              <EstoqueSection />
-            </div>
-          </div>
         </div>
-      </div>
-
-      <CreateButton title="Confirmar Solicitação" onSubmit={handleSolicitacao}>
-        {({ formData, handleChange }) => (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-lg font-semibold mb-3">SKU do Insumo</label>
-              <input
-                name="sku"
-                value={formData.sku || searchSku}
-                onChange={handleChange}
-                placeholder="INS-2025-001"
-                className="w-full px-6 py-4 border-2 rounded-xl focus:border-blue-500 outline-none text-lg"
-                required
-                autoFocus
-              />
-            </div>
-            <p className="text-center text-gray-600">O gerente será notificado automaticamente.</p>
-          </div>
-        )}
-      </CreateButton>
-    </div>
-  );
+    );
 }
+
+const StatusBadge = ({ status }) => {
+    const s = (status || '').toLowerCase();
+    let style = "bg-muted text-muted-foreground border-border";
+    let Icon = Clock;
+    let label = status || "Desconhecido";
+
+    if (s.includes('aprovado')) { style = "bg-green-100 text-green-700 border-green-200"; Icon = CheckCircle2; label = "Aprovado"; }
+    else if (s.includes('negado')) { style = "bg-red-100 text-red-700 border-red-200"; Icon = XCircle; label = "Negado"; }
+    else if (s.includes('compra_efetuada')) { style = "bg-purple-100 text-purple-700 border-purple-200"; Icon = CheckCircle2; label = "Comprado"; }
+    else if (s.includes('compra_iniciada')) { style = "bg-blue-100 text-blue-700 border-blue-200"; Icon = RefreshCw; label = "Em Compra"; }
+    else { style = "bg-amber-100 text-amber-700 border-amber-200"; Icon = Clock; label = "Solicitado"; }
+
+    return <Badge variant="outline" className={clsx("gap-1 py-0.5 px-2 shadow-none border", style)}><Icon size={12}/> <span className="capitalize">{label}</span></Badge>;
+};
