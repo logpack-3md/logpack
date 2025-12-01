@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { LogoSite } from "@/components/ui/icons-geral";
+import { SwitchTheme } from "@/components/SwitchThemes";
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -156,7 +157,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
           ))}
         </ul>
       </nav>
-      
+     <SwitchTheme /> 
       <div className="p-4 border-t border-sidebar-border text-xs text-muted-foreground text-center">
         © 2024 LogPack Inc.
       </div>
