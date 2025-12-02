@@ -13,16 +13,11 @@ import {
   Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
-
-// UI Components
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que existe ou remova
 import { SwitchTheme } from "@/components/SwitchThemes"; // Certifique-se que existe
-
-// API
 import { api } from "@/lib/api";
 
-// MENU SIMPLIFICADO
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },

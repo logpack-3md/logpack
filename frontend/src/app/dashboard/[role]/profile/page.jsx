@@ -96,8 +96,8 @@ export default function ProfilePage() {
           <Card className="overflow-hidden border-border shadow-sm">
 
             {/* Banner Decorativo */}
-            <div className="h-48 w-full bg-linear-to-r from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-950 relative">
-              <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div className="h-48 w-full bg-linear-to-r from-[#f9f9f978] to-[#ad8500bb] dark:from-[#e5e5e52b] dark:to-[#97740085] relative">
+              <div className="absolute inset-0 opacity-100 dark:opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             </div>
 
             <CardContent className="px-6 pb-8 md:px-10">
