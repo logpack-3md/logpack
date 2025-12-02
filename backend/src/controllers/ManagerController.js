@@ -43,6 +43,7 @@ class ManagerController {
                     'userId',
                     'insumoSKU',
                     'status',
+                    'createdAt'
                 ]
             })
 

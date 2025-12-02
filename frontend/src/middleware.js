@@ -1,20 +1,36 @@
-
 import { NextResponse } from 'next/server';
+
+// ----------------------------------------------------------------------
+// ACL (Lista de Controle de Acesso)
+// ----------------------------------------------------------------------
+const ROLE_PERMISSIONS = {
+  // Admin: Acesso restrito apenas ao perfil (Dashboard raiz é liberada abaixo)
+  admin: ['profile'], 
+  
+  // Manager: Acesso operacional
+  manager: ['insumos', 'setores', 'pedidos', 'orcamentos', 'profile'],
+  
+  // Buyer: Acesso de compras
+  buyer: ['compras', 'estimar', 'profile'], 
+  
+  // Employee: Operacional básico
+  employee: ['profile'], 
+};
 
 function decodeJwt(token) {
   try {
-
     const base64Url = token.split('.')[1];
     if (!base64Url) return null;
 
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
 
     return JSON.parse(jsonPayload);
-
   } catch (e) {
     console.error("Erro na decodificação JWT no Middleware:", e);
     return null;
@@ -23,19 +39,17 @@ function decodeJwt(token) {
 
 function getRoleFromToken(req) {
   const token = req.cookies.get('token')?.value;
-
   if (!token) return null;
 
   const decoded = decodeJwt(token);
 
-  if (decoded.status === 'pendente' || decoded.status === 'inativo') {
-    return decoded.status
+  if (decoded?.status === 'pendente' || decoded?.status === 'inativo') {
+    return decoded.status;
   }
 
   if (decoded && decoded.role) {
     return decoded.role.toLowerCase();
   }
-
 
   return null;
 }
@@ -44,38 +58,54 @@ export function middleware(req) {
   const { pathname } = req.nextUrl;
   const targetBase = '/dashboard';
 
-  // 1. Só atua se a rota começar com /dashboard
+  // 1. Só atua dentro do /dashboard
   if (pathname.startsWith(targetBase)) {
+    
+    // --- VERIFICAÇÃO DE LOGIN ---
     const userRole = getRoleFromToken(req);
 
     if (!userRole) {
-      // Não autenticado: Redireciona para login
       return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    // 2. Extrai a role na URL se houver (ex: 'admin' em /dashboard/admin/insumos)
-    // [role] será o 2º segmento (índice 2) se for /dashboard/[role]/...
-    const segments = pathname.split('/').filter(s => s);
-    const urlRole = segments[1];
-
-    // 3. Ação de Proteção/Redirecionamento
-    if (urlRole && urlRole !== userRole) {
-      // Usuário 'admin' acessando /dashboard/manager/insumos
-
-      // Substitui a role incorreta na URL pela role correta
-      segments[1] = userRole;
-      const newPath = '/' + segments.join('/');
-
-      // console.log(`MIDDLEWARE: Usuário ${userRole} redirecionado de ${pathname} para ${newPath}`);
-      return NextResponse.redirect(new URL(newPath, req.url));
-
-    } else if (!urlRole && pathname === targetBase) {
-      // Usuário acessando a rota base /dashboard
-      const newPath = `${targetBase}/${userRole}`;
-      return NextResponse.redirect(new URL(newPath, req.url));
+    if (userRole === 'pendente' || userRole === 'inativo') {
+      if (pathname !== '/dashboard') {
+         return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+      return NextResponse.next();
     }
 
-    // Continua se a rota estiver correta (ex: /dashboard/admin/insumos, sendo admin)
+    // --- ANÁLISE DA URL ---
+    const segments = pathname.split('/').filter((s) => s);
+    const urlRole = segments[1]; // ex: admin, manager
+    const subRoute = segments[2]; // ex: pedidos, insumos
+
+    // --- BLOQUEIO: SPOOFING DE ROLE NA URL ---
+    // Se o usuário 'manager' tentar entrar em '/dashboard/admin/...'
+    if (urlRole && urlRole !== userRole) {
+      // REWRITE para 404 em vez de redirecionar para a correta.
+      // Isso simula que a página não existe para ele.
+      return NextResponse.rewrite(new URL('/404', req.url));
+    } 
+    
+    // Redireciona /dashboard para /dashboard/[role] (User experience)
+    else if (!urlRole && pathname === targetBase) {
+      return NextResponse.redirect(new URL(`${targetBase}/${userRole}`, req.url));
+    }
+
+    // --- BLOQUEIO: PERMISSÃO DE ROTA (ACL) ---
+    // Se tentar acessar uma sub-rota não permitida (ex: admin acessando /pedidos)
+    if (subRoute) {
+      const allowedRoutes = ROLE_PERMISSIONS[userRole] || [];
+      const hasPermission = allowedRoutes.includes(subRoute);
+
+      if (!hasPermission) {
+        console.warn(`404 Simulado: ${userRole} tentou acessar ${subRoute}`);
+        // REWRITE para 404: O usuário vê a tela de erro, a URL não muda.
+        return NextResponse.rewrite(new URL('/404', req.url));
+      }
+    }
+
     return NextResponse.next();
   }
 
@@ -83,5 +113,5 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/']
-}
+  matcher: ['/dashboard/:path*', '/'],
+};
