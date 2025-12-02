@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
-    LayoutDashboard, Plus, Search, Package, 
+import {
+    LayoutDashboard, Plus, Search, Package,
     FileText, CheckCircle2, Clock, XCircle, Loader2, Menu, RefreshCw
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -20,7 +20,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Componentes
 import SidebarEmployee from '@/components/layout/sidebar-employee';
@@ -30,10 +29,10 @@ import { useEmployeeOperations } from '@/hooks/useEmployeeOperations';
 export default function EmployeeDashboard() {
     // Extraindo fetchActiveSkus e allActiveSkus do hook atualizado
     const { pedidos, allActiveSkus, meta, loading, isSubmitting, fetchPedidos, fetchActiveSkus, criarSolicitacao } = useEmployeeOperations();
-    
+
     const [skuInput, setSkuInput] = useState('');
     const [activeTab, setActiveTab] = useState('pedidos');
-    const [rowsPerPage, setRowsPerPage] = useState("5"); 
+    const [rowsPerPage, setRowsPerPage] = useState("5");
 
     // Carregamento Inicial
     useEffect(() => {
@@ -71,27 +70,34 @@ export default function EmployeeDashboard() {
         const success = await criarSolicitacao(skuClean);
         if (success) setSkuInput('');
     };
-
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     return (
         <div className="min-h-screen bg-muted/40 font-sans text-foreground">
             <Toaster position="top-right" richColors />
-            <SidebarEmployee />
+
+
+            <SidebarEmployee isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
             <div className="flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
-                <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur px-6 shadow-sm">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="lg:hidden shrink-0"><Menu className="h-5 w-5" /></Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="p-0 w-64"><SidebarEmployee /></SheetContent>
-                    </Sheet>
+             
+
+                {/* Header Mobile */}
+                <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
+                        aria-label="Abrir menu"
+                    >
+                        <Menu size={24} />
+                    </button>
                     <div className="flex items-center gap-2 font-semibold text-lg">
                         <LayoutDashboard className="h-5 w-5 text-primary" /> Visão Geral
                     </div>
                 </header>
 
+
                 <main className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto">
-                    
+
                     {/* Solicitação Rápida */}
                     <Card className="border-l-4 border-l-primary shadow-sm bg-card">
                         <CardHeader className="pb-3">
@@ -106,8 +112,8 @@ export default function EmployeeDashboard() {
                             <form onSubmit={handleQuickRequest} className="flex gap-3 items-center max-w-2xl">
                                 <div className="relative flex-1">
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input 
-                                        placeholder="Ex: PAP-A4" 
+                                    <Input
+                                        placeholder="Ex: PAP-A4"
                                         className="pl-9 bg-background h-11 text-base uppercase"
                                         value={skuInput}
                                         onChange={(e) => setSkuInput(e.target.value.toUpperCase())}
@@ -121,13 +127,13 @@ export default function EmployeeDashboard() {
                     </Card>
 
                     <Tabs defaultValue="pedidos" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                        
+
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4">
                             <TabsList className="bg-muted/50 p-1">
                                 <TabsTrigger value="pedidos" className="px-4 py-2"><FileText className="mr-2 h-4 w-4" /> Pedidos Recentes</TabsTrigger>
                                 <TabsTrigger value="insumos" className="px-4 py-2"><Package className="mr-2 h-4 w-4" /> Catálogo Completo</TabsTrigger>
                             </TabsList>
-                            
+
                             {activeTab === 'pedidos' && (
                                 <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -165,7 +171,7 @@ export default function EmployeeDashboard() {
                                     </TableHeader>
                                     <TableBody>
                                         {loading ? (
-                                            Array.from({length: Number(rowsPerPage)}).map((_, i) => (
+                                            Array.from({ length: Number(rowsPerPage) }).map((_, i) => (
                                                 <TableRow key={i}><TableCell colSpan={4} className="pl-6 py-4"><Skeleton className="h-10 w-full" /></TableCell></TableRow>
                                             ))
                                         ) : pedidos.length === 0 ? (
@@ -173,8 +179,8 @@ export default function EmployeeDashboard() {
                                         ) : (
                                             pedidos.map((pedido) => (
                                                 <TableRow key={pedido.id || pedido._id} className="hover:bg-muted/40 transition-colors border-b border-border last:border-0">
-                                                    <TableCell className="pl-6 py-4"><span className="font-mono text-xs text-muted-foreground">#{pedido.id ? pedido.id.slice(0,8) : '...'}</span></TableCell>
-                                                    <TableCell className="text-muted-foreground font-medium text-sm py-4">{pedido.createdAt ? format(new Date(pedido.createdAt), "dd/MM/yyyy HH:mm", {locale: ptBR}) : '-'}</TableCell>
+                                                    <TableCell className="pl-6 py-4"><span className="font-mono text-xs text-muted-foreground">#{pedido.id ? pedido.id.slice(0, 8) : '...'}</span></TableCell>
+                                                    <TableCell className="text-muted-foreground font-medium text-sm py-4">{pedido.createdAt ? format(new Date(pedido.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR }) : '-'}</TableCell>
                                                     <TableCell className="py-4">
                                                         <div className="flex flex-col items-start gap-1">
                                                             <Badge variant="outline" className="font-mono text-xs text-foreground border-border bg-muted/50 px-2 py-1">{pedido.displaySku}</Badge>
@@ -209,10 +215,10 @@ export default function EmployeeDashboard() {
                                 </CardHeader>
                                 <div className="p-6">
                                     {/* AQUI ESTÁ A CORREÇÃO: Passamos allActiveSkus (lista completa) */}
-                                    <EmployeeInsumosGrid 
-                                        activeRequests={allActiveSkus} 
-                                        onRequestSuccess={handleRefresh} 
-                                    /> 
+                                    <EmployeeInsumosGrid
+                                        activeRequests={allActiveSkus}
+                                        onRequestSuccess={handleRefresh}
+                                    />
                                 </div>
                             </Card>
                         </TabsContent>
@@ -235,5 +241,5 @@ const StatusBadge = ({ status }) => {
     else if (s.includes('compra_iniciada')) { style = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"; Icon = RefreshCw; label = "Em Compra"; }
     else { style = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"; Icon = Clock; label = "Solicitado"; }
 
-    return <Badge variant="outline" className={clsx("gap-1 py-0.5 px-2 shadow-none border", style)}><Icon size={12}/> <span className="capitalize">{label}</span></Badge>;
+    return <Badge variant="outline" className={clsx("gap-1 py-0.5 px-2 shadow-none border", style)}><Icon size={12} /> <span className="capitalize">{label}</span></Badge>;
 };

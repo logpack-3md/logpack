@@ -27,7 +27,7 @@ export default function ProfilePage() {
   } = useProfile();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const fileInputRef = useRef(null);
   const params = useParams();
 
@@ -35,8 +35,8 @@ export default function ProfilePage() {
   const Sidebar = () => {
     const role = params.role;
     if (role === 'employee') return <SidebarEmployee />;
-    if (role === 'manager') return <SidebarManager />;
-    return <SidebarAdmin />;
+    if (role === 'manager') return <SidebarManager  />;
+    return <SidebarAdmin  />;
   };
 
   const handleSaveClick = async () => {
@@ -69,21 +69,27 @@ export default function ProfilePage() {
 
       {/* Sidebar Desktop */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 z-30 border-r bg-background">
-        <Sidebar />
+        <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)}/>
       </div>
 
       <div className="flex-1 flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
 
-        {/* Header Mobile */}
-        <div className="lg:hidden p-4 border-b bg-background flex items-center gap-4 sticky top-0 z-20 shadow-sm">
-          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon"><Menu className="h-5 w-5" /></Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64"><Sidebar /></SheetContent>
-          </Sheet>
-          <span className="font-bold text-lg">Meu Perfil</span>
-        </div>
+
+
+          {/* Header Mobile */}
+                <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
+                    <button
+                        onClick={() => {setIsSidebarOpen(!isSidebarOpen), console.log(isSidebarOpen)}}
+                        className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
+                        aria-label="Abrir menu"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <div className="flex items-center gap-2 font-semibold text-lg">
+                        <User className="h-5 w-5 text-primary" /> Visão Geral
+                    </div>
+                </header>
+
 
         <main className="flex-1 p-4 lg:p-8 max-w-5xl mx-auto w-full">
 

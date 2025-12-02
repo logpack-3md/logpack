@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, LayoutDashboard } from "lucide-react";
 import SidebarAdmin from "@/components/layout/sidebar-admin";
 import { ListUsers } from "@/components/ListUsers/page";
 import clsx from "clsx";
@@ -22,20 +22,22 @@ export default function AdminDashboard() {
         onClick={() => setIsSidebarOpen(false)}
       />
 
-      <SidebarAdmin isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)}/>
+      <SidebarAdmin isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
       <main className="flex flex-col min-h-screen transition-all duration-300 lg:ml-64">
 
         {/* Header Mobile */}
-        <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+            className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
             aria-label="Abrir menu"
-            >
+          >
             <Menu size={24} />
           </button>
-          <span className="font-bold text-lg tracking-tight text-foreground">LogPack</span>
+          <div className="flex items-center gap-2 font-semibold text-lg">
+            <LayoutDashboard className="h-5 w-5 text-primary" /> Visão Geral
+          </div>  
         </header>
 
         {/* Área do Conteúdo */}
