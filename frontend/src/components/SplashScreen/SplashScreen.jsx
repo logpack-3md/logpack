@@ -94,7 +94,7 @@ export default function SplashScreen() {
                 >
                     <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
                         <Image
-                            src="/logo/Logo_Light.svg"
+                            src="/Logo/Logo_Light.svg"
                             alt="LogPack Logo"
                             width={110}
                             height={110}
