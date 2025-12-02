@@ -36,7 +36,6 @@ const menuItems = [
     icon: Briefcase, // Ícone pai
     subItems: [
       { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' },
-      { id: 'setores', label: 'Setores', icon: PackageOpen, href: '/dashboard/manager/setores' },
       { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
       { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/manager/orcamentos' },
     ],

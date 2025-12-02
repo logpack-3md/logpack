@@ -1,141 +1,227 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
 export const useInsumosOperations = () => {
-    const [loading, setLoading] = useState(true);
-    const [insumos, setInsumos] = useState([]); // Lista filtrada exibida
-    const [allInsumos, setAllInsumos] = useState([]); // Lista completa (cache)
+    const [insumos, setInsumos] = useState([]);
     const [setores, setSetores] = useState([]);
+    const [occupiedSectors, setOccupiedSectors] = useState(new Set());
     
-    // Filtros
-    const [search, setSearch] = useState('');
-    const [setorFilter, setSetorFilter] = useState('todos');
-    const [statusFilter, setStatusFilter] = useState('todos');
+    const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1, currentPage: 1 });
+    
+    // --- DEPENDÊNCIAS E VALIDAÇÃO DE OCUPAÇÃO ---
+    const fetchDependencies = useCallback(async () => {
+        try {
+            const [resSetores, resAllInsumos] = await Promise.all([
+                api.get('setor?limit=1000'), 
+                api.get('insumos?limit=5000')
+            ]);
+            
+            const listaSetores = resSetores?.data || resSetores?.setores || [];
+            setSetores(Array.isArray(listaSetores) ? listaSetores : []);
 
-    // --- CARREGAR DADOS ---
-    const fetchData = useCallback(async () => {
+            const listaTodosInsumos = resAllInsumos?.data || resAllInsumos?.insumos || [];
+            const occupied = new Set();
+            if (Array.isArray(listaTodosInsumos)) {
+                listaTodosInsumos.forEach(item => {
+                    if (item.setorName && item.setorName !== 'N/A' && item.setorName !== 'null') {
+                        occupied.add(item.setorName);
+                    }
+                });
+            }
+            setOccupiedSectors(occupied);
+        } catch (err) { console.error("Erro deps", err); }
+    }, []);
+
+    // --- LISTAR (SEM SEARCH TEXTUAL) ---
+    const fetchData = useCallback(async (pageIndex = 1, pageSize = 10, setorFilter = 'todos', statusFilter = 'todos') => {
         setLoading(true);
         try {
-            // 1. Busca Insumos (Limite alto para front-end filter, ideal seria back-end filter)
-            const [resInsumos, resSetores] = await Promise.all([
-                api.get('insumos?limit=1000'),
-                api.get('setor?limit=100') // Simplificado: busca os primeiros 100 setores
-            ]);
+            const queryParams = new URLSearchParams({ 
+                page: pageIndex.toString(), 
+                limit: pageSize.toString() 
+            });
 
-            // Processa Insumos
-            const rawInsumos = resInsumos.data || [];
-            const formattedInsumos = rawInsumos.map(i => ({
-                id: i.id || i._id,
-                name: i.name || i.nome || 'Sem nome',
-                sku: i.SKU || i.sku || 'N/A',
-                setorName: i.setorName || i.setor?.name || 'Geral',
-                status: i.status || 'ativo',
-                image: i.image || i.imagem,
-                measure: i.measure || 'UN',
-                max_storage: i.max_storage || 0,
-                updatedAt: i.updatedAt || i.createdAt || new Date(),
-                // Determina cor baseada no setor (hash simples ou aleatório consistente)
-                colorIndex: (i.setorName?.length || 0) % 6 
-            })).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-
-            setAllInsumos(formattedInsumos);
-            setInsumos(formattedInsumos);
-
-            // Processa Setores
-            const rawSetores = resSetores.data || resSetores.setores || [];
-            const formattedSetores = Array.isArray(rawSetores) 
-                ? rawSetores.map(s => ({ id: s.id || s._id, name: s.name || s.nome }))
-                : [];
+            if (setorFilter !== 'todos') queryParams.append('setorName', setorFilter);
+            if (statusFilter !== 'todos') queryParams.append('status', statusFilter);
             
-            setSetores(formattedSetores.sort((a, b) => a.name.localeCompare(b.name)));
+            const res = await api.get(`insumos?${queryParams.toString()}`);
+            
+            if (res && res.success === false) {
+                 const isNotFound = res.status === 404 || (res.message && (res.message.includes('Nenhum') || res.message.includes('encontrado')));
+                 if (isNotFound) {
+                    setInsumos([]);
+                    setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
+                    return;
+                 }
+                 setInsumos([]);
+                 return; 
+            }
 
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro ao carregar dados.");
-        } finally {
-            setLoading(false);
+            const rawList = res?.data || res?.insumos || [];
+            const normalized = rawList.map(i => ({
+                id: i.id || i._id,
+                name: i.name,
+                sku: i.SKU || i.sku,
+                setorName: i.setorName || 'N/A',
+                current_storage: Number(i.current_storage || 0),
+                max_storage: Number(i.max_storage || 1),
+                status: i.status,
+                image: i.image,
+                description: i.description,
+                measure: i.measure,
+                last_check: i.last_check
+            }));
+
+            setInsumos(normalized);
+            setMeta(res?.meta || { totalItems: normalized.length, totalPages: Math.ceil(normalized.length / pageSize), currentPage: pageIndex });
+            
+            setPage(pageIndex);
+            setLimit(pageSize);
+
+        } catch (err) { 
+            console.warn("Fetch error:", err); 
+            setInsumos([]); 
+        } finally { 
+            setLoading(false); 
         }
     }, []);
 
-    // --- FILTRAGEM (Client-Side) ---
-    useEffect(() => {
-        let result = [...allInsumos];
-
-        // 1. Busca Texto (Nome ou SKU)
-        if (search.trim()) {
-            const q = search.toLowerCase();
-            result = result.filter(i => 
-                i.name.toLowerCase().includes(q) || 
-                i.sku.toLowerCase().includes(q)
-            );
-        }
-
-        // 2. Filtro de Setor
-        if (setorFilter !== 'todos') {
-            result = result.filter(i => i.setorName === setorFilter);
-        }
-
-        // 3. Filtro de Status
-        if (statusFilter !== 'todos') {
-            result = result.filter(i => i.status === statusFilter);
-        }
-
-        setInsumos(result);
-    }, [search, setorFilter, statusFilter, allInsumos]);
-
-    // --- CRIAR INSUMO ---
     const createInsumo = async (formData) => {
+        setIsSubmitting(true);
         try {
-            // Se tiver arquivo, usa FormData, senão JSON
             let payload;
-            let isMultipart = false;
+            const cleanSku = String(formData.sku || "").toUpperCase().trim();
+            
+            if (!formData.name || cleanSku.length < 3 || !formData.setor) {
+                toast.warning("Preencha os campos obrigatórios.");
+                return false;
+            }
+            
+            // Validação: O setor está ocupado por OUTRO insumo?
+            // Nota: Se occupiedSectors contem o nome, e estamos criando um NOVO, bloqueia.
+            if (occupiedSectors.has(formData.setor)) {
+                toast.error(`O setor ${formData.setor} já está ocupado.`);
+                return false;
+            }
 
             if (formData.file) {
-                isMultipart = true;
                 payload = new FormData();
-                payload.append('file', formData.file);
+                payload.append('image', formData.file);
                 payload.append('name', formData.name);
-                payload.append('SKU', formData.sku);
+                payload.append('SKU', cleanSku);
                 payload.append('setorName', formData.setor);
                 payload.append('description', formData.description || '');
-                payload.append('measure', formData.measure);
-                payload.append('max_storage', formData.max_storage);
-                payload.append('status', formData.status);
+                payload.append('measure', formData.measure || 'UN');
+                payload.append('max_storage', formData.max_storage || '0');
+                payload.append('status', formData.status || 'ativo');
             } else {
-                payload = {
-                    name: formData.name,
-                    SKU: formData.sku,
-                    setorName: formData.setor,
-                    description: formData.description || '',
-                    measure: formData.measure,
-                    max_storage: Number(formData.max_storage),
-                    status: formData.status
-                };
+                payload = { name: formData.name, SKU: cleanSku, setorName: formData.setor, description: formData.description, measure: formData.measure, max_storage: Number(formData.max_storage), status: formData.status };
             }
 
             const res = await api.post('manager/insumos', payload);
 
-            if (res.success === false) throw new Error(res.message || "Erro ao criar");
+            if (res && res.success === false) {
+                const msg = res.error || res.message || "Erro ao criar";
+                toast.error(msg);
+                return false;
+            }
 
-            toast.success("Insumo criado com sucesso!");
-            fetchData(); // Recarrega a lista
+            toast.success("Criado com sucesso!");
+            fetchDependencies(); // Atualiza lista de ocupação
             return true;
 
         } catch (err) {
             console.error(err);
-            toast.error(err.message || "Erro ao criar insumo.");
+            toast.error("Erro de conexão.");
             return false;
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    const updateInsumo = async (id, formData) => {
+        setIsSubmitting(true);
+        try {
+            let payload;
+            if (formData.file) {
+                payload = new FormData();
+                payload.append('image', formData.file);
+                payload.append('name', formData.name);
+                // Não envia SKU se não for necessário alterar
+                payload.append('setorName', formData.setor);
+                payload.append('description', formData.description);
+                payload.append('measure', formData.measure);
+                payload.append('max_storage', formData.max_storage);
+            } else {
+                payload = { 
+                    name: formData.name, 
+                    // SKU: formData.sku, // Comentado para segurança, geralmente SKU não muda
+                    setorName: formData.setor, 
+                    description: formData.description, 
+                    measure: formData.measure, 
+                    max_storage: Number(formData.max_storage) 
+                };
+            }
+
+            const res = await api.put(`manager/insumos/${id}`, payload);
+            
+            if (res && res.success === false) { 
+                const msg = res.error || res.message;
+                if(msg?.includes('utilizado') || msg?.includes('ocupado')) {
+                    toast.error("Setor indisponível.", { description: "Escolha um setor vazio." });
+                } else {
+                    toast.error(msg || "Erro ao atualizar.");
+                }
+                return false; 
+            }
+
+            toast.success("Atualizado!"); 
+            fetchDependencies();
+            return true;
+        } catch (err) { 
+            toast.error("Erro ao editar."); 
+            return false; 
+        } finally { 
+            setIsSubmitting(false); 
+        }
+    };
+
+    const toggleStatus = async (id, currentStatus) => { 
+        try {
+            const newStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+            await api.put(`manager/insumos/status/${id}`, { status: newStatus });
+            setInsumos(current => current.map(i => i.id === id ? { ...i, status: newStatus } : i));
+            toast.success("Status alterado.");
+            return true;
+        } catch { 
+            toast.error("Erro ao alterar status."); 
+            return false; 
+        }
+    };
+
+    const verifyInsumo = async (id) => {
+        try {
+            const res = await api.post(`manager/insumos/verify/${id}`);
+            if (res && res.success === false) throw new Error(res.error);
+            const newDate = res.lastCheck || new Date().toISOString();
+            setInsumos(current => current.map(i => i.id === id ? { ...i, last_check: newDate } : i));
+            toast.success("Verificado!");
+            return newDate;
+        } catch {
+            toast.error("Erro ao verificar.");
+            return null;
         }
     };
 
     return {
-        insumos,
-        setores,
-        loading,
-        filters: { search, setorFilter, statusFilter },
-        setFilters: { setSearch, setSetorFilter, setStatusFilter },
-        fetchData,
-        createInsumo
+        insumos, setores, occupiedSectors, loading, isSubmitting, 
+        pagination: { page, limit, meta },
+        fetchData, fetchDependencies, createInsumo, updateInsumo, toggleStatus, verifyInsumo
     };
 };
