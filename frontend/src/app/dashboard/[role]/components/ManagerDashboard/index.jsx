@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback } from 'react';
+import React from 'react';
 import { 
     LayoutDashboard, 
     RefreshCw, 
@@ -11,7 +11,12 @@ import {
     Calendar,
     ChevronLeft,
     ChevronRight,
-    ArrowRight
+    ArrowRight,
+    Inbox,
+    PackageX,
+    ShoppingBag,
+    CheckCircle2,
+    XCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { format, isValid } from 'date-fns';
@@ -58,7 +63,7 @@ export default function ManagerDashboard() {
             
             <SidebarManager />
 
-            {/* Ajuste no Container Principal para ocupar 100% da altura */}
+            {/* Container Principal Full Height */}
             <div className="flex flex-1 flex-col min-h-screen lg:ml-64 transition-all duration-300">
                 
                 {/* Header */}
@@ -67,7 +72,7 @@ export default function ManagerDashboard() {
                         <Sheet>
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
-                                    <Layers size={20} />
+                                    <LayoutDashboard size={20} />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="p-0 w-64">
@@ -87,22 +92,22 @@ export default function ManagerDashboard() {
                     </Button>
                 </header>
 
-                {/* Main: Agora usa flex-col para empurrar o footer da tabela pro final da tela */}
+                {/* Main: Ocupa o resto da tela (flex-1) */}
                 <main className="flex flex-1 flex-col p-6 md:p-8 gap-8 overflow-hidden h-[calc(100vh-4rem)]">
                     
-                    {/* 1. CARDS DE ESTATÍSTICAS (Tamanho Fixo) */}
+                    {/* 1. Stats - Fixo no Topo */}
                     <div className="shrink-0">
                         <ManagerStats stats={stats} loading={loadingStats} />
                     </div>
 
-                    {/* 2. ÁREA DE LISTAGEM COM TABS (Ocupa o resto da tela) */}
+                    {/* 2. Tabs + Table (Expande para o fundo) */}
                     <Tabs 
                         defaultValue={TABS.PEDIDOS} 
                         value={activeTab} 
                         onValueChange={changeTab}
                         className="flex flex-1 flex-col gap-4 overflow-hidden"
                     >
-                        {/* Header das Tabs */}
+                        {/* Header Tabs */}
                         <div className="flex shrink-0 flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <TabsList className="bg-background border border-border shadow-sm p-1">
                                 <TabsTrigger value={TABS.PEDIDOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ShoppingCart size={14}/> Pedidos</TabsTrigger>
@@ -118,7 +123,7 @@ export default function ManagerDashboard() {
                             </Button>
                         </div>
 
-                        {/* Card da Tabela que Cresce (flex-1) */}
+                        {/* Card da Tabela que Cresce */}
                         <div className="flex flex-1 flex-col bg-card rounded-xl border border-border shadow-sm overflow-hidden">
                             
                             {/* Conteúdo com Scroll interno */}
@@ -130,9 +135,9 @@ export default function ManagerDashboard() {
                                         ))}
                                     </div>
                                 ) : tableData.length === 0 ? (
-                                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+                                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground min-h-[300px]">
                                         <div className="p-6 bg-muted/30 rounded-full mb-3 border border-border/50">
-                                            <Package className="h-10 w-10 opacity-40" />
+                                            {activeTab === TABS.PEDIDOS ? <Inbox className="h-10 w-10 opacity-40" /> : <PackageX className="h-10 w-10 opacity-40" />}
                                         </div>
                                         <p className="font-medium">Nenhum registro encontrado.</p>
                                     </div>
@@ -144,7 +149,7 @@ export default function ManagerDashboard() {
                                 )}
                             </div>
 
-                            {/* Footer Fixo no final do Card */}
+                            {/* Footer Fixo no final */}
                             <div className="border-t border-border bg-background p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
                                 
                                 <div className="flex items-center gap-6 text-sm text-muted-foreground w-full sm:w-auto justify-between sm:justify-start">
@@ -153,7 +158,7 @@ export default function ManagerDashboard() {
                                     </span>
                                     
                                     <div className="flex items-center gap-2">
-                                        <span className="hidden sm:inline">Por página:</span>
+                                        <span className="hidden sm:inline">Exibir:</span>
                                         <Select 
                                             value={String(pagination.limit)} 
                                             onValueChange={changeLimit}
@@ -163,8 +168,8 @@ export default function ManagerDashboard() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="8">8</SelectItem>
-                                                <SelectItem value="15">15</SelectItem>
+                                                <SelectItem value="6">6</SelectItem>
+                                                <SelectItem value="10">10</SelectItem>
                                                 <SelectItem value="20">20</SelectItem>
                                                 <SelectItem value="50">50</SelectItem>
                                             </SelectContent>
@@ -213,20 +218,18 @@ export default function ManagerDashboard() {
     );
 }
 
-// --- SUB-COMPONENTE: TABELA GENÉRICA ---
+// --- TABELAS ---
 const GenericTable = ({ type, data }) => {
-    
-    // Configurações comuns de renderização
     const renderContent = () => {
         switch (type) {
             case TABS.PEDIDOS:
                 return (
                     <>
                         <TableHeader className="bg-muted/40 sticky top-0 backdrop-blur-sm z-10">
-                            <TableRow>
+                            <TableRow className="border-b border-border/60 hover:bg-transparent">
                                 <TableHead className="w-[120px] pl-6 h-12">ID</TableHead>
                                 <TableHead>Insumo (SKU)</TableHead>
-                                <TableHead>Data</TableHead>
+                                <TableHead>Data Solicitação</TableHead>
                                 <TableHead className="text-right pr-6">Status</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -236,8 +239,10 @@ const GenericTable = ({ type, data }) => {
                                     <TableCell className="pl-6 font-mono text-xs text-muted-foreground">
                                         #{item.id.slice(0, 8)}
                                     </TableCell>
-                                    <TableCell className="py-4">
-                                        <div className="font-medium text-sm">{item.sku || '---'}</div>
+                                    <TableCell>
+                                        <Badge variant="outline" className="font-mono text-xs bg-background font-normal px-2 py-1 border-border">
+                                            {item.sku || item.insumoSKU || '---'}
+                                        </Badge>
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1.5">
@@ -258,7 +263,7 @@ const GenericTable = ({ type, data }) => {
                 return (
                     <>
                         <TableHeader className="bg-muted/40 sticky top-0 backdrop-blur-sm z-10">
-                            <TableRow>
+                            <TableRow className="border-b border-border/60 hover:bg-transparent">
                                 <TableHead className="w-[120px] pl-6 h-12">ID</TableHead>
                                 <TableHead>Descrição</TableHead>
                                 <TableHead>Valor Total</TableHead>
@@ -369,44 +374,65 @@ const GenericTable = ({ type, data }) => {
     return <Table>{renderContent()}</Table>;
 };
 
-// --- UTILITÁRIOS & COMPONENTES VISUAIS ---
+// ----------------------------------------------------
+// UTILS
+// ----------------------------------------------------
 
 const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     try {
         const d = new Date(dateStr);
         if (!isValid(d)) return '-';
-        return format(d, "dd/MM/yyyy", { locale: ptBR });
+        return format(d, "dd MMM yy", { locale: ptBR });
     } catch {
         return dateStr;
     }
 };
 
+const formatStatusLabel = (status) => {
+    switch (status?.toLowerCase()) {
+        case 'solicitado': return 'Solicitado';
+        case 'pendente': return 'Pendente';
+        case 'aprovado': return 'Aprovado';
+        case 'negado': return 'Negado';
+        case 'compra_iniciada': return 'Em Compra';
+        case 'compra_efetuada': return 'Concluído';
+        case 'concluido': return 'Concluído';
+        case 'renegociacao': return 'Em renegociação';
+        case 'cancelado': return 'Cancelado';
+        case 'ativo': return 'Ativo';
+        case 'inativo': return 'Inativo';
+        default: return status || 'N/A';
+    }
+}
+
 const StatusBadge = ({ status }) => {
     const s = String(status || '').toLowerCase();
     
-    // CORES "PRETTIER": Fundo transparente (opacity) com borda visível e texto forte.
-    let colors = "bg-slate-500/10 text-slate-600 border-slate-500/20"; // Padrão / Inativo
+    // --- ESTILO DOS BADGES ---
+    let colors = "bg-slate-500/10 text-slate-600 border-slate-500/20"; 
+    let icon = null;
 
-    if (s.includes('aprovado') || s.includes('concluido') || s.includes('compra_efetuada')) {
-        colors = "bg-emerald-500/10 text-emerald-700 border-emerald-500/25 dark:text-emerald-400";
-    } 
-    else if (s.includes('negado') || s.includes('cancelado')) {
-        colors = "bg-rose-500/10 text-rose-700 border-rose-500/25 dark:text-rose-400";
-    } 
-    else if (s.includes('pendente') || s.includes('solicitado')) {
-        colors = "bg-amber-500/10 text-amber-700 border-amber-500/25 dark:text-amber-400";
-    } 
-    else if (s.includes('renegociacao')) {
-        colors = "bg-orange-500/10 text-orange-700 border-orange-500/25 dark:text-orange-400";
-    } 
-    else if (s.includes('ativo') || s.includes('compra_iniciada')) {
-        colors = "bg-blue-500/10 text-blue-700 border-blue-500/25 dark:text-blue-400";
+    if (s.includes('aprovado')) {
+        colors = "bg-emerald-500/10 text-emerald-700 border-emerald-500/25 dark:text-emerald-400 dark:border-emerald-500/20";
+        icon = <CheckCircle2 size={12} />;
+    } else if (s.includes('negado') || s.includes('cancelado')) {
+        colors = "bg-rose-500/10 text-rose-700 border-rose-500/25 dark:text-rose-400 dark:border-rose-500/20";
+        icon = <XCircle size={12} />;
+    } else if (s.includes('compra_iniciada')) {
+        colors = "bg-blue-500/10 text-blue-700 border-blue-500/25 dark:text-blue-400 dark:border-blue-500/20";
+        icon = <ShoppingBag size={12} />;
+    } else if (s.includes('compra_efetuada') || s.includes('concluido')) {
+        colors = "bg-purple-500/10 text-purple-700 border-purple-500/25 dark:text-purple-400 dark:border-purple-500/20";
+        icon = <CheckCircle2 size={12} />;
+    } else if (s.includes('pendente') || s.includes('solicitado')) {
+        colors = "bg-amber-500/10 text-amber-700 border-amber-500/25 dark:text-amber-400 dark:border-amber-500/20";
     }
 
     return (
-        <Badge variant="outline" className={clsx("capitalize shadow-none border whitespace-nowrap font-medium", colors)}>
-            {status || 'N/A'}
+        <Badge variant="outline" className={clsx("capitalize shadow-none border whitespace-nowrap font-medium px-2.5 py-0.5 gap-1.5", colors)}>
+            {icon && <span className="shrink-0">{icon}</span>}
+            {formatStatusLabel(status)}
         </Badge>
     );
 };

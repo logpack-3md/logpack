@@ -31,9 +31,9 @@ class InsumosController {
 
         const {
             status: statusFilter,
-            setorName: setorNameFilter, 
-            sku: skuFilter,             
-            name: nameFilter           
+            setorName: setorNameFilter,
+            sku: skuFilter,
+            name: nameFilter
         } = req.query;
 
         const offset = (page - 1) * limit
@@ -112,7 +112,7 @@ class InsumosController {
                         name: nameFilter || null
                     }
                 }
-                });
+            });
 
         } catch (error) {
             res.status(500).json({ error: "Erro ao listar insumos." })
@@ -122,9 +122,10 @@ class InsumosController {
 
     static async getInsumo(req, res) {
         try {
-            const { id } = req.params;
+            const { sku } = req.params;
 
-            const insumo = await Insumos.findByPk(id, {
+            const insumo = await Insumos.findOne(
+                { where: { sku: sku } }, {
                 attributes: [
                     'id',
                     'name',

@@ -12,7 +12,7 @@ router.get('/',
 )
 
 // buscar um insumo
-router.get('/:id', 
+router.get('/:sku', 
     AuthMiddleware.verifyToken,
     AuthMiddleware.isActiveUser,
     InsumosController.getInsumo
