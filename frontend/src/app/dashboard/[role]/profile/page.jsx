@@ -32,12 +32,18 @@ export default function ProfilePage() {
   const params = useParams();
 
   // Seleção dinâmica de Sidebar baseada na rota
-  const Sidebar = () => {
-    const role = params.role;
-    if (role === 'employee') return <SidebarEmployee />;
-    if (role === 'manager') return <SidebarManager  />;
-    return <SidebarAdmin  />;
+
+  const Sidebar = ({ role, isOpen, onToggle }) => {
+    if (role === 'employee') return <SidebarEmployee isOpen={isOpen} onToggle={onToggle} />;
+    if (role === 'manager') return <SidebarManager isOpen={isOpen} onToggle={onToggle} />;
+    return <SidebarAdmin isOpen={isOpen} onToggle={onToggle} />;
   };
+  // const Sidebar = () => {
+  //   const role = params.role;
+  //   if (role === 'employee') return <SidebarEmployee />;
+  //   if (role === 'manager') return <SidebarManager />;
+  //   return <SidebarAdmin />;
+  // };
 
   const handleSaveClick = async () => {
     const success = await updateProfile();
@@ -67,28 +73,60 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-muted/40 font-sans text-foreground flex">
       <Toaster position="top-right" richColors />
 
+
+
+
       {/* Sidebar Desktop */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 z-30 border-r bg-background">
-        <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)}/>
+        <Sidebar
+          role={params.role}
+          isOpen={true} // Desktop sempre aberta ou controlada se preferir
+          onToggle={() => { }}
+        />
       </div>
+
+
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Fundo escuro ao clicar fecha */}
+          <div
+            className={clsx(
+              "fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-300",
+              isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}
+            onClick={() => setIsSidebarOpen(false)}
+          />
+
+          {/* O menu deslizante */}
+
+          <Sidebar
+            role={params.role}
+            isOpen={true}
+            onToggle={() => setIsSidebarOpen(false)}
+
+          />
+
+        </div>
+      )}
+
 
       <div className="flex-1 flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
 
+        {/* Header Mobile */}
+        <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
+          <button
+            onClick={() => { setIsSidebarOpen(!isSidebarOpen), console.log(isSidebarOpen) }}
+            className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
+            aria-label="Abrir menu"
+          >
+            <Menu size={24} />
+          </button>
+          <div className="flex items-center gap-2 font-semibold text-lg">
+            <User className="h-5 w-5 text-primary" /> Visão Geral
+          </div>
+        </header>
 
 
-          {/* Header Mobile */}
-                <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
-                    <button
-                        onClick={() => {setIsSidebarOpen(!isSidebarOpen), console.log(isSidebarOpen)}}
-                        className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
-                        aria-label="Abrir menu"
-                    >
-                        <Menu size={24} />
-                    </button>
-                    <div className="flex items-center gap-2 font-semibold text-lg">
-                        <User className="h-5 w-5 text-primary" /> Visão Geral
-                    </div>
-                </header>
 
 
         <main className="flex-1 p-4 lg:p-8 max-w-5xl mx-auto w-full">
