@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
+import GlobalLayout from "@/components/SplashScreen/GlobalLayout";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,7 +30,10 @@ export default function RootLayout({ children }) {
             enableSystem
             disableTransitionOnChange
           >
+            <GlobalLayout>
+
             {children}
+            </GlobalLayout>
           </ThemeProvider>
         </body>
       </html>

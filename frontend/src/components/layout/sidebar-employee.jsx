@@ -14,18 +14,18 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogoSite } from "@/components/ui/icons-geral";
-import { SwitchTheme } from "@/components/SwitchThemes"; 
+import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que existe ou remova
+import { SwitchTheme } from "@/components/SwitchThemes"; // Certifique-se que existe
 import { api } from "@/lib/api";
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
-  { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/employee' },
+  { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/employee/profile' },
 ];
 
-export default function SidebarAdmin({ isOpen, onToggle }) {
+export default function SidebarEmployee({ isOpen, onToggle }) {
   const pathname = usePathname();
-  const [user, setUser] = useState({ name: 'Administrador', image: null });
+  const [user, setUser] = useState({ name: 'Employee', image: null });
   const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
         const res = await api.get('users/profile');
         if (res) {
             setUser({
-                name: res.name || res.user?.name || 'Administrador',
+                name: res.name || res.user?.name || 'Employee',
                 image: res.image || res.user?.image || null
             });
         }
@@ -59,7 +59,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
   };
 
   const isLinkActive = (href) => pathname === href;
-  
+
   const getInitials = (name) => {
       return name
         ?.split(" ")
@@ -105,7 +105,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
             key={item.id}
             href={item.href}
             className={clsx(
-              'flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all outline-none mb-1',
+              'flex items-center px-3 py-2.5 text-md font-medium rounded-md transition-all outline-none mb-1',
               isLinkActive(item.href)
                 ? 'bg-primary/10 text-primary font-semibold' 
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -117,7 +117,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
         ))}
       </nav>
 
-      {/* --- FOOTER (Avatar + Logout) --- */}
+      {/* --- FOOTER --- */}
       <div className="p-4 border-t border-border bg-muted/30">
         
         <div className="flex items-center justify-between mb-4 px-1">
@@ -158,7 +158,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                 {user.name}
             </span>
             <span className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
-                Funcionário
+                Employee
             </span>
           </div>
         </div>

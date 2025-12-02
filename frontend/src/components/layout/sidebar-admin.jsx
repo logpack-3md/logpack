@@ -27,6 +27,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
   const pathname = usePathname();
   const [user, setUser] = useState({ name: 'Administrador', image: null });
   const [loadingUser, setLoadingUser] = useState(true);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -46,7 +47,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     fetchUser();
   }, []);
 
-  // Lógica de Logout
+
   const handleLogout = (e) => {
     e.preventDefault();
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
@@ -59,7 +60,6 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
 
   const isLinkActive = (href) => pathname === href;
 
-  // Helper para iniciais
   const getInitials = (name) => {
       return name
         ?.split(" ")
