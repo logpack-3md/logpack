@@ -26,7 +26,7 @@ export const useManagerDashboard = () => {
 
     // 3. Estado de Paginação (Controlado pelo Hook)
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(6);
+    const [limit, setLimit] = useState(8);
     const [meta, setMeta] = useState({ currentPage: 1, totalPages: 1, totalItems: 0 });
 
     // --- AÇÃO 1: CARREGAR STATS ---
