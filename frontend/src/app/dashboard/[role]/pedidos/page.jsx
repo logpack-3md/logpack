@@ -13,7 +13,8 @@ import {
     CheckCircle2, 
     XCircle,
     Info,
-    Filter
+    Filter,
+    RefreshCw
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -27,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
     Dialog, 
     DialogContent, 
@@ -61,24 +63,46 @@ export default function PedidosManagerPage() {
     const router = useRouter();
     const { pedidos, meta, loading, fetchPedidos, createPedido } = useManagerOrders();
     
-    // Estados Locais
+    // --- ESTADOS DE FILTRO E PAGINAÇÃO ---
     const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('todos'); // Filtro de Status
+    const [currentPage, setCurrentPage] = useState(1);
+    
+    // --- ESTADOS DE AÇÃO ---
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [skuInput, setSkuInput] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    // Estados para Modais de Ação (Aprovar/Negar)
     const [actionDialog, setActionDialog] = useState({ open: false, type: null, item: null });
 
-    // Carregamento inicial e busca com debounce
+    // 1. Carregamento Inicial e Debounce da Busca
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchPedidos(1, 10, search);
+            // Nota: Se o hook fetchPedidos não aceitar status diretamente, 
+            // a filtragem pode precisar ocorrer via 'search' ou atualização do hook.
+            // Aqui passamos currentPage e search.
+            fetchPedidos(currentPage, 10, search); 
         }, 500);
         return () => clearTimeout(timer);
-    }, [search, fetchPedidos]);
+    }, [search, currentPage, fetchPedidos]);
 
-    // Criação de nova solicitação (manual pelo gerente)
+    // Filtra visualmente os dados recebidos (caso a API não suporte status no endpoint atual do hook)
+    const filteredPedidos = pedidos.filter(p => {
+        if (statusFilter === 'todos') return true;
+        return (p.status || '').toLowerCase() === statusFilter;
+    });
+
+    // 2. Manipuladores de Filtros
+    const handleRefresh = () => {
+        fetchPedidos(currentPage, 10, search);
+        toast.info("Lista atualizada");
+    };
+
+    const handleStatusChange = (val) => {
+        setStatusFilter(val);
+        setCurrentPage(1); // Volta para a primeira página ao filtrar
+    };
+
+    // 3. Ações do Sistema
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -87,18 +111,16 @@ export default function PedidosManagerPage() {
         if (success) {
             setIsCreateOpen(false);
             setSkuInput('');
-            fetchPedidos(1, 10, search); // Atualiza lista
+            fetchPedidos(1, 10, search);
         }
     };
 
-    // Ação de Aprovar/Negar
     const handleStatusUpdate = async () => {
         const { type, item } = actionDialog;
         if (!item) return;
 
         setIsSubmitting(true);
         try {
-            // Define o status baseado no tipo de ação
             const newStatus = type === 'approve' ? 'aprovado' : 'negado';
             
             const res = await api.put(`manager/pedido/status/${item.id}`, { 
@@ -110,7 +132,7 @@ export default function PedidosManagerPage() {
             }
 
             toast.success(`Pedido ${type === 'approve' ? 'aprovado' : 'negado'} com sucesso!`);
-            fetchPedidos(meta.currentPage, 10, search); // Recarrega a página atual
+            fetchPedidos(currentPage, 10, search); // Recarrega mantendo a página
             setActionDialog({ open: false, type: null, item: null });
 
         } catch (error) {
@@ -122,11 +144,13 @@ export default function PedidosManagerPage() {
     };
 
     const handlePageChange = (p) => {
-        if (p >= 1 && p <= meta.totalPages) fetchPedidos(p, 10, search);
+        if (p >= 1 && p <= meta.totalPages) {
+            setCurrentPage(p);
+        }
     };
 
     const openActionDialog = (e, type, item) => {
-        e.stopPropagation(); // Evita navegar para detalhes ao clicar no botão
+        e.stopPropagation();
         setActionDialog({ open: true, type, item });
     };
 
@@ -134,7 +158,6 @@ export default function PedidosManagerPage() {
         <div className="min-h-screen bg-muted/40 font-sans text-foreground">
             <Toaster position="top-right" richColors />
             
-            {/* Sidebar Fixa */}
             <SidebarManager />
 
             <div className="flex flex-col lg:ml-64 min-h-screen transition-all duration-300">
@@ -164,38 +187,63 @@ export default function PedidosManagerPage() {
                     
                     {/* Cabeçalho da Página */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
+                        <div className="space-y-1">
                             <h1 className="text-3xl font-bold tracking-tight">Pedidos de Insumos</h1>
-                            <p className="text-muted-foreground mt-1">Aprove ou negue solicitações de reposição vindas do estoque.</p>
+                            <p className="text-muted-foreground">Acompanhe, filtre e decida sobre as solicitações.</p>
                         </div>
                         <Button onClick={() => setIsCreateOpen(true)} className="bg-primary hover:bg-primary/90 shadow-sm">
-                            <Plus className="mr-2 h-4 w-4" /> Solicitação Manual
+                            <Plus className="mr-2 h-4 w-4" /> Nova Solicitação
                         </Button>
                     </div>
 
-                    {/* Filtros e Busca */}
-                    <div className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
-                        <div className="relative flex-1 max-w-md">
+                    {/* BARRA DE FILTROS E PESQUISA */}
+                    <div className="flex flex-col md:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm items-center justify-between">
+                        
+                        {/* Busca Texto */}
+                        <div className="relative w-full md:w-1/3">
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input 
                                 placeholder="Buscar por SKU..." 
-                                className="pl-9 bg-background"
+                                className="pl-9 bg-background border-input"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
+
+                        {/* Filtros e Ações */}
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            
+                            <Select value={statusFilter} onValueChange={handleStatusChange}>
+                                <SelectTrigger className="w-full md:w-[180px] bg-background">
+                                    <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="todos">Todos</SelectItem>
+                                    <SelectItem value="solicitado">Pendente</SelectItem>
+                                    <SelectItem value="aprovado">Aprovado</SelectItem>
+                                    <SelectItem value="negado">Negado</SelectItem>
+                                    <SelectItem value="compra_iniciada">Em Compra</SelectItem>
+                                    <SelectItem value="compra_efetuada">Concluído</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Button variant="outline" size="icon" onClick={handleRefresh} title="Atualizar">
+                                <RefreshCw className={clsx("h-4 w-4", loading && "animate-spin")} />
+                            </Button>
+                        </div>
                     </div>
 
-                    {/* Tabela de Listagem */}
-                    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                    {/* TABELA DE PEDIDOS */}
+                    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden min-h-[400px] flex flex-col">
                         <Table>
                             <TableHeader className="bg-muted/50">
                                 <TableRow className="hover:bg-transparent border-b border-border">
-                                    <TableHead className="w-[100px] pl-6 font-medium">ID</TableHead>
-                                    <TableHead className="font-medium">Insumo (SKU)</TableHead>
-                                    <TableHead className="font-medium">Data da Solicitação</TableHead>
-                                    <TableHead className="text-center font-medium">Status</TableHead>
-                                    <TableHead className="text-right pr-6 font-medium">Ações</TableHead>
+                                    <TableHead className="w-[100px] pl-6 font-medium text-muted-foreground">ID</TableHead>
+                                    <TableHead className="font-medium text-muted-foreground">Insumo (SKU)</TableHead>
+                                    <TableHead className="font-medium text-muted-foreground">Data da Solicitação</TableHead>
+                                    <TableHead className="text-center font-medium text-muted-foreground">Status</TableHead>
+                                    <TableHead className="text-right pr-6 font-medium text-muted-foreground">Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -203,29 +251,29 @@ export default function PedidosManagerPage() {
                                     Array.from({length: 5}).map((_, i) => (
                                         <TableRow key={i}>
                                             <TableCell colSpan={5} className="py-4 px-6">
-                                                <Skeleton className="h-10 w-full rounded-md" />
+                                                <Skeleton className="h-12 w-full rounded-md" />
                                             </TableCell>
                                         </TableRow>
                                     ))
-                                ) : pedidos.length === 0 ? (
+                                ) : filteredPedidos.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={5} className="h-64 text-center text-muted-foreground">
                                             <div className="flex flex-col items-center justify-center gap-3">
-                                                <div className="p-4 bg-muted/50 rounded-full">
-                                                    <Package className="h-8 w-8 opacity-40" />
+                                                <div className="p-4 bg-muted/50 rounded-full border border-border/50">
+                                                    <Package className="h-10 w-10 opacity-30" />
                                                 </div>
-                                                <p className="text-sm font-medium">Nenhuma solicitação encontrada.</p>
+                                                <p className="text-sm font-medium">Nenhum pedido encontrado com este filtro.</p>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    pedidos.map((pedido) => {
+                                    filteredPedidos.map((pedido) => {
                                         const isPending = pedido.status === 'solicitado' || pedido.status === 'pendente';
                                         
                                         return (
                                             <TableRow 
                                                 key={pedido.id} 
-                                                className="hover:bg-muted/50 transition-colors cursor-pointer group border-b border-border"
+                                                className="hover:bg-muted/50 transition-colors cursor-pointer group border-b border-border last:border-0"
                                                 onClick={() => router.push(`/dashboard/manager/pedidos/${pedido.id}`)}
                                             >
                                                 <TableCell className="pl-6 py-4 font-mono text-xs text-muted-foreground">
@@ -234,7 +282,7 @@ export default function PedidosManagerPage() {
                                                 
                                                 <TableCell className="py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <Badge variant="outline" className="bg-background font-mono text-xs border-border px-2 py-1">
+                                                        <Badge variant="outline" className="bg-background font-mono text-xs border-border px-2 py-1 shadow-sm">
                                                             {pedido.displaySku || pedido.sku}
                                                         </Badge>
                                                         {pedido.displayInsumoName && (
@@ -247,7 +295,7 @@ export default function PedidosManagerPage() {
                                                 
                                                 <TableCell className="py-4 text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-2">
-                                                        <CalendarDays className="h-3.5 w-3.5" />
+                                                        <CalendarDays className="h-3.5 w-3.5 opacity-70" />
                                                         {pedido.createdAt ? format(new Date(pedido.createdAt), "dd MMM, HH:mm", {locale: ptBR}) : '-'}
                                                     </div>
                                                 </TableCell>
@@ -264,13 +312,14 @@ export default function PedidosManagerPage() {
                                                                     <TooltipTrigger asChild>
                                                                         <Button 
                                                                             size="icon" 
-                                                                            className="h-8 w-8 bg-green-100 text-green-700 hover:bg-green-200 border-green-200 shadow-sm"
+                                                                            variant="ghost"
+                                                                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100 border border-transparent hover:border-green-200"
                                                                             onClick={(e) => openActionDialog(e, 'approve', pedido)}
                                                                         >
                                                                             <CheckCircle2 className="h-4 w-4" />
                                                                         </Button>
                                                                     </TooltipTrigger>
-                                                                    <TooltipContent><p>Aprovar Pedido</p></TooltipContent>
+                                                                    <TooltipContent><p>Aprovar</p></TooltipContent>
                                                                 </Tooltip>
                                                             </TooltipProvider>
 
@@ -279,18 +328,19 @@ export default function PedidosManagerPage() {
                                                                     <TooltipTrigger asChild>
                                                                         <Button 
                                                                             size="icon" 
-                                                                            className="h-8 w-8 bg-red-100 text-red-700 hover:bg-red-200 border-red-200 shadow-sm"
+                                                                            variant="ghost"
+                                                                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-100 border border-transparent hover:border-red-200"
                                                                             onClick={(e) => openActionDialog(e, 'deny', pedido)}
                                                                         >
                                                                             <XCircle className="h-4 w-4" />
                                                                         </Button>
                                                                     </TooltipTrigger>
-                                                                    <TooltipContent><p>Negar Pedido</p></TooltipContent>
+                                                                    <TooltipContent><p>Negar</p></TooltipContent>
                                                                 </Tooltip>
                                                             </TooltipProvider>
                                                         </div>
                                                     ) : (
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/50 hover:bg-muted cursor-default">
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
                                                     )}
@@ -302,41 +352,52 @@ export default function PedidosManagerPage() {
                             </TableBody>
                         </Table>
 
-                        {/* Paginação */}
-                        {meta.totalPages > 1 && (
-                            <div className="p-4 border-t border-border flex justify-end">
-                                <Pagination>
+                        {/* Paginação Fixada ao Fundo da Tabela */}
+                        <div className="mt-auto border-t border-border bg-muted/10 p-4 flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground hidden sm:inline-block">
+                                Total: {meta.totalItems} registro(s)
+                            </span>
+                            
+                            {meta.totalPages > 1 && (
+                                <Pagination className="mx-0 w-auto">
                                     <PaginationContent>
                                         <PaginationItem>
                                             <PaginationPrevious 
                                                 onClick={() => handlePageChange(meta.currentPage - 1)} 
-                                                className={clsx("cursor-pointer", meta.currentPage <= 1 && "pointer-events-none opacity-50")} 
+                                                className={clsx("cursor-pointer h-8 w-8 p-0", meta.currentPage <= 1 && "pointer-events-none opacity-50")} 
                                             />
                                         </PaginationItem>
+                                        
                                         <PaginationItem>
-                                            <PaginationLink isActive>{meta.currentPage}</PaginationLink>
+                                            <PaginationLink isActive className="h-8 w-8 border-primary text-primary font-bold">
+                                                {meta.currentPage}
+                                            </PaginationLink>
                                         </PaginationItem>
+                                        <PaginationItem className="text-muted-foreground text-sm px-1">
+                                            / {meta.totalPages}
+                                        </PaginationItem>
+
                                         <PaginationItem>
                                             <PaginationNext 
                                                 onClick={() => handlePageChange(meta.currentPage + 1)} 
-                                                className={clsx("cursor-pointer", meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")} 
+                                                className={clsx("cursor-pointer h-8 w-8 p-0", meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")} 
                                             />
                                         </PaginationItem>
                                     </PaginationContent>
                                 </Pagination>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </main>
             </div>
 
-            {/* --- MODAL 1: CRIAR SOLICITAÇÃO MANUAL --- */}
+            {/* MODAL CRIAR SOLICITAÇÃO */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Solicitação Manual</DialogTitle>
                         <DialogDescription>
-                            Crie um pedido manualmente caso o sistema automático falhe.
+                            Gere uma ordem de pedido manualmente.
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreateSubmit} className="space-y-4 py-4">
@@ -347,7 +408,7 @@ export default function PedidosManagerPage() {
                                 placeholder="Ex: PAP-A4" 
                                 value={skuInput} 
                                 onChange={(e) => setSkuInput(e.target.value.toUpperCase())}
-                                className="uppercase font-mono"
+                                className="uppercase font-mono tracking-widest"
                                 required
                             />
                         </div>
@@ -361,28 +422,27 @@ export default function PedidosManagerPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* --- MODAL 2: CONFIRMAR APROVAÇÃO/NEGAÇÃO --- */}
+            {/* MODAL CONFIRMAÇÃO DE STATUS */}
             <Dialog open={actionDialog.open} onOpenChange={(open) => !open && setActionDialog({ ...actionDialog, open: false })}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle className={clsx("flex items-center gap-2", actionDialog.type === 'deny' ? "text-red-600" : "text-emerald-600")}>
                             {actionDialog.type === 'approve' ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                            {actionDialog.type === 'approve' ? "Aprovar Solicitação" : "Negar Solicitação"}
+                            {actionDialog.type === 'approve' ? "Aprovar Solicitação?" : "Negar Solicitação?"}
                         </DialogTitle>
                         <DialogDescription>
                             {actionDialog.type === 'approve' 
-                                ? "O status será alterado para 'Aprovado'. Você poderá iniciar a compra nos detalhes do pedido."
-                                : "O pedido será cancelado definitivamente e o solicitante será notificado."}
+                                ? "O pedido avançará para a etapa de cotação com o comprador."
+                                : "O pedido será encerrado. Esta ação não pode ser desfeita."}
                         </DialogDescription>
                     </DialogHeader>
                     
-                    <div className="py-4">
-                        <p className="text-sm font-medium text-foreground">
-                            Insumo: <span className="font-mono text-muted-foreground">{actionDialog.item?.displaySku || actionDialog.item?.sku}</span>
-                        </p>
+                    <div className="py-2 px-3 bg-muted/50 rounded-lg border border-border">
+                        <p className="text-sm font-medium">Insumo: {actionDialog.item?.displaySku}</p>
+                        <p className="text-xs text-muted-foreground mt-1">ID: #{actionDialog.item?.id.slice(0,8)}</p>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="mt-2">
                         <Button variant="outline" onClick={() => setActionDialog({ ...actionDialog, open: false })}>Cancelar</Button>
                         <Button 
                             disabled={isSubmitting} 
@@ -402,12 +462,11 @@ export default function PedidosManagerPage() {
     );
 }
 
-// Componente Badge de Status Padronizado
 const StatusBadge = ({ status }) => {
     const s = (status || '').toLowerCase();
     
     let style = "bg-muted text-muted-foreground border-border";
-    let label = status || "Desconhecido";
+    let label = status || "N/A";
     let Icon = Info;
 
     if (s.includes('aprovado')) {
@@ -428,8 +487,8 @@ const StatusBadge = ({ status }) => {
         Icon = Truck;
     } else {
         style = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400";
-        label = "Solicitado";
-        Icon = Filter;
+        label = "Pendente";
+        Icon = Info;
     }
 
     return (

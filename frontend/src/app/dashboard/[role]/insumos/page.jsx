@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Hook
-// import { useInsumosOperations } from '@/hooks/useInsumosOperations';
+import { useInsumosOperations } from '@/hooks/useInsumosOperations';
 
 // Mapa de Ícones por tipo (simulado pela cor/setor)
 const getIcon = (index) => {

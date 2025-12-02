@@ -1,11 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
+export const TABS = {
+    PEDIDOS: 'pedidos',
+    ORCAMENTOS: 'orcamentos',
+    INSUMOS: 'insumos',
+    SETORES: 'setores'
+};
+
 export const useManagerDashboard = () => {
-    const [loading, setLoading] = useState(true);
-    
-    // Estatísticas (Contadores)
+    // 1. Estado Geral (Stats)
+    const [loadingStats, setLoadingStats] = useState(true);
     const [stats, setStats] = useState({
         totalInsumos: 0,
         totalSetores: 0,
@@ -13,24 +19,28 @@ export const useManagerDashboard = () => {
         totalOrcamentos: 0
     });
 
-    // Listas Recentes (Top 5)
-    const [recentPedidos, setRecentPedidos] = useState([]);
-    const [recentOrcamentos, setRecentOrcamentos] = useState([]);
+    // 2. Estado da Tabela (Dados, Loading, Aba Atual)
+    const [activeTab, setActiveTab] = useState(TABS.PEDIDOS);
+    const [tableData, setTableData] = useState([]);
+    const [tableLoading, setTableLoading] = useState(false);
 
-    const fetchDashboardData = useCallback(async () => {
-        setLoading(true);
+    // 3. Estado de Paginação (Controlado pelo Hook)
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(8);
+    const [meta, setMeta] = useState({ currentPage: 1, totalPages: 1, totalItems: 0 });
+
+    // --- AÇÃO 1: CARREGAR STATS ---
+    const fetchStats = useCallback(async () => {
+        setLoadingStats(true);
         try {
-            // Dispara todas as requisições em paralelo para performance
-            // Limit 1 nos cadastros apenas para pegar o 'meta.totalItems'
             const [resInsumos, resSetores, resPedidos, resOrcamentos] = await Promise.all([
                 api.get('insumos?limit=1'), 
                 api.get('setor?limit=1'),   
-                api.get('manager/pedido?limit=5'), // Pega os 5 últimos
-                api.get('manager/orcamentos?limit=5') // Pega os 5 últimos
+                api.get('manager/pedido?limit=1'), 
+                api.get('manager/orcamentos?limit=1')
             ]);
 
-            // --- PROCESSAMENTO DE TOTAIS ---
-            const getCount = (res) => res?.meta?.totalItems || res?.data?.length || (Array.isArray(res) ? res.length : 0);
+            const getCount = (res) => res?.meta?.totalItems || (Array.isArray(res?.data) ? res.data.length : 0);
 
             setStats({
                 totalInsumos: getCount(resInsumos),
@@ -38,37 +48,119 @@ export const useManagerDashboard = () => {
                 totalPedidos: getCount(resPedidos),
                 totalOrcamentos: getCount(resOrcamentos)
             });
-
-            // --- PROCESSAMENTO DE LISTAS RECENTES ---
-            // Extrai array de pedidos
-            const listaPedidos = resPedidos?.data || resPedidos?.pedidos || (Array.isArray(resPedidos) ? resPedidos : []);
-            
-            // Extrai array de orçamentos
-            const listaOrcamentos = resOrcamentos?.data || resOrcamentos?.orcamentos || (Array.isArray(resOrcamentos) ? resOrcamentos : []);
-
-            // Garante ordem cronológica (mais recente primeiro) se a API não ordenar
-            const sortByDate = (a, b) => new Date(b.createdAt || b.data_criacao) - new Date(a.createdAt || a.data_criacao);
-
-            setRecentPedidos(listaPedidos.sort(sortByDate).slice(0, 5));
-            setRecentOrcamentos(listaOrcamentos.sort(sortByDate).slice(0, 5));
-
         } catch (error) {
-            console.error("Erro ao carregar dashboard:", error);
-            // toast.error("Erro ao atualizar dados do painel."); // Opcional: descomente se quiser feedback de erro visual
+            console.error("Erro ao carregar estatísticas:", error);
         } finally {
-            setLoading(false);
+            setLoadingStats(false);
         }
     }, []);
 
+    // --- AÇÃO 2: CARREGAR DADOS DA TABELA ATIVA ---
+    const fetchTableData = useCallback(async () => {
+        setTableLoading(true);
+        try {
+            let endpoint = '';
+            
+            switch (activeTab) {
+                case TABS.PEDIDOS: 
+                    endpoint = `manager/pedido?limit=${limit}&page=${page}`; 
+                    break;
+                case TABS.ORCAMENTOS: 
+                    endpoint = `manager/orcamentos?limit=${limit}&page=${page}`; 
+                    break;
+                case TABS.INSUMOS: 
+                    endpoint = `insumos?limit=${limit}&page=${page}`; 
+                    break;
+                case TABS.SETORES: 
+                    endpoint = `setor?limit=${limit}&page=${page}`; 
+                    break;
+                default: return;
+            }
+
+            const res = await api.get(endpoint);
+            
+            // Tratamento da lista bruta
+            const rawList = res?.data || res?.pedidos || res?.orcamentos || res?.setores || (Array.isArray(res) ? res : []);
+            
+            // NORMALIZAÇÃO DE DADOS (Crucial para datas aparecerem)
+            const normalizedList = rawList.map(item => ({
+                ...item,
+                // Tenta pegar createdAt, senão data_criacao, senão updatedAt, senão nulo
+                createdAt: item.createdAt || item.data_criacao || item.updatedAt || null, 
+                // Garante normalização de nomes
+                name: item.name || item.nome || null,
+                sku: item.insumoSKU || item.SKU || item.sku || null
+            }));
+
+            // Ordena pedidos pela data (mais recente primeiro)
+            if (activeTab === TABS.PEDIDOS || activeTab === TABS.ORCAMENTOS) {
+                normalizedList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            }
+
+            const metaData = res?.meta || { currentPage: page, totalPages: 1, totalItems: normalizedList.length };
+
+            setTableData(normalizedList);
+            setMeta(metaData);
+
+        } catch (error) {
+            console.error(`Erro ao carregar ${activeTab}:`, error);
+            toast.error("Erro ao carregar tabela.");
+            setTableData([]);
+        } finally {
+            setTableLoading(false);
+        }
+    }, [activeTab, page, limit]); 
+
     useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        fetchStats();
+    }, [fetchStats]);
+
+    useEffect(() => {
+        fetchTableData();
+    }, [fetchTableData]);
+
+    // Handlers
+    const changeTab = (newTab) => {
+        if (newTab !== activeTab) {
+            setActiveTab(newTab);
+            setPage(1); 
+        }
+    };
+
+    const changePage = (newPage) => {
+        if (newPage >= 1 && newPage <= meta.totalPages) {
+            setPage(newPage);
+        }
+    };
+
+    const changeLimit = (val) => {
+        const newLimit = parseInt(val, 10);
+        setLimit(newLimit);
+        setPage(1);
+    };
+
+    const refresh = () => {
+        fetchStats();
+        fetchTableData();
+        toast.success("Dados atualizados.");
+    };
 
     return {
         stats,
-        recentPedidos,
-        recentOrcamentos,
-        loading,
-        refresh: fetchDashboardData
+        loadingStats,
+        activeTab,
+        tableData,
+        tableLoading,
+        pagination: { 
+            page, 
+            limit, 
+            meta,
+            hasPrevious: meta.currentPage > 1,
+            hasNext: meta.currentPage < meta.totalPages
+        },
+        changeTab,
+        changePage,
+        changeLimit,
+        refresh
     };
 };
