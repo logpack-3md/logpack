@@ -1,13 +1,13 @@
 "use client";
 
 import React from 'react';
-import { 
-    LayoutDashboard, 
-    RefreshCw, 
-    Package, 
-    Layers, 
-    FileText, 
-    ShoppingCart, 
+import {
+    LayoutDashboard,
+    RefreshCw,
+    Package,
+    Layers,
+    FileText,
+    ShoppingCart,
     Calendar,
     ChevronLeft,
     ChevronRight,
@@ -23,10 +23,10 @@ import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import clsx from 'clsx';
 import { Toaster } from 'sonner';
-
+import { useState } from 'react';
+import { Menu } from "lucide-react";
 // SHADCN UI COMPONENTS
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -44,49 +44,52 @@ import ManagerStats from '@/components/Dashboard/ManagerStats';
 import { useManagerDashboard, TABS } from '@/hooks/useManagerDashboard';
 
 export default function ManagerDashboard() {
-    const { 
-        stats, 
-        loadingStats, 
-        activeTab, 
-        tableData, 
+    const {
+        stats,
+        loadingStats,
+        activeTab,
+        tableData,
         tableLoading,
         pagination,
         changeTab,
         changePage,
         changeLimit,
-        refresh 
+        refresh
     } = useManagerDashboard();
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
         <div className="flex min-h-screen bg-muted/40 font-sans text-foreground">
             <Toaster position="top-right" richColors />
-            
-            <SidebarManager />
+            <div
+                className={clsx(
+                    "fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-300",
+                    isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setIsSidebarOpen(false)}
+            />
+
+            <SidebarManager isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
             {/* Container Principal Full Height */}
             <div className="flex flex-1 flex-col min-h-screen lg:ml-64 transition-all duration-300">
-                
-                {/* Header */}
-                <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur px-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
-                                    <LayoutDashboard size={20} />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="p-0 w-64">
-                                <SidebarManager />
-                            </SheetContent>
-                        </Sheet>
-                        
-                        <div className="flex items-center gap-2 font-semibold text-lg">
-                            <LayoutDashboard className="h-5 w-5 text-primary" />
-                            <span className="hidden sm:inline">Visão Geral do</span> Gerente
-                        </div>
+
+                {/* Header Mobile */}
+                <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
+                        aria-label="Abrir menu"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <div className="flex items-center gap-2 font-semibold text-lg">
+                        <LayoutDashboard className="h-5 w-5 text-primary" /> Visão Geral
                     </div>
-                    
-                    <Button variant="outline" size="sm" onClick={refresh} disabled={tableLoading} className="gap-2">
+
+
+                    <Button variant="outline" size="sm" onClick={refresh} disabled={tableLoading} className="gap-2 ml-auto">
                         <RefreshCw className={clsx("h-4 w-4", (tableLoading || loadingStats) && "animate-spin")} />
                         Atualizar
                     </Button>
@@ -94,26 +97,26 @@ export default function ManagerDashboard() {
 
                 {/* Main: Ocupa o resto da tela (flex-1) */}
                 <main className="flex flex-1 flex-col p-6 md:p-8 gap-8 overflow-hidden h-[calc(100vh-4rem)]">
-                    
+
                     {/* 1. Stats - Fixo no Topo */}
                     <div className="shrink-0">
                         <ManagerStats stats={stats} loading={loadingStats} />
                     </div>
 
                     {/* 2. Tabs + Table (Expande para o fundo) */}
-                    <Tabs 
-                        defaultValue={TABS.PEDIDOS} 
-                        value={activeTab} 
+                    <Tabs
+                        defaultValue={TABS.PEDIDOS}
+                        value={activeTab}
                         onValueChange={changeTab}
                         className="flex flex-1 flex-col gap-4 overflow-hidden"
                     >
                         {/* Header Tabs */}
                         <div className="flex shrink-0 flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <TabsList className="bg-background border border-border shadow-sm p-1">
-                                <TabsTrigger value={TABS.PEDIDOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ShoppingCart size={14}/> Pedidos</TabsTrigger>
-                                <TabsTrigger value={TABS.ORCAMENTOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><FileText size={14}/> Orçamentos</TabsTrigger>
-                                <TabsTrigger value={TABS.INSUMOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Package size={14}/> Insumos</TabsTrigger>
-                                <TabsTrigger value={TABS.SETORES} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Layers size={14}/> Setores</TabsTrigger>
+                                <TabsTrigger value={TABS.PEDIDOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ShoppingCart size={14} /> Pedidos</TabsTrigger>
+                                <TabsTrigger value={TABS.ORCAMENTOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><FileText size={14} /> Orçamentos</TabsTrigger>
+                                <TabsTrigger value={TABS.INSUMOS} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Package size={14} /> Insumos</TabsTrigger>
+                                <TabsTrigger value={TABS.SETORES} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Layers size={14} /> Setores</TabsTrigger>
                             </TabsList>
 
                             <Button variant="link" asChild className="text-muted-foreground hover:text-primary px-0 hidden sm:flex">
@@ -125,7 +128,7 @@ export default function ManagerDashboard() {
 
                         {/* Card da Tabela que Cresce */}
                         <div className="flex flex-1 flex-col bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-                            
+
                             {/* Conteúdo com Scroll interno */}
                             <div className="flex-1 overflow-auto scrollbar-thin">
                                 {tableLoading ? (
@@ -142,25 +145,25 @@ export default function ManagerDashboard() {
                                         <p className="font-medium">Nenhum registro encontrado.</p>
                                     </div>
                                 ) : (
-                                    <GenericTable 
-                                        type={activeTab} 
-                                        data={tableData} 
+                                    <GenericTable
+                                        type={activeTab}
+                                        data={tableData}
                                     />
                                 )}
                             </div>
 
                             {/* Footer Fixo no final */}
                             <div className="border-t border-border bg-background p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
-                                
+
                                 <div className="flex items-center gap-6 text-sm text-muted-foreground w-full sm:w-auto justify-between sm:justify-start">
                                     <span>
                                         Total: <span className="font-semibold text-foreground">{pagination.meta.totalItems}</span>
                                     </span>
-                                    
+
                                     <div className="flex items-center gap-2">
                                         <span className="hidden sm:inline">Exibir:</span>
-                                        <Select 
-                                            value={String(pagination.limit)} 
+                                        <Select
+                                            value={String(pagination.limit)}
                                             onValueChange={changeLimit}
                                             disabled={tableLoading}
                                         >
@@ -180,9 +183,9 @@ export default function ManagerDashboard() {
                                 <Pagination className="w-auto mx-0">
                                     <PaginationContent className="gap-1">
                                         <PaginationItem>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 disabled={!pagination.hasPrevious || tableLoading}
                                                 onClick={() => changePage(pagination.page - 1)}
                                                 className="gap-1 h-8 px-3"
@@ -190,15 +193,15 @@ export default function ManagerDashboard() {
                                                 <ChevronLeft className="h-4 w-4" /> Anterior
                                             </Button>
                                         </PaginationItem>
-                                        
+
                                         <PaginationItem className="flex items-center justify-center min-w-[3rem] text-sm font-medium">
                                             {pagination.meta.currentPage} <span className="text-muted-foreground mx-1">/</span> {pagination.meta.totalPages}
                                         </PaginationItem>
 
                                         <PaginationItem>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 disabled={!pagination.hasNext || tableLoading}
                                                 onClick={() => changePage(pagination.page + 1)}
                                                 className="gap-1 h-8 px-3"
@@ -278,8 +281,8 @@ const GenericTable = ({ type, data }) => {
                                         {item.description || "Sem descrição"}
                                     </TableCell>
                                     <TableCell className="font-semibold text-emerald-600 text-sm">
-                                        {item.valor_total 
-                                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor_total) 
+                                        {item.valor_total
+                                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor_total)
                                             : <span className="text-muted-foreground font-normal">-</span>
                                         }
                                     </TableCell>
@@ -327,7 +330,7 @@ const GenericTable = ({ type, data }) => {
                                                 (item.current_storage < (item.max_storage * 0.35)) ? "text-red-600" : "text-foreground"
                                             )}>
                                                 {item.current_storage || 0}
-                                            </span> 
+                                            </span>
                                             <span className="text-muted-foreground text-xs">/ {item.max_storage}</span>
                                         </div>
                                     </TableCell>
@@ -408,9 +411,9 @@ const formatStatusLabel = (status) => {
 
 const StatusBadge = ({ status }) => {
     const s = String(status || '').toLowerCase();
-    
+
     // --- ESTILO DOS BADGES ---
-    let colors = "bg-slate-500/10 text-slate-600 border-slate-500/20"; 
+    let colors = "bg-slate-500/10 text-slate-600 border-slate-500/20";
     let icon = null;
 
     if (s.includes('aprovado')) {

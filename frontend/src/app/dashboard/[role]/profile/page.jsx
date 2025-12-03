@@ -31,19 +31,15 @@ export default function ProfilePage() {
   const fileInputRef = useRef(null);
   const params = useParams();
 
-  // Seleção dinâmica de Sidebar baseada na rota
+  // Limite de caracteres para o nome
+  const MAX_NAME_LENGTH = 50;
 
+  // Seleção dinâmica de Sidebar baseada na rota (INALTERADA CONFORME SOLICITADO)
   const Sidebar = ({ role, isOpen, onToggle }) => {
     if (role === 'employee') return <SidebarEmployee isOpen={isOpen} onToggle={onToggle} />;
     if (role === 'manager') return <SidebarManager isOpen={isOpen} onToggle={onToggle} />;
     return <SidebarAdmin isOpen={isOpen} onToggle={onToggle} />;
   };
-  // const Sidebar = () => {
-  //   const role = params.role;
-  //   if (role === 'employee') return <SidebarEmployee />;
-  //   if (role === 'manager') return <SidebarManager />;
-  //   return <SidebarAdmin />;
-  // };
 
   const handleSaveClick = async () => {
     const success = await updateProfile();
@@ -68,27 +64,24 @@ export default function ProfilePage() {
   }
 
   const isActive = user.status === 'Ativo';
+  // Calcula caracteres atuais do nome
+  const currentNameLength = user.name?.length || 0;
 
   return (
-    <div className="min-h-screen bg-muted/40 font-sans text-foreground flex">
+    <div className="min-h-screen bg-muted/40 font-sans text-foreground flex overflow-x-hidden">
       <Toaster position="top-right" richColors />
 
-
-
-
-      {/* Sidebar Desktop */}
+      {/* Sidebar Desktop (LÓGICA INALTERADA) */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 z-30 border-r bg-background">
         <Sidebar
           role={params.role}
-          isOpen={true} // Desktop sempre aberta ou controlada se preferir
+          isOpen={true}
           onToggle={() => { }}
         />
       </div>
 
-
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
-          {/* Fundo escuro ao clicar fecha */}
           <div
             className={clsx(
               "fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-300",
@@ -96,45 +89,38 @@ export default function ProfilePage() {
             )}
             onClick={() => setIsSidebarOpen(false)}
           />
-
-          {/* O menu deslizante */}
-
+          {/* O menu deslizante (LÓGICA INALTERADA) */}
           <Sidebar
             role={params.role}
             isOpen={true}
             onToggle={() => setIsSidebarOpen(false)}
-
           />
-
         </div>
       )}
 
-
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-64 transition-all duration-300 w-full">
 
         {/* Header Mobile */}
         <header className="sticky top-0 z-30 flex items-center px-4 h-16 border-b border-border bg-background/80 backdrop-blur-md">
           <button
-            onClick={() => { setIsSidebarOpen(!isSidebarOpen), console.log(isSidebarOpen) }}
+            onClick={() => { setIsSidebarOpen(!isSidebarOpen) }}
             className="p-2 -ml-2 mr-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring lg:hidden"
             aria-label="Abrir menu"
           >
             <Menu size={24} />
           </button>
-          <div className="flex items-center gap-2 font-semibold text-lg">
-            <User className="h-5 w-5 text-primary" /> Visão Geral
+          <div className="flex items-center gap-2 font-semibold text-lg truncate">
+            <User className="h-5 w-5 text-primary min-w-fit" />
+            <span className="truncate">Profile de {user.name}</span>
           </div>
         </header>
-
-
-
 
         <main className="flex-1 p-4 lg:p-8 max-w-5xl mx-auto w-full">
 
           {/* Cabeçalho da Página */}
           <div className="mb-8 space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">Configurações da Conta</h1>
-            <p className="text-muted-foreground">Gerencie suas informações pessoais e preferências de segurança.</p>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Configurações da Conta</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Gerencie suas informações pessoais e preferências de segurança.</p>
           </div>
 
           <Card className="overflow-hidden border-border shadow-sm">
@@ -150,7 +136,7 @@ export default function ProfilePage() {
               <div className="flex flex-col md:flex-row items-center md:items-end -mt-20 mb-8 gap-6">
 
                 {/* Avatar com Upload */}
-                <div className="relative group">
+                <div className="relative group shrink-0">
                   <div
                     onClick={() => isEditing && fileInputRef.current?.click()}
                     className={clsx(
@@ -183,9 +169,11 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Informações do Usuário */}
-                <div className="flex-1 text-center md:text-left mb-2 space-y-2">
-                  <h2 className="text-3xl font-bold text-foreground">{user.name}</h2>
-                  <div className="flex flex-col md:flex-row items-center gap-3">
+                <div className="flex-1 text-center md:text-left mb-2 space-y-2 w-full min-w-0">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground truncate px-2 md:px-0">
+                    {user.name}
+                  </h2>
+                  <div className="flex flex-col md:flex-row items-center gap-3 justify-center md:justify-start">
                     <Badge variant="secondary" className="px-3 py-1 gap-1.5 text-sm font-medium h-7">
                       <ShieldCheck className="h-3.5 w-3.5" /> {user.role}
                     </Badge>
@@ -201,7 +189,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Botões de Ação */}
-                <div className="flex gap-2 md:mb-4">
+                <div className="flex flex-wrap justify-center gap-2 md:mb-4 w-full md:w-auto">
                   {isEditing ? (
                     <>
                       <Button variant="ghost" onClick={handleCancelClick} disabled={saving}>
@@ -226,7 +214,15 @@ export default function ProfilePage() {
               <div className="grid gap-6 md:grid-cols-2">
 
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">Nome Completo</Label>
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="name" className="text-sm font-medium">Nome Completo</Label>
+                    {/* Contador de caracteres (Visível apenas na edição) */}
+                    {isEditing && (
+                      <span className={clsx("text-xs transition-colors", currentNameLength >= MAX_NAME_LENGTH ? "text-red-500 font-semibold" : "text-muted-foreground")}>
+                        {currentNameLength}/{MAX_NAME_LENGTH}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -235,6 +231,7 @@ export default function ProfilePage() {
                       value={user.name}
                       onChange={handleChange}
                       disabled={!isEditing}
+                      maxLength={MAX_NAME_LENGTH} // LIMITE IMPLEMENTADO AQUI
                       className={clsx("pl-9", !isEditing && "bg-muted/50 text-muted-foreground border-transparent")}
                     />
                   </div>
@@ -257,7 +254,7 @@ export default function ProfilePage() {
 
                 {/* Seção de Segurança (Visível apenas ao editar) */}
                 {isEditing && (
-                  <div className="md:col-span-2 bg-muted/30 p-6 rounded-xl border border-border mt-2 animate-in fade-in-50 slide-in-from-top-2">
+                  <div className="md:col-span-2 bg-muted/30 p-4 md:p-6 rounded-xl border border-border mt-2 animate-in fade-in-50 slide-in-from-top-2">
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
                         <KeyRound className="h-5 w-5 text-primary" /> Alterar Senha
