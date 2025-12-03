@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../components/Dashboards/theme';
-import Sidebar from '../../components/layout/sidebar';
+import theme from '../Dashboards/theme';
+import Sidebar from '../layout/sidebar';
 
 export default function DashboardLayout({ children }) {
   const [open, setOpen] = useState(true);

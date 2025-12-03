@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const menuItems = [
   { id: 'pedidos', label: 'Painel', icon: LayoutDashboard, href: '/dashboard/buyer' },
   { id: 'compras', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
-  { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/buyer/orcamentos' },
+  { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/buyer/estimar' },
   {
     id: 'conta',
     label: 'Minha Conta',
