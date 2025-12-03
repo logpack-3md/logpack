@@ -20,11 +20,6 @@ Contato.init({
         allowNull: false,
     },
 
-    title: {
-        type: DataTypes.STRING(25),
-        allowNull: false
-    },
-
     phone: {
         type: DataTypes.STRING,
         allowNull: true

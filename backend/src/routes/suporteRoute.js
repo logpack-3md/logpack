@@ -4,6 +4,6 @@ import SuporteController from "../controllers/SuporteController.js";
 const router = express.Router();
 
 // Rota para enviar o e-mail
-router.post('/send', SuporteController.sendContactEmail);
+router.post('/send', SuporteController.sendSuporteEmail);
 
 export default router;

@@ -1,24 +1,24 @@
-import transporter from '../../config/mailer.js'; 
+import transporter from '../../config/mailer.js';
 import z from 'zod';
 import Suporte from '../models/Suporte.js';
 
 class SuporteController {
-  static contactSchema = z.object({
+  static suporteSchema = z.object({
     name: z.string().trim().min(2, { error: "O nome é obrigatório." }),
-    title: z.string().trim().min(5, { error: "Insira no mínimo 5 caracteres"}),
     email: z.string().email({ error: "Por favor, insira um e-mail válido." }),
+    title: z.string().trim().min(5, { error: "Insira no mínimo 5 caracteres" }),
     phone: z.string().optional(),
     message: z.string().min(10, { error: "A mensagem deve ter pelo menos 10 caracteres." }),
   });
 
-  static async sendContactEmail(req, res) {
+  static async sendSuporteEmail(req, res) {
     try {
-      const { name, title, email, phone, message } = SuporteController.contactSchema.parse(req.body);
+      const { name, title, email, phone, message } = SuporteController.suporteSchema.parse(req.body);
 
       const mailOptions = {
         from: `"${name}" <${email}>`,
-        to: process.env.EMAIL_USER, 
-        subject: `Nova Mensagem de Suporte de ${name}`,
+        to: process.env.EMAIL_USER,
+        subject: `${title}`,
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">
             <h2>Nova Mensagem do Formulário de Suporte</h2>
