@@ -120,7 +120,7 @@ export default function ManagerDashboard() {
                             </TabsList>
 
                             <Button variant="link" asChild className="text-muted-foreground hover:text-primary px-0 hidden sm:flex">
-                                <Link href={`/dashboard/manager/${activeTab}`} className="flex items-center gap-1 font-medium">
+                                <Link href={TABS.SETORES ? '/dashboard/manager/insumos' : `/dashboard/manager/${activeTab}`} className="flex items-center gap-1 font-medium">
                                     Gerenciar {activeTab} <ArrowRight size={14} />
                                 </Link>
                             </Button>
@@ -171,7 +171,6 @@ export default function ManagerDashboard() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="6">6</SelectItem>
                                                 <SelectItem value="10">10</SelectItem>
                                                 <SelectItem value="20">20</SelectItem>
                                                 <SelectItem value="50">50</SelectItem>
