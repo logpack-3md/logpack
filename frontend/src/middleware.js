@@ -8,10 +8,10 @@ const ROLE_PERMISSIONS = {
   admin: ['profile'], 
   
   // Manager: Acesso operacional
-  manager: ['insumos', 'setores', 'pedidos', 'orcamentos', 'profile'],
+  manager: ['insumos', 'setores', 'pedidos', 'renegociacoes', 'profile'],
   
   // Buyer: Acesso de compras
-  buyer: ['compras', 'estimar', 'profile'], 
+  buyer: ['compras', 'orcamentos', 'profile'], 
   
   // Employee: Operacional básico
   employee: ['profile'], 
