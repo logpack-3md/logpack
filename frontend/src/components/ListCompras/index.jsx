@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/pagination";
 
 // --- Utilitários ---
-
 const formatCurrency = (val) => {
     if (val === null || val === undefined) return '-';
     const numberVal = typeof val === 'string' ? parseFloat(val) : val;
@@ -102,7 +101,6 @@ export default function ListCompras({ compras = [], loading = false, meta = {}, 
         });
     }, [compras]);
 
-    // --- ESTADOS DE LOADING ---
     const isInitialLoading = loading && sortedCompras.length === 0;
     const isRevalidating = loading && sortedCompras.length > 0;
 
@@ -140,7 +138,6 @@ export default function ListCompras({ compras = [], loading = false, meta = {}, 
         <div className="flex flex-col gap-4">
             <div className="relative rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 
-                {/* Overlay sutil de carregamento ao revalidar */}
                 {isRevalidating && (
                     <div className="absolute inset-0 bg-background/50 z-10 flex items-start justify-center pt-20 backdrop-blur-[1px] transition-all duration-300">
                         <div className="bg-background/80 px-4 py-2 rounded-full shadow-sm border flex items-center gap-2">
@@ -163,7 +160,7 @@ export default function ListCompras({ compras = [], loading = false, meta = {}, 
                     </TableHeader>
                     <TableBody>
                         {sortedCompras.map((item) => {
-                            // --- Extração Segura de Valores ---
+                            // Extração segura do orçamento
                             const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
                             const rawValue = orcamentoObj?.valor_total ?? item.valor_total;
                             const hasValue = rawValue !== undefined && rawValue !== null;
@@ -191,14 +188,20 @@ export default function ListCompras({ compras = [], loading = false, meta = {}, 
                                             </span>
                                         </div>
                                     </TableCell>
+
+                                    {/* DESCRIÇÃO CORRIGIDA: agora mostra a do orçamento! */}
                                     <TableCell className="py-4 align-top">
                                         <div className="flex items-start gap-2">
                                             <PackageOpen className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                                            <p className="text-sm text-foreground/90 leading-snug line-clamp-2 max-w-[300px]" title={item.description}>
-                                                {item.description}
+                                            <p 
+                                                className="text-sm text-foreground/90 leading-snug line-clamp-2 max-w-[300px]" 
+                                                title={orcamentoObj?.description || item.description || "Sem descrição"}
+                                            >
+                                                {orcamentoObj?.description || item.description || "Sem descrição"}
                                             </p>
                                         </div>
                                     </TableCell>
+
                                     <TableCell className="py-4 align-top">
                                         <StatusBadge status={item.status} />
                                     </TableCell>
@@ -267,7 +270,6 @@ export default function ListCompras({ compras = [], loading = false, meta = {}, 
                 </Table>
             </div>
 
-            {/* --- PAGINAÇÃO INTEGRADA --- */}
             {meta && meta.totalPages > 1 && (
                 <div className="flex justify-end">
                     <Pagination>
@@ -278,11 +280,9 @@ export default function ListCompras({ compras = [], loading = false, meta = {}, 
                                     onClick={() => onPageChange && onPageChange(meta.currentPage - 1)} 
                                 />
                             </PaginationItem>
-                            
                             <PaginationItem>
                                 <PaginationLink isActive>{meta.currentPage}</PaginationLink>
                             </PaginationItem>
-                            
                             <PaginationItem>
                                 <PaginationNext 
                                     className={clsx("cursor-pointer", meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Search, Menu, CircleUser, Bell, Filter } from 'lucide-react';
 import clsx from 'clsx';
+import { Toaster, toast } from "sonner";
 
 // SHADCN UI COMPONENTS
 import { Button } from "@/components/ui/button";
@@ -36,16 +37,14 @@ export default function BuyerDashboard() {
         fetchCompras(1, 10, filterToSend);
     }, [fetchCompras, statusFilter]);
 
-    // --- Handlers ---
     const handleOpenModal = (type, item) => {
         setModalConfig({ type, item });
         
-        // Extração segura do orçamento (igual à lista)
         const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
         
         const valorInicial = orcamentoObj?.valor_total 
             ? String(orcamentoObj.valor_total) 
-            : (item.amount ? String(item.amount) : ""); // item.amount é quantidade, mas usamos como placeholder se necessário
+            : (item.amount ? String(item.amount) : "");
             
         const descInicial = orcamentoObj?.description || item.description || "";
         
@@ -62,8 +61,7 @@ export default function BuyerDashboard() {
         const { type, item } = modalConfig;
         if (!item) return;
         setIsSubmitting(true);
-        
-        // --- CORREÇÃO PRINCIPAL: Extração do ID do Orçamento ---
+
         const orcamentoObj = Array.isArray(item.orcamento) ? item.orcamento[0] : item.orcamento;
         const orcamentoId = orcamentoObj?.id;
 
@@ -74,34 +72,40 @@ export default function BuyerDashboard() {
                         valor_total: parseFloat(formData.amount), 
                         description: formData.desc || "Orçamento inicial"
                     });
+                    toast.success("Orçamento criado com sucesso!");
                     break;
 
                 case 'renegotiate':
                     if (!orcamentoId) throw new Error("ID do orçamento não encontrado.");
-                    await renegociarOrcamento(orcamentoId, { 
-                        valor_total: parseFloat(formData.amount) 
-                    });
+                    await renegociarOrcamento(orcamentoId, { valor_total: parseFloat(formData.amount) });
+                    toast.success("Valor renegociado com sucesso!");
                     break;
 
                 case 'edit_desc':
                     if (!orcamentoId) throw new Error("ID do orçamento não encontrado.");
-                    // Validação de Frontend Básica para evitar erro do Zod
                     if (formData.desc.length < 10) {
                         throw new Error("A descrição deve ter no mínimo 10 caracteres.");
                     }
                     await updateDescricao(orcamentoId, { description: formData.desc });
+                    toast.success("Descrição atualizada com sucesso!");
                     break;
 
                 case 'cancel':
                     if (!orcamentoId) throw new Error("ID do orçamento não encontrado.");
                     await cancelarOrcamento(orcamentoId);
+                    toast.error("Orçamento cancelado.");
                     break;
             }
+
             handleCloseModal();
+
+            // Refetch para atualizar a lista (agora a descrição aparece!)
+            const filterToSend = statusFilter === 'todos' ? '' : statusFilter;
+            await fetchCompras(meta?.currentPage || 1, 10, filterToSend);
+
         } catch (error) {
-            console.error("Erro na operação:", error);
-            // Exibe o erro real (ex: "Mínimo 10 caracteres")
-            alert(error.message || "Erro ao processar solicitação.");
+            console.error("Erro:", error);
+            toast.error(error.message || "Ocorreu um erro inesperado.");
             setIsSubmitting(false);
         }
     };
@@ -109,7 +113,7 @@ export default function BuyerDashboard() {
     const getModalTitle = () => {
         switch(modalConfig.type) {
             case 'create': return 'Novo Orçamento';
-            case 'renegotiate': return 'Renegociar Valor';
+            case 'renegociate': return 'Renegociar Valor';
             case 'edit_desc': return 'Editar Detalhes';
             case 'cancel': return 'Cancelar Pedido';
             default: return '';
@@ -117,153 +121,165 @@ export default function BuyerDashboard() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-muted/40">
-            <SidebarBuyer />
-            <div className="flex flex-col md:pl-[240px] lg:pl-[260px]">
-                
-                {/* Header */}
-                <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-                                <Menu className="h-5 w-5" />
-                                <span className="sr-only">Menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="flex flex-col p-0 w-[260px]">
-                           <SidebarContent />
-                        </SheetContent>
-                    </Sheet>
+        <>
+            <div className="min-h-screen w-full bg-muted/40">
+                <SidebarBuyer />
+                <div className="flex flex-col md:pl-[240px] lg:pl-[260px]">
+                    {/* Header */}
+                    <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+                                    <Menu className="h-5 w-5" />
+                                    <span className="sr-only">Menu</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="flex flex-col p-0 w-[260px]">
+                               <SidebarContent />
+                            </SheetContent>
+                        </Sheet>
 
-                    <div className="w-full flex-1">
-                        <form>
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input type="search" placeholder="Buscar pedidos..." className="w-full bg-background pl-8 md:w-2/3 lg:w-1/3" />
+                        <div className="w-full flex-1">
+                            <form>
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input type="search" placeholder="Buscar pedidos..." className="w-full bg-background pl-8 md:w-2/3 lg:w-1/3" />
+                                </div>
+                            </form>
+                        </div>
+
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <Bell className="h-5 w-5" />
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="secondary" size="icon" className="rounded-full">
+                                    <CircleUser className="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>Sair</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="flex flex-1 flex-col gap-6 p-6">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tight">Painel de Compras</h1>
+                                <p className="text-sm text-muted-foreground">Visualize e responda às solicitações de orçamento.</p>
                             </div>
-                        </form>
-                    </div>
+                            <div className="flex items-center gap-2">
+                                 <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    <SelectTrigger className="w-[200px] bg-background">
+                                        <Filter className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                        <SelectValue placeholder="Filtrar por Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="todos">Todos os Pedidos</SelectItem>
+                                        <SelectItem value="pendente">Novos (Pendente)</SelectItem>
+                                        <SelectItem value="fase_de_orcamento">Em Análise</SelectItem>
+                                        <SelectItem value="renegociacao">Renegociação</SelectItem>
+                                        <SelectItem value="concluido">Concluídos</SelectItem>
+                                        <SelectItem value="negado">Negados</SelectItem>
+                                        <SelectItem value="cancelado">Cancelados</SelectItem>
+                                    </SelectContent>
+                                 </Select>
+                            </div>
+                        </div>
 
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Bell className="h-5 w-5" />
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="icon" className="rounded-full">
-                                <CircleUser className="h-5 w-5" />
+                        <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                             <ListCompras compras={compras} loading={loading} onAction={handleOpenModal} />
+                        </div>
+
+                        {meta && meta.totalPages > 1 && (
+                            <div className="mt-auto py-4">
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious 
+                                                href="#"
+                                                onClick={(e) => { e.preventDefault(); if(meta.currentPage > 1) fetchCompras(meta.currentPage - 1, 10, statusFilter === 'todos' ? '' : statusFilter); }}
+                                                className={clsx(meta.currentPage <= 1 && "pointer-events-none opacity-50")}
+                                            />
+                                        </PaginationItem>
+                                        <PaginationItem><PaginationLink isActive>{meta.currentPage}</PaginationLink></PaginationItem>
+                                        <PaginationItem>
+                                            <PaginationNext 
+                                                 href="#"
+                                                 onClick={(e) => { e.preventDefault(); if(meta.currentPage < meta.totalPages) fetchCompras(meta.currentPage + 1, 10, statusFilter === 'todos' ? '' : statusFilter); }}
+                                                 className={clsx(meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )}
+                    </main>
+                </div>
+
+                {/* Modais */}
+                <Dialog open={modalConfig.type !== null && modalConfig.type !== 'cancel'} onOpenChange={(open) => !open && handleCloseModal()}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>{getModalTitle()}</DialogTitle>
+                            <DialogDescription>Preencha os dados necessários.</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            {['create', 'renegotiate'].includes(modalConfig.type) && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="amount" className="text-right">Valor</Label>
+                                    <div className="col-span-3 relative">
+                                        <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">R$</span>
+                                        <Input id="amount" type="number" className="pl-9" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
+                                    </div>
+                                </div>
+                            )}
+                            {['create', 'edit_desc'].includes(modalConfig.type) && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="desc" className="text-right">Descrição</Label>
+                                    <Textarea id="desc" className="col-span-3" placeholder="Detalhes do orçamento..." value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} />
+                                </div>
+                            )}
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={handleCloseModal}>Cancelar</Button>
+                            <Button onClick={handleSubmit} disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Sair</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </header>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
-                {/* Main Content */}
-                <main className="flex flex-1 flex-col gap-6 p-6">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Painel de Compras</h1>
-                            <p className="text-sm text-muted-foreground">Visualize e responda às solicitações de orçamento.</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-[200px] bg-background">
-                                    <Filter className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                    <SelectValue placeholder="Filtrar por Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="todos">Todos os Pedidos</SelectItem>
-                                    <SelectItem value="pendente">Novos (Pendente)</SelectItem>
-                                    <SelectItem value="fase_de_orcamento">Em Análise</SelectItem>
-                                    <SelectItem value="renegociacao">Renegociação</SelectItem>
-                                    <SelectItem value="concluido">Concluídos</SelectItem>
-                                    <SelectItem value="negado">Negados</SelectItem>
-                                    <SelectItem value="cancelado">Cancelados</SelectItem>
-                                </SelectContent>
-                             </Select>
-                        </div>
-                    </div>
-
-                    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
-                         <ListCompras compras={compras} loading={loading} onAction={handleOpenModal} />
-                    </div>
-
-                    {meta && meta.totalPages > 1 && (
-                        <div className="mt-auto py-4">
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious 
-                                            href="#"
-                                            onClick={(e) => { e.preventDefault(); if(meta.currentPage > 1) fetchCompras(meta.currentPage - 1, 10, statusFilter === 'todos' ? '' : statusFilter); }}
-                                            className={clsx(meta.currentPage <= 1 && "pointer-events-none opacity-50")}
-                                        />
-                                    </PaginationItem>
-                                    <PaginationItem><PaginationLink isActive>{meta.currentPage}</PaginationLink></PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationNext 
-                                             href="#"
-                                             onClick={(e) => { e.preventDefault(); if(meta.currentPage < meta.totalPages) fetchCompras(meta.currentPage + 1, 10, statusFilter === 'todos' ? '' : statusFilter); }}
-                                             className={clsx(meta.currentPage >= meta.totalPages && "pointer-events-none opacity-50")}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    )}
-                </main>
+                <Dialog open={modalConfig.type === 'cancel'} onOpenChange={(open) => !open && handleCloseModal()}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle className="text-destructive">Cancelar Solicitação</DialogTitle>
+                            <DialogDescription>Tem certeza? O status será revertido e o orçamento cancelado.</DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={handleCloseModal}>Voltar</Button>
+                            <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Confirmar
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
-            {/* --- Modais --- */}
-            <Dialog open={modalConfig.type !== null && modalConfig.type !== 'cancel'} onOpenChange={(open) => !open && handleCloseModal()}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>{getModalTitle()}</DialogTitle>
-                        <DialogDescription>Preencha os dados necessários.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        {['create', 'renegotiate'].includes(modalConfig.type) && (
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="amount" className="text-right">Valor</Label>
-                                <div className="col-span-3 relative">
-                                    <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">R$</span>
-                                    <Input id="amount" type="number" className="pl-9" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
-                                </div>
-                            </div>
-                        )}
-                        {['create', 'edit_desc'].includes(modalConfig.type) && (
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="desc" className="text-right">Descrição</Label>
-                                <Textarea id="desc" className="col-span-3" placeholder="Detalhes do orçamento..." value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} />
-                            </div>
-                        )}
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={handleCloseModal}>Cancelar</Button>
-                        <Button onClick={handleSubmit} disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={modalConfig.type === 'cancel'} onOpenChange={(open) => !open && handleCloseModal()}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle className="text-destructive">Cancelar Solicitação</DialogTitle>
-                        <DialogDescription>Tem certeza? O status será revertido e o orçamento cancelado.</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={handleCloseModal}>Voltar</Button>
-                        <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Confirmar
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
+            {/* TOAST LINDO E FUNCIONAL - sem nenhum arquivo extra */}
+            <Toaster 
+                position="bottom-right"
+                richColors
+                closeButton
+                toastOptions={{
+                    style: { fontSize: '14px' },
+                    className: 'shadow-2xl'
+                }}
+            />
+        </>
     );
 }
