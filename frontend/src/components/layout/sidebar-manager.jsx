@@ -37,7 +37,7 @@ const menuItems = [
     subItems: [
       { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' },
       { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
-      { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/manager/orcamentos' },
+      { id: 'renegociacoes', label: 'Renegociações', icon: FileText, href: '/dashboard/manager/renegociacoes' },
     ],
   },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/manager/profile' },

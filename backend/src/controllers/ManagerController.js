@@ -530,12 +530,14 @@ class ManagerController {
         const { orcamentoId } = req.params;
 
         const approveSchema = z.object({
-            status: z.enum(['negado', 'aprovado', 'renegociacao'],
-                { error: "O gerente so pode determinar se o pedido foi aprovado, rejeitado ou deseja renegociação." })
+            status: z.enum(['negado', 'aprovado', 'renegociacao'], { 
+                error: "Status inválido." 
+            }),
+            description: z.string().optional()
         })
 
         try {
-            const { status } = approveSchema.parse(req.body);
+            const { status, description } = approveSchema.parse(req.body);
 
             const oldDataOrcamento = await Orcamento.findByPk(orcamentoId);
             if (!oldDataOrcamento) return res.status(404).json({ message: "Orçamento não encontrado" });
@@ -550,9 +552,6 @@ class ManagerController {
                 { status: status },
                 { where: { id: orcamentoId } }
             );
-            
-            const orcamentoAtualizado = await Orcamento.findByPk(orcamentoId);
-            const newDataOrcamentoJson = orcamentoAtualizado.toJSON();
 
             switch (status) {
                 case 'aprovado':
@@ -581,7 +580,6 @@ class ManagerController {
                         status: 'concluido',
                         responsavel_pela_decisao_id: gerenteId
                     }, { where: { id: compraId } });
-
                     break;
 
                 case 'negado':
@@ -610,27 +608,39 @@ class ManagerController {
                         status: 'negado',
                         responsavel_pela_decisao_id: gerenteId
                     }, { where: { id: compraId } });
-
                     break;
 
                 case 'renegociacao':
+
                     await Compra.update({
                         data_de_decisao: new Date(),
                         status: 'renegociacao_solicitada', 
                         responsavel_pela_decisao_id: gerenteId
                     }, { where: { id: compraId } });
 
+                    if (description) {
+                        await Orcamento.update(
+                            { description: description },
+                            { where: { id: orcamentoId } }
+                        );
+                    }
+
+                    const orcamentoRenegociado = await Orcamento.findByPk(orcamentoId);
+
                     await OrcamentoLog.create({
                         buyerId: oldDataOrcamento.buyerId,
                         orcamentoId: orcamentoId,
                         actionType: 'UPDATE',
-                        contextDetails: "Solicitação de renegociação enviada pelo gerente.",
+                        contextDetails: description 
+                            ? "Solicitação de renegociação enviada pelo gerente com nova descrição." 
+                            : "Solicitação de renegociação enviada pelo gerente.",
                         oldData: oldDataOrcamentoJson,
-                        newData: newDataOrcamentoJson
+                        newData: orcamentoRenegociado.toJSON() 
                     });
                     break;
             }
 
+            const orcamentoFinal = await Orcamento.findByPk(orcamentoId);
             const newDataCompra = await Compra.findByPk(compraId);
             
             await CompraLog.create({
@@ -644,7 +654,7 @@ class ManagerController {
 
             return res.status(200).json({
                 message: `Status atualizado para: ${status}`,
-                orcamento: orcamentoAtualizado
+                orcamento: orcamentoFinal
             });
 
         } catch (error) {
@@ -657,7 +667,6 @@ class ManagerController {
             console.error("Erro interno no servidor ao contestar orçamento", error)
             res.status(500).json({ error: "Ocorreu um erro interno no servidor ao contestar o orçamento." })
         }
-
     }
 }
 

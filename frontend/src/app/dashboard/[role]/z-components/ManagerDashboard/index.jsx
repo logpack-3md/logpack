@@ -119,8 +119,8 @@ export default function ManagerDashboard() {
                                 <TabsTrigger value={TABS.SETORES} className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Layers size={14} /> Setores</TabsTrigger>
                             </TabsList>
 
-                            <Button variant="link" asChild className="text-muted-foreground hover:text-primary px-0 hidden md:flex">
-                                <Link href={`/dashboard/manager/${activeTab}`} className="flex items-center gap-1 font-medium">
+                            <Button variant="link" asChild className="text-muted-foreground hover:text-primary px-0 hidden sm:flex">
+                                <Link href={TABS.SETORES ? '/dashboard/manager/insumos' : `/dashboard/manager/${activeTab}`} className="flex items-center gap-1 font-medium">
                                     Gerenciar {activeTab} <ArrowRight size={14} />
                                 </Link>
                             </Button>

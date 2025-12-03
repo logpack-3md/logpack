@@ -5,10 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { notFound } from 'next/navigation';
 
 // Componentes de Dashboard
-import ManagerDashboard from './components/ManagerDashboard';
-import AdminDashboard from './components/AdminDashboard/page';
-import BuyerDashboard from './components/BuyerDashboard/page';
-import EmployeeDashboard from './components/EmployeeDashboard/page';
+import ManagerDashboard from './z-components/ManagerDashboard';
+import AdminDashboard from './z-components/AdminDashboard/page';
+import BuyerDashboard from './z-components/BuyerDashboard/page';
+import EmployeeDashboard from './z-components/EmployeeDashboard/page';
 
 // Componentes de UI e Ícones
 import { Button } from "@/components/ui/button";
