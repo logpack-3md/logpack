@@ -11,7 +11,7 @@ const ROLE_PERMISSIONS = {
   manager: ['insumos', 'setores', 'pedidos', 'renegociacoes', 'profile'],
   
   // Buyer: Acesso de compras
-  buyer: ['compras', 'orcamentos', 'profile'], 
+  buyer: ['compras', 'estimar', 'profile'], 
   
   // Employee: Operacional básico
   employee: ['profile'], 

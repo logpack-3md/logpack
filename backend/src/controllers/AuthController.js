@@ -8,7 +8,7 @@ class AuthController {
             throw new Error('JWT_SECRET não definido no ambiente.')
         }
 
-        return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' })
+        return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' })
     }
 
     static async login(req, res) {

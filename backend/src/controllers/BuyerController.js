@@ -13,7 +13,8 @@ class BuyerController {
             .refine((value) => {
                 const roundedValue = Math.round(value * 100) / 100;
                 return value === roundedValue;
-            }, { error: "O valor pode ter no máximo duas casas decimais.", })
+            }, { error: "O valor pode ter no máximo duas casas decimais.", }),
+        description: z.string().optional()
     })
 
     static updateOrcamentoSchema = z.object({
@@ -27,6 +28,7 @@ class BuyerController {
                 const roundedValue = Math.round(value * 100) / 100;
                 return value === roundedValue;
             }, { error: "O valor pode ter no máximo duas casas decimais.", }).optional(),
+        description: z.string().optional()  
     })
 
     static async getCompras(req, res) {
@@ -239,7 +241,7 @@ class BuyerController {
             const oldDataJson = orcamento
 
             const [rowsAffected] = await Orcamento.update(
-                { 
+                {
                     ...validatedSchema,
                     status: 'pendente'
                 },

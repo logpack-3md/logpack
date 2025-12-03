@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Menu Definition
 const menuItems = [
   { id: 'pedidos', label: 'Painel', icon: LayoutDashboard, href: '/dashboard/buyer' },
-  { id: 'compras', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
+  // { id: 'compras', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
   { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/buyer/estimar' },
   {
     id: 'conta',
@@ -20,7 +20,7 @@ const menuItems = [
     icon: User,
     subItems: [
       { id: 'profile', label: 'Meu Perfil', icon: User, href: '/dashboard/buyer/profile' },
-      { id: 'config', label: 'Configurações', icon: Settings, href: '/dashboard/buyer/configuracoes' },
+      // { id: 'config', label: 'Configurações', icon: Settings, href: '/dashboard/buyer/configuracoes' },
       // O ID 'sair' será interceptado na renderização
       { id: 'sair', label: 'Sair', icon: LogOut, href: '/' },
     ],

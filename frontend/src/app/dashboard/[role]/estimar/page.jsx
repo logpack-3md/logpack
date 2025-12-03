@@ -1,305 +1,179 @@
-// src/app/dashboard/[role]/estimar/page.jsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Search, Menu, CircleUser, Bell, DollarSign, Clock, XCircle, RefreshCw, Plus } from 'lucide-react';
-import { Toaster, toast } from "sonner";
+import { ShoppingBag, RefreshCcw, Menu } from 'lucide-react';
+import clsx from 'clsx';
+import { Toaster } from 'sonner';
 
+// UI Components
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
-import SidebarBuyer, { SidebarContent } from "@/components/layout/sidebar-buyer";
+// Components
+import SidebarBuyer from "@/components/layout/sidebar-buyer";
+import BuyerTable from "@/components/Buyer/BuyerTable";
+import BuyerFilters from "@/components/Buyer/BuyerFilters";
+import BuyerModals from "@/components/Buyer/BuyerModals";
+
+// Hooks
 import { useBuyerOperations } from "@/hooks/useBuyerOperations";
 
 export default function EstimarPage() {
-  const { compras, loading, fetchCompras, createOrcamento, renegociarOrcamento, cancelarOrcamento } = useBuyerOperations();
+    const { 
+        compras, loading, meta, isSubmitting,
+        fetchCompras, createOrcamento, renegociarOrcamento, cancelarOrcamento 
+    } = useBuyerOperations();
 
-  const [tab, setTab] = useState("pedidos");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("criar"); // "criar" | "renegociar" | "cancelar"
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [valorProposto, setValorProposto] = useState("");
-  const [descricao, setDescricao] = useState("");
+    const [statusFilter, setStatusFilter] = useState('todos');
+    
+    // Modal States
+    const [modalConfig, setModalConfig] = useState({ type: null, item: null });
+    const [formData, setFormData] = useState({ amount: "", desc: "" });
 
-  useEffect(() => {
-    const statusMap = {
-      pedidos: "fase_de_orcamento",
-      renegociacoes: "renegociacao",
-      cancelados: "cancelado"
+    // --- Init ---
+    useEffect(() => {
+        // Carrega a lista inicial
+        fetchCompras(1, 10, statusFilter === 'todos' ? '' : statusFilter);
+    }, [fetchCompras, statusFilter]); 
+
+    // --- Handlers ---
+    const handleRefresh = () => {
+        fetchCompras(meta.currentPage, 10, statusFilter === 'todos' ? '' : statusFilter);
     };
-    fetchCompras(1, 100, statusMap[tab] || null);
-  }, [tab, fetchCompras]);
 
-  const abrirModal = (item, tipo) => {
-    setSelectedItem(item);
-    setModalType(tipo);
-    setValorProposto(item.orcamento?.[0]?.valor_total?.toString() || "");
-    setDescricao(item.orcamento?.[0]?.description || "");
-    setModalOpen(true);
-  };
+    const handlePageChange = (newPage) => {
+        fetchCompras(newPage, 10, statusFilter === 'todos' ? '' : statusFilter);
+    };
+    
+    const handleLimitChange = (limit) => {
+        fetchCompras(1, parseInt(limit), statusFilter === 'todos' ? '' : statusFilter);
+    };
 
-  const handleSubmit = async () => {
-    if (!selectedItem || !valorProposto || parseFloat(valorProposto) <= 0) {
-      toast.error("Preencha um valor válido");
-      return;
-    }
+    const handleOpenModal = (type, item) => {
+        let valor = "";
+        let desc = "";
 
-    try {
-      if (modalType === "criar") {
-        await createOrcamento(selectedItem.id, {
-          valor_total: parseFloat(valorProposto),
-          description: descricao || "Orçamento enviado pelo comprador"
-        });
-        toast.success("Orçamento criado com sucesso!");
-      } else if (modalType === "renegociar") {
-        const orcId = selectedItem.orcamento?.[0]?.id;
-        await renegociarOrcamento(orcId, { valor_total: parseFloat(valorProposto) });
-        toast.success("Renegociação enviada!");
-      }
-      setModalOpen(false);
-      fetchCompras();
-    } catch (err) {
-      toast.error(err.message || "Erro ao processar orçamento");
-    }
-  };
+        // Pré-carrega dados se existirem
+        if (item.orcamento) {
+            valor = item.orcamento.valor_total ? String(item.orcamento.valor_total) : "";
+            // Tenta carregar a descrição atual do orçamento, senão da compra
+            desc = item.orcamento.description || "";
+        } else {
+            // Se for criar, deixa vazio ou puxa do pedido
+            desc = item.description || ""; 
+        }
 
-  const handleCancelar = async () => {
-    const orcId = selectedItem.orcamento?.[0]?.id;
-    if (!orcId) return;
+        setFormData({ amount: valor, desc: desc });
+        setModalConfig({ type, item });
+    };
 
-    try {
-      await cancelarOrcamento(orcId);
-      toast.error("Orçamento cancelado");
-      setModalOpen(false);
-      fetchCompras();
-    } catch (err) {
-      toast.error("Erro ao cancelar");
-    }
-  };
+    const handleSubmit = async () => {
+        const { type, item } = modalConfig;
+        if (!item) return;
+        
+        const orcamentoId = item.orcamento?.id; 
+        let success = false;
 
-  const itensFiltrados = compras
-    .filter(item => {
-      const busca = searchTerm.toLowerCase();
-      return (
-        item.titulo?.toLowerCase().includes(busca) ||
-        item.patrimonio?.toLowerCase().includes(busca)
-      );
-    });
+        // Validação básica de front (o Hook faz a do backend)
+        const payloadData = { 
+            valor_total: parseFloat(formData.amount), 
+            description: formData.desc 
+        };
 
-  return (
-    <>
-      <div className="min-h-screen w-full bg-muted/40">
-        <SidebarBuyer />
+        if (type === 'create') {
+            success = await createOrcamento(item.id, payloadData);
+        } 
+        else if (type === 'renegotiate') {
+            if (!orcamentoId) return;
+            // CORREÇÃO: Agora envia a descrição junto com o novo valor
+            success = await renegociarOrcamento(orcamentoId, payloadData);
+        } 
+        else if (type === 'cancel') {
+            if (!orcamentoId) return;
+            success = await cancelarOrcamento(orcamentoId);
+        }
 
-        <div className="flex flex-col md:pl-[240px] lg:pl-[260px]">
-          {/* Header */}
-          <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[260px] p-0">
-                <SidebarContent />
-              </SheetContent>
-            </Sheet>
+        if (success) {
+            setModalConfig({ type: null, item: null });
+            setFormData({ amount: "", desc: "" });
+        }
+    };
 
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por título, patrimônio ou status..."
-                  className="pl-8 w-full md:w-96"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
+    return (
+        <div className="flex min-h-screen bg-muted/40 font-sans text-foreground overflow-hidden">
+            <Toaster position="top-right" richColors />
+            <SidebarBuyer />
 
-            <Button variant="ghost" size="icon"><Bell className="h-5 w-5" /></Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="rounded-full">
-                  <CircleUser className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Sair</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </header>
-
-          <main className="flex-1 p-6">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold tracking-tight">Estimativas e Orçamentos</h1>
-              <p className="text-sm text-muted-foreground">
-                Crie orçamentos, renegocie valores ou cancele solicitações.
-              </p>
-            </div>
-
-            <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-                <TabsTrigger value="pedidos">
-                  Pedidos ({compras.filter(c => !c.orcamento).length})
-                </TabsTrigger>
-                <TabsTrigger value="renegociacoes">
-                  Renegociações ({compras.filter(c => c.orcamento?.[0]?.status === "renegociacao").length})
-                </TabsTrigger>
-                <TabsTrigger value="cancelados">
-                  Cancelados ({compras.filter(c => c.orcamento?.[0]?.status === "cancelado").length})
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={tab}>
-                {loading ? (
-                  <div className="flex justify-center py-20">
-                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  </div>
-                ) : itensFiltrados.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-16 text-center text-muted-foreground">
-                      Nenhum item encontrado.
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {itensFiltrados.map((item) => {
-                      const orc = item.orcamento?.[0];
-
-                      return (
-                        <Card key={item.id} className="relative overflow-hidden">
-                          <CardHeader>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <CardTitle className="text-lg">{item.titulo || "Sem título"}</CardTitle>
-                                <p className="text-sm text-muted-foreground">Patrimônio: {item.patrimonio}</p>
-                              </div>
-                              {orc && (
-                                <Badge variant={orc.status === "cancelado" ? "destructive" : orc.status === "renegociacao" ? "secondary" : "default"}>
-                                  {orc.status === "renegociacao" ? "Renegociação" : orc.status}
-                                </Badge>
-                              )}
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            {orc ? (
-                              <div className="space-y-3">
-                                <p className="flex items-center gap-2">
-                                  <DollarSign className="h-4 w-4 text-green-600" />
-                                  <span className="font-semibold">R$ {orc.valor_total?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                                </p>
-                                {orc.status === "renegociacao" && (
-                                  <p className="text-amber-600 text-sm flex items-center gap-1">
-                                    <RefreshCw className="h-4 w-4" /> Em renegociação
-                                  </p>
-                                )}
-                                {orc.status === "cancelado" && (
-                                  <p className="text-red-600 text-sm flex items-center gap-1">
-                                    <XCircle className="h-4 w-4" /> Cancelado
-                                  </p>
-                                )}
-                              </div>
-                            ) : (
-                              <p className="text-muted-foreground flex items-center gap-2">
-                                <Clock className="h-4 w-4" /> Aguardando orçamento
-                              </p>
-                            )}
-
-                            {/* Botões de ação */}
-                            <div className="mt-4 flex gap-2">
-                              {!orc && (
-                                <Button size="sm" className="flex-1" onClick={() => abrirModal(item, "criar")}>
-                                  <Plus className="h-4 w-4 mr-1" /> Criar Orçamento
+            <div className="flex flex-1 flex-col md:ml-[240px] lg:ml-[260px] transition-all duration-300">
+                
+                {/* Header Fixo */}
+                <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur px-6 shadow-sm shrink-0">
+                    <div className="flex items-center gap-4">
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="lg:hidden">
+                                    <Menu />
                                 </Button>
-                              )}
-                              {orc && orc.status !== "cancelado" && (
-                                <>
-                                  <Button size="sm" variant="outline" onClick={() => abrirModal(item, "renegociar")}>
-                                    Renegociar
-                                  </Button>
-                                  <Button size="sm" variant="destructive" onClick={() => abrirModal(item, "cancelar")}>
-                                    Cancelar
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </main>
-        </div>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 w-64">
+                                <SidebarBuyer />
+                            </SheetContent>
+                        </Sheet>
+                        <div className="flex items-center gap-2 font-semibold text-lg text-foreground">
+                            <ShoppingBag className="h-5 w-5 text-primary" /> 
+                            <span>Estimativas de Compra</span>
+                        </div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading} className="gap-2">
+                        <RefreshCcw className={clsx("h-4 w-4", loading && "animate-spin")} />
+                        <span className="hidden sm:inline">Atualizar</span>
+                    </Button>
+                </header>
 
-        {/* Modal */}
-        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {modalType === "criar" && "Criar Orçamento"}
-                {modalType === "renegociar" && "Renegociar Orçamento"}
-                {modalType === "cancelar" && "Cancelar Orçamento"}
-              </DialogTitle>
-              <DialogDescription>
-                {modalType === "cancelar"
-                  ? "Tem certeza que deseja cancelar este orçamento? Esta ação não pode ser desfeita."
-                  : "Preencha os dados do orçamento"}
-              </DialogDescription>
-            </DialogHeader>
+                {/* Main Full Height */}
+                <main className="flex flex-1 flex-col p-4 md:p-8 gap-4 md:gap-6 overflow-hidden h-[calc(100vh-4rem)]">
+                    
+                    {/* Topo */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 shrink-0">
+                         <div className="space-y-1">
+                            <h1 className="text-2xl font-bold tracking-tight">Cotações e Orçamentos</h1>
+                            <p className="text-sm text-muted-foreground">Gerencie valores e envie propostas para aprovação.</p>
+                        </div>
+                    </div>
 
-            {modalType !== "cancelar" ? (
-              <div className="space-y-4 py-4">
-                <div>
-                  <label className="text-sm font-medium">Valor Proposto (R$)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0,00"
-                    value={valorProposto}
-                    onChange={(e) => setValorProposto(e.target.value)}
-                  />
-                </div>
-                {modalType === "criar" && (
-                  <div>
-                    <label className="text-sm font-medium">Descrição (opcional)</label>
-                    <Input
-                      placeholder="Ex: Inclui frete, instalação..."
-                      value={descricao}
-                      onChange={(e) => setDescricao(e.target.value)}
+                    {/* Filtros */}
+                    <BuyerFilters 
+                        statusFilter={statusFilter} 
+                        setStatusFilter={setStatusFilter} 
+                        onRefresh={handleRefresh}
                     />
-                  </div>
-                )}
-              </div>
-            ) : null}
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setModalOpen(false)}>Fechar</Button>
-              {modalType === "cancelar" ? (
-                <Button variant="destructive" onClick={handleCancelar}>Confirmar Cancelamento</Button>
-              ) : (
-                <Button onClick={handleSubmit}>
-                  {modalType === "criar" ? "Enviar Orçamento" : "Enviar Renegociação"}
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                    {/* Tabela Flexível */}
+                    <BuyerTable 
+                        loading={loading} 
+                        compras={compras} 
+                        pagination={{
+                            limit: 10,
+                            page: meta?.currentPage || 1,
+                            meta: meta || { totalItems: 0, totalPages: 1, currentPage: 1 },
+                            hasNext: (meta?.currentPage || 1) < (meta?.totalPages || 1),
+                            hasPrevious: (meta?.currentPage || 1) > 1
+                        }}
+                        onAction={handleOpenModal} 
+                        onPageChange={handlePageChange} 
+                        onLimitChange={handleLimitChange}
+                    />
+                </main>
+            </div>
 
-        <Toaster position="bottom-right" richColors closeButton />
-      </div>
-    </>
-  );
+            <BuyerModals 
+                config={modalConfig} 
+                onClose={() => setModalConfig({ type: null, item: null })}
+                formData={formData} 
+                setFormData={setFormData} 
+                onSubmit={handleSubmit} 
+                isSubmitting={isSubmitting}
+            />
+        </div>
+    );
 }

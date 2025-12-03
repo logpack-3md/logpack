@@ -4,55 +4,69 @@ import { toast } from 'sonner';
 
 export const useBuyerOperations = () => {
     const [compras, setCompras] = useState([]); 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1, currentPage: 1 });
-    
-    // Estados de controle
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // --- LEITURA ---
     const fetchCompras = useCallback(async (page = 1, limit = 10, status = '') => {
         setLoading(true);
         try {
             const queryParams = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
             if (status && status !== 'todos') queryParams.append('status', status);
             
-            // Busca Compras
             const resCompras = await api.get(`buyer/compras?${queryParams.toString()}`);
             
             if (resCompras && resCompras.success === false) {
                 const msg = (resCompras.error || "").toLowerCase();
                 if (msg.includes('nenhum') || resCompras.status === 404) {
-                     setCompras([]); setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 }); return;
+                     setCompras([]); 
+                     setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
+                     return;
                 }
                 throw new Error(resCompras.error);
             }
 
             const listaCompras = Array.isArray(resCompras?.data) ? resCompras.data : [];
-            const metaData = resCompras?.meta || { totalItems: 0, totalPages: 1, currentPage: 1 };
-
-            // Join Manual com Orçamentos para pegar ID/Status corretos
+            
+            // JOIN DE DADOS (IMPORTANTE: Recuperar ID/Data dos orçamentos)
             let listaOrcamentos = [];
             try {
-                const resOrcamentos = await api.get(`buyer/orcamentos?limit=100`); 
+                // Busca todos (ou limitados aos recentes) para cruzar dados
+                const resOrcamentos = await api.get(`buyer/orcamentos?limit=200`); 
                 listaOrcamentos = Array.isArray(resOrcamentos?.data) ? resOrcamentos.data : [];
-            } catch (err) { console.warn("Falha ao cruzar orçamentos", err); }
+            } catch (err) { console.warn("Join falhou"); }
 
-            const comprasComOrcamento = listaCompras.map(compra => {
-                // Encontra o orçamento vinculado à compra
+            const comprasProcessadas = listaCompras.map(compra => {
+                // Procura o orçamento específico
                 const orcamentoEncontrado = listaOrcamentos.find(orc => orc.compraId === compra.id);
+                // Prioriza dados do orcamento encontrado, senão usa o que veio na compra
+                const orcamentoFinal = orcamentoEncontrado || compra.orcamento || null;
+                
                 return {
                     ...compra,
-                    // Importante: 'orcamento' agora é o objeto cheio
-                    orcamento: orcamentoEncontrado || compra.orcamento || null,
-                    // O status exibido deve refletir o do orçamento se ele existir e estiver em renegociação,
-                    // senão usa o da compra.
-                    displayStatus: (orcamentoEncontrado?.status === 'renegociacao') ? 'renegociacao' : compra.status
+                    orcamento: orcamentoFinal,
+                    // Data prioritária: Criação do orçamento (interação mais recente) > Criação do Pedido
+                    createdAt: orcamentoFinal?.createdAt || compra.createdAt || compra.updatedAt || new Date().toISOString(),
+                    status: (orcamentoFinal?.status === 'renegociacao') ? 'renegociacao_solicitada' : compra.status
                 };
             });
+            
+            // Ordenação: Prioriza ações pendentes (Pendente e Renegociação)
+            comprasProcessadas.sort((a, b) => {
+                const getWeight = (s) => {
+                   if(s === 'renegociacao_solicitada') return 1;
+                   if(s === 'pendente') return 2;
+                   return 10;
+                }
+                const wA = getWeight(a.status);
+                const wB = getWeight(b.status);
+                if(wA !== wB) return wA - wB;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
 
-            setCompras(comprasComOrcamento);
-            setMeta(metaData);
+            setCompras(comprasProcessadas);
+            setMeta(resCompras?.meta || { totalItems: 0, totalPages: 1, currentPage: 1 });
+
         } catch (err) {
             console.error(err);
             setCompras([]);
@@ -61,62 +75,30 @@ export const useBuyerOperations = () => {
         }
     }, []);
 
-    // Helper para tratar erros de API e Validação sem quebrar a UI
-    const handleOperation = async (operationFn, successMessage) => {
+    // ... Funções handleOperation, createOrcamento etc. iguais ao anterior ...
+    // Certifique-se que create/renegociar etc atualizem o estado
+    const handleOperation = async (fn, msg) => {
         setIsSubmitting(true);
         try {
-            const res = await operationFn();
-            
-            // Se houve erro na resposta da API (Ex: 400 Bad Request do Zod)
-            if (res && res.success === false) {
-                if (res.issues) {
-                    // Formata erros do Zod (Ex: "Descrição muito curta")
-                    const issuesMsg = res.issues.map(i => i.message).join('. ');
-                    toast.warning("Atenção nos dados:", { description: issuesMsg });
-                } else {
-                    // Erros genéricos
-                    toast.error("Não foi possível completar a ação", { description: res.error || res.message });
-                }
-                return false;
-            }
-
-            toast.success(successMessage || "Operação realizada com sucesso!");
+            const res = await fn();
+            if(res && res.success === false) throw new Error(res.error || res.message);
+            toast.success(msg);
             return true;
-        } catch (err) {
-            console.error("Operation error:", err);
-            toast.error("Erro de comunicação.");
+        } catch(err) {
+            toast.error("Erro na operação");
             return false;
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }
 
-    const createOrcamento = (compraId, payload) => 
-        handleOperation(
-            () => api.post(`buyer/orcamento/${compraId}`, payload), 
-            "Orçamento enviado com sucesso!"
-        ).then(res => { if(res) fetchCompras(meta.currentPage); return res; });
+    const createOrcamento = (id, payload) => handleOperation(() => api.post(`buyer/orcamento/${id}`, payload), "Orçado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
+    const renegociarOrcamento = (id, payload) => handleOperation(() => api.put(`buyer/orcamento/renegociar/${id}`, payload), "Valor atualizado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
+    // Apenas para constar no return, updateDescricao removida do frontend para não confundir usuário
+    const cancelarOrcamento = (id) => handleOperation(() => api.put(`buyer/orcamento/cancelar/${id}`), "Cancelado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
 
-    const renegociarOrcamento = (orcamentoId, payload) => 
-        handleOperation(
-            () => api.put(`buyer/orcamento/renegociar/${orcamentoId}`, payload),
-            "Novo valor enviado!"
-        ).then(res => { if(res) fetchCompras(meta.currentPage); return res; });
-
-    const updateDescricao = (orcamentoId, payload) => 
-        handleOperation(
-            () => api.put(`buyer/orcamento/descricao/${orcamentoId}`, payload),
-            "Descrição atualizada."
-        ).then(res => { if(res) fetchCompras(meta.currentPage); return res; });
-
-    const cancelarOrcamento = (orcamentoId) => 
-        handleOperation(
-            () => api.put(`buyer/orcamento/cancelar/${orcamentoId}`),
-            "Pedido cancelado."
-        ).then(res => { if(res) fetchCompras(meta.currentPage); return res; });
-
-    return {
+    return { 
         compras, loading, meta, isSubmitting,
-        fetchCompras, createOrcamento, renegociarOrcamento, updateDescricao, cancelarOrcamento
+        fetchCompras, createOrcamento, renegociarOrcamento, cancelarOrcamento 
     };
 };
