@@ -32,9 +32,9 @@ export default function ProfilePage() {
   const params = useParams();
 
   // Limite de caracteres para o nome
-  const MAX_NAME_LENGTH = 50;
+  const MAX_NAME_LENGTH = 60;
 
-  // Seleção dinâmica de Sidebar baseada na rota (INALTERADA CONFORME SOLICITADO)
+  // Seleção dinâmica de Sidebar baseada na rota (Foi chato de arrumar isso mas foi)
   const Sidebar = ({ role, isOpen, onToggle }) => {
     if (role === 'employee') return <SidebarEmployee isOpen={isOpen} onToggle={onToggle} />;
     if (role === 'manager') return <SidebarManager isOpen={isOpen} onToggle={onToggle} />;
@@ -71,7 +71,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-muted/40 font-sans text-foreground flex overflow-x-hidden">
       <Toaster position="top-right" richColors />
 
-      {/* Sidebar Desktop (LÓGICA INALTERADA) */}
+      {/* Sidebar Desktop */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 z-30 border-r bg-background">
         <Sidebar
           role={params.role}
@@ -89,7 +89,7 @@ export default function ProfilePage() {
             )}
             onClick={() => setIsSidebarOpen(false)}
           />
-          {/* O menu deslizante (LÓGICA INALTERADA) */}
+          {/* menu */}
           <Sidebar
             role={params.role}
             isOpen={true}
