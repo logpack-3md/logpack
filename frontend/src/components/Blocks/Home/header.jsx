@@ -77,8 +77,10 @@ export default function Header() {
                 <NavigationMenuTrigger className={"font-bold"}>Contato</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <NavigationMenuLink href="/contato" className="px-4 py-2 block w-28">Contate-nos</NavigationMenuLink>
+                  <NavigationMenuLink href="/suporte" className="px-4 py-2 block w-28">Suporte</NavigationMenuLink>
                 </NavigationMenuContent>
-              </NavigationMenuItem>
+     
+              </NavigationMenuItem> 
 
             </NavigationMenuList>
           </NavigationMenu>
