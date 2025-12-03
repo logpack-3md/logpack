@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 export const TABS = {
     PEDIDOS: 'pedidos',
-    ORCAMENTOS: 'orcamentos',
+    ORCAMENTOS: 'renegociacoes',
     INSUMOS: 'insumos',
     SETORES: 'setores'
 };
@@ -78,7 +78,6 @@ export const useManagerDashboard = () => {
             }
 
             const res = await api.get(endpoint);
-            
             // Tratamento da lista bruta
             const rawList = res?.data || res?.pedidos || res?.orcamentos || res?.setores || (Array.isArray(res) ? res : []);
             

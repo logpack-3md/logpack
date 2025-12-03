@@ -14,6 +14,7 @@ class ManagerController {
     static createCompraSchema = z.object({
         description: z.string().min(10, { error: "Digite no mínimo 10 caracteres." }),
         amount: z.int().min(200, { error: "Insira um valor acima e múltiplo de 200." }).refine(value => value % 200 === 0, { error: "O valor deve ser MÚLTIPLO de 200. (ex.: 200, 400, 600, etc.)." }),
+        insumoSKU: z.string().min(1)
     })
 
     static async getPedidos(req, res) {
@@ -224,16 +225,16 @@ class ManagerController {
                 contextDetails = `Alteração de status do Insumo para ${status} e desvinculação do Setor ${oldInsumo.setorName}.`;
                 console.log(`Insumo ${oldInsumo.name} será desativado e desvinculado do setor ${oldInsumo.setorName}.`);
             }
-            
+
             const [rowsAffected] = await Insumos.update(
-                updateFields, 
+                updateFields,
                 { where: { id: id } }
             )
 
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Insumo não encontrado." })
             }
-            
+
             const updatedInsumo = await Insumos.findByPk(id)
             const newDataJson = updatedInsumo.toJSON()
 
@@ -243,7 +244,7 @@ class ManagerController {
                 actionType: 'UPDATE',
                 contextDetails: contextDetails,
                 oldData: oldDataJson,
-                newData: newDataJson  
+                newData: newDataJson
             })
 
             return res.status(200).json({ message: `Status de insumo alterado para ${status}.` })
@@ -331,12 +332,12 @@ class ManagerController {
 
                 if (insumoVinculado) {
                     const oldInsumoData = insumoVinculado.toJSON();
-                    
+
                     await Insumos.update(
                         { setorName: null },
                         { where: { id: insumoVinculado.id } }
                     );
-                    
+
                     const newInsumoData = { ...oldInsumoData, setorName: null };
 
                     await InsumosLog.create({
@@ -347,7 +348,7 @@ class ManagerController {
                         oldData: oldInsumoData,
                         newData: newInsumoData
                     });
-                    
+
                     logContextDetails += ` O insumo ${insumoVinculado.name} foi desvinculado.`;
                     console.log(`Setor ${oldSetor.name} desativado e Insumo ${insumoVinculado.name} desvinculado.`);
                 }
@@ -435,36 +436,36 @@ class ManagerController {
             return res.status(500).json({ error: "Erro ao alterar estoque máximo." })
         }
     }
-// Alterado por victor (a função tava forçando sempre o "aprovado", dificultando o sistema entender "negado")
+    // Alterado por victor (a função tava forçando sempre o "aprovado", dificultando o sistema entender "negado")
     static async approvePedido(req, res) {
         try {
-          const { id } = req.params;
-          const managerId = req.user.id;
-      
-          const pedido = await Pedidos.findByPk(id);
-          if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
-      
-          const oldStatus = pedido.status;
-          const novoStatus = req.body.status === 'negado' ? 'negado' : 'aprovado';
-      
-          pedido.status = novoStatus;
-          await pedido.save();
-      
-          await PedidosLog.create({
-            userId: managerId,
-            pedidoId: pedido.id,
-            contextDetails: novoStatus === 'negado' ? 'Pedido negado pelo gerente' : 'Pedido aprovado pelo gerente',
-            actionType: 'UPDATE',
-            oldData: { status: oldStatus },
-            newData: { status: novoStatus }
-          });
-      
-          res.json({ message: 'Status atualizado com sucesso', pedido });
+            const { id } = req.params;
+            const managerId = req.user.id;
+
+            const pedido = await Pedidos.findByPk(id);
+            if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
+
+            const oldStatus = pedido.status;
+            const novoStatus = req.body.status === 'negado' ? 'negado' : 'aprovado';
+
+            pedido.status = novoStatus;
+            await pedido.save();
+
+            await PedidosLog.create({
+                userId: managerId,
+                pedidoId: pedido.id,
+                contextDetails: novoStatus === 'negado' ? 'Pedido negado pelo gerente' : 'Pedido aprovado pelo gerente',
+                actionType: 'UPDATE',
+                oldData: { status: oldStatus },
+                newData: { status: novoStatus }
+            });
+
+            res.json({ message: 'Status atualizado com sucesso', pedido });
         } catch (err) {
-          console.error(err);
-          res.status(500).json({ error: 'Erro interno' });
+            console.error(err);
+            res.status(500).json({ error: 'Erro interno' });
         }
-      }
+    }
 
     static async createCompra(req, res) {
         const gerenteId = req.user.id
@@ -473,19 +474,26 @@ class ManagerController {
         try {
             const validatedSchema = ManagerController.createCompraSchema.parse(req.body)
 
+            const pedido = await Pedidos.findByPk(pedidoId)
+
+            if (!pedido) {
+                return res.status(404).json({ message: "Pedido não encontrado para iniciar compra." })
+            }
+
             const oldDataJson = await Pedidos.findByPk(pedidoId)
 
             const newCompraData = {
                 ...validatedSchema,
                 gerenteId: gerenteId,
-                pedidoId: pedidoId
+                pedidoId: pedidoId,
+                insumoSKU: pedido.insumoSKU
             }
 
             const compra = await Compra.create(newCompraData)
 
             await Pedidos.update(
                 { status: "compra_iniciada" },
-                { where: { id: pedidoId, status: 'aprovado' } }
+                { where: { id: pedidoId } }
             )
 
             const newDataJson = await Pedidos.findByPk(pedidoId)
@@ -520,6 +528,7 @@ class ManagerController {
                     issues: error.issues
                 })
             }
+
             res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
             console.error("Erro ao criar compra", error);
         }
@@ -530,8 +539,8 @@ class ManagerController {
         const { orcamentoId } = req.params;
 
         const approveSchema = z.object({
-            status: z.enum(['negado', 'aprovado', 'renegociacao'], { 
-                error: "Status inválido." 
+            status: z.enum(['negado', 'aprovado', 'renegociacao'], {
+                error: "Status inválido."
             }),
             description: z.string().optional()
         })
@@ -541,7 +550,7 @@ class ManagerController {
 
             const oldDataOrcamento = await Orcamento.findByPk(orcamentoId);
             if (!oldDataOrcamento) return res.status(404).json({ message: "Orçamento não encontrado" });
-            
+
             const oldDataOrcamentoJson = oldDataOrcamento.toJSON();
             const compraId = oldDataOrcamento.compraId;
 
@@ -557,14 +566,14 @@ class ManagerController {
                 case 'aprovado':
                     if (oldDataCompra.pedidoId) {
                         const oldPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
-                        
+
                         await Pedidos.update(
                             { status: 'compra_efetuada' },
                             { where: { id: oldDataCompra.pedidoId } }
                         );
-                        
+
                         const newPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
-                        
+
                         await PedidosLog.create({
                             userId: gerenteId,
                             pedidoId: oldDataCompra.pedidoId,
@@ -585,14 +594,14 @@ class ManagerController {
                 case 'negado':
                     if (oldDataCompra.pedidoId) {
                         const oldPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
-                        
+
                         await Pedidos.update(
                             { status: 'negado' },
                             { where: { id: oldDataCompra.pedidoId } }
                         );
-                        
+
                         const newPedido = await Pedidos.findByPk(oldDataCompra.pedidoId);
-                        
+
                         await PedidosLog.create({
                             userId: gerenteId,
                             pedidoId: oldDataCompra.pedidoId,
@@ -614,13 +623,15 @@ class ManagerController {
 
                     await Compra.update({
                         data_de_decisao: new Date(),
-                        status: 'renegociacao_solicitada', 
+                        status: 'renegociacao_solicitada',
                         responsavel_pela_decisao_id: gerenteId
                     }, { where: { id: compraId } });
 
                     if (description) {
-                        await Orcamento.update(
-                            { description: description },
+                        await Orcamento.update({
+                            description: description,
+                            status: 'renegociacao'
+                        },
                             { where: { id: orcamentoId } }
                         );
                     }
@@ -631,18 +642,18 @@ class ManagerController {
                         buyerId: oldDataOrcamento.buyerId,
                         orcamentoId: orcamentoId,
                         actionType: 'UPDATE',
-                        contextDetails: description 
-                            ? "Solicitação de renegociação enviada pelo gerente com nova descrição." 
+                        contextDetails: description
+                            ? "Solicitação de renegociação enviada pelo gerente com nova descrição."
                             : "Solicitação de renegociação enviada pelo gerente.",
                         oldData: oldDataOrcamentoJson,
-                        newData: orcamentoRenegociado.toJSON() 
+                        newData: orcamentoRenegociado.toJSON()
                     });
                     break;
             }
 
             const orcamentoFinal = await Orcamento.findByPk(orcamentoId);
             const newDataCompra = await Compra.findByPk(compraId);
-            
+
             await CompraLog.create({
                 gerenteId: gerenteId,
                 compraId: compraId,

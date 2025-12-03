@@ -17,7 +17,7 @@ export default function ManagerStats({ stats, loading }) {
             title: "Setores Operantes",
             value: stats.totalSetores,
             icon: Layers,
-            desc: "Departamentos ativos",
+            desc: "Todos os setores",
             color: "text-indigo-600",
             bg: "bg-indigo-50"
         },

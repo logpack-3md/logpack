@@ -120,7 +120,7 @@ export default function ManagerDashboard() {
                             </TabsList>
 
                             <Button variant="link" asChild className="text-muted-foreground hover:text-primary px-0 hidden sm:flex">
-                                <Link href={TABS.SETORES ? '/dashboard/manager/insumos' : `/dashboard/manager/${activeTab}`} className="flex items-center gap-1 font-medium">
+                                <Link href={TABS.SETORES == activeTab ? '/dashboard/manager/insumos' : `/dashboard/manager/${activeTab}`} className="flex items-center gap-1 font-medium">
                                     Gerenciar {activeTab} <ArrowRight size={14} />
                                 </Link>
                             </Button>
@@ -264,7 +264,7 @@ const GenericTable = ({ type, data }) => {
                     </>
                 );
 
-            case TABS.ORCAMENTOS:
+
                 return (
                     <>
                         <TableHeader className="bg-muted/40 sticky top-0 backdrop-blur-sm z-10">
@@ -298,6 +298,53 @@ const GenericTable = ({ type, data }) => {
                         </TableBody>
                     </>
                 );
+
+            case TABS.ORCAMENTOS:
+                return (
+                    <>
+                        <TableHeader className="bg-muted/40 sticky top-0 backdrop-blur-sm z-10">
+                            <TableRow className="border-b border-border/60 hover:bg-transparent">
+                                <TableHead className="w-[120px] pl-6 h-12">ID</TableHead>
+                                <TableHead>Item / Descrição</TableHead> {/* Atualizado Cabeçalho */}
+                                <TableHead>Valor Total</TableHead>
+                                <TableHead className="text-right pr-6">Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {data.map((item) => (
+                                <TableRow key={item.id} className="hover:bg-muted/40 transition-colors border-b border-border/60">
+                                    <TableCell className="pl-6 font-mono text-xs text-muted-foreground">#{item.id.slice(0, 8)}</TableCell>
+                                    <TableCell>
+                                        {/* TENTA PEGAR SKU NESTED OU DO PRÓPRIO OBJETO */}
+                                        <div className="flex flex-col gap-1">
+                                            {(item.compra?.pedido?.insumoSKU || item.sku) ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="font-mono bg-background">{item.compra?.pedido?.insumoSKU || item.sku}</Badge>
+                                                </div>
+                                            ) : (
+                                                // Fallback para description cortada se não tiver SKU
+                                                <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+                                                    <Tag size={12} /> <span className="truncate max-w-[150px]">Geral</span>
+                                                </div>
+                                            )}
+                                            <span className="text-xs text-muted-foreground truncate max-w-[250px]">{item.description}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-semibold text-emerald-600 text-sm">
+                                        {item.valor_total
+                                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor_total)
+                                            : <span className="text-muted-foreground font-normal">-</span>
+                                        }
+                                    </TableCell>
+                                    <TableCell className="text-right pr-6">
+                                        <StatusBadge status={item.status} />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </>
+                );
+                
             case TABS.INSUMOS:
                 const formatNumber = (value) => {
                     return new Intl.NumberFormat('pt-BR').format(value || 0);

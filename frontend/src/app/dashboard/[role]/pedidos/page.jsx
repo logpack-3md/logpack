@@ -5,13 +5,17 @@ import { Truck, Menu, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { Toaster } from 'sonner';
 
-// Layout
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+// Layout
 import SidebarManager from "@/components/layout/sidebar-manager";
+
+// Hook de Lógica
 import { useManagerOrders } from "@/hooks/useManagerOrders";
 
-// Componentes Modularizados
+// *** COMPONENTES MODULARIZADOS ***
 import PedidosFilters from "@/components/Pedidos/PedidosFilters";
 import PedidosTable from "@/components/Pedidos/PedidosTable";
 import PedidoModals from "@/components/Pedidos/PedidoModals";
@@ -19,101 +23,104 @@ import PedidoModals from "@/components/Pedidos/PedidoModals";
 export default function PedidosManagerPage() {
     const isFirstRun = useRef(true);
     
-    // Use o hook corrigido (abaixo)
     const { 
         pedidos, loading, isSubmitting, pagination, 
         fetchPedidos, updateStatus, createCompra, getPedidoDetails
     } = useManagerOrders();
     
-    // Filtro Apenas de Status (Search removido)
+    // Filtros
+    const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('todos');
     
-    // Modais
+    // Estados de Modais
     const [actionDialog, setActionDialog] = useState({ open: false, type: null, item: null });
     const [buyDialog, setBuyDialog] = useState({ open: false, item: null });
     const [buyForm, setBuyForm] = useState({ amount: '', description: '' });
     const [detailDialog, setDetailDialog] = useState({ open: false, isLoading: false, data: null });
 
-    // INIT - Carrega sem filtro de texto
+    // --- INIT & LOAD ---
     useEffect(() => {
-        if (isFirstRun.current) { 
-            isFirstRun.current = false; 
-            fetchPedidos(pagination.page, pagination.limit, null, statusFilter); 
-            return; 
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
+            return;
         }
-        const timer = setTimeout(() => { 
-            fetchPedidos(pagination.page, pagination.limit, null, statusFilter); 
-        }, 300);
+        const timer = setTimeout(() => {
+            fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
+        }, 500);
         return () => clearTimeout(timer);
-    }, [statusFilter, pagination.page, pagination.limit]); // Removida dep. 'search'
+    }, [search, statusFilter, pagination.page, pagination.limit]); // Removido fetchPedidos da dependência para evitar loop se o hook recriar
 
-    const handleRefresh = () => fetchPedidos(pagination.page, pagination.limit, null, statusFilter);
-    
-    const handleLimitChange = (val) => fetchPedidos(1, parseInt(val), null, statusFilter);
-    const handlePageChange = (newPage) => fetchPedidos(newPage, pagination.limit, null, statusFilter);
+    // --- HANDLERS DE ESTADO (Wrapper functions) ---
+    const handleRefresh = () => fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
 
-    // --- FIX DE DADOS DO MODAL ---
     const handleOpenDetails = async (pedidoSimples) => {
-        // Abre mostrando o que temos na tabela (incluindo requesterId que funciona na lista)
         setDetailDialog({ open: true, isLoading: true, data: pedidoSimples });
         
         const completeData = await getPedidoDetails(pedidoSimples.id);
         
-        // O truque é garantir que o requesterId persista se o fetch novo vier sem user
-        const merged = {
+        // Mesclagem Segura para não perder o ID que já está na lista
+        const mergedData = {
             ...pedidoSimples,
             ...completeData,
-            // Prioriza dado do fetch se existir, senao fallback para tabela
-            requesterId: completeData?.userId || completeData?.requesterId || pedidoSimples.requesterId,
-            // Garante status atual
-            status: pedidoSimples.status 
+            requesterId: completeData?.userId || completeData?.requesterId || pedidoSimples.requesterId || pedidoSimples.userId
         };
 
         setDetailDialog({
             open: true,
             isLoading: false,
-            data: merged
+            data: mergedData
         });
     };
 
     const openActionDialog = (e, type, item) => {
         if(e) e.stopPropagation();
-        // setDetailDialog({...detailDialog, open: false}); // Opcional: pode fechar ou manter aberto
+        // Fecha detalhes se estiver aberto para focar na ação
+        setDetailDialog(prev => ({...prev, open: false})); 
         setActionDialog({ open: true, type, item });
     };
 
     const confirmStatusUpdate = async () => {
         if (!actionDialog.item) return;
         const newStatus = actionDialog.type === 'approve' ? 'aprovado' : 'negado';
+        
         const success = await updateStatus(actionDialog.item.id, newStatus);
+        
         if (success) {
-             setActionDialog({ open: false, type: null, item: null });
-             setDetailDialog(p => ({...p, open: false})); // Fecha detalhes se tiver aberto
-             fetchPedidos(pagination.page, pagination.limit, null, statusFilter);
+            setActionDialog({ open: false, type: null, item: null });
+            fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
         }
     };
 
     const openBuyDialog = (e, item) => {
         if(e) e.stopPropagation();
-        setDetailDialog({...detailDialog, open: false});
+        setDetailDialog(prev => ({...prev, open: false}));
         setBuyDialog({ open: true, item });
         setBuyForm({ amount: '', description: '' }); 
     };
 
     const handleSubmitCompra = async () => {
         if(!buyDialog.item) return;
-        const success = await createCompra(buyDialog.item.id, buyForm);
+        // Pega SKU do item selecionado
+        const sku = buyDialog.item.sku || buyDialog.item.insumoSKU;
+        
+        const success = await createCompra(buyDialog.item.id, buyForm, sku);
+        
         if (success) {
             setBuyDialog({ open: false, item: null });
-            fetchPedidos(pagination.page, pagination.limit, null, statusFilter);
+            fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
         }
     };
 
     return (
         <div className="flex min-h-screen bg-muted/40 font-sans text-foreground">
             <Toaster position="top-right" richColors />
+            
             <SidebarManager />
+
             <div className="flex flex-1 flex-col min-h-screen lg:ml-64 transition-all duration-300">
+                
+                {/* HEADER */}
                 <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur px-6 shadow-sm">
                     <div className="flex items-center gap-4">
                         <Sheet><SheetTrigger asChild><Button variant="ghost" size="icon" className="lg:hidden"><Menu /></Button></SheetTrigger><SheetContent side="left" className="p-0 w-64"><SidebarManager /></SheetContent></Sheet>
@@ -123,31 +130,49 @@ export default function PedidosManagerPage() {
                 </header>
 
                 <main className="flex flex-1 flex-col p-6 md:p-8 gap-6 overflow-hidden h-[calc(100vh-4rem)]">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0"><div className="space-y-1"><h1 className="text-2xl font-bold tracking-tight">Solicitações de Insumo</h1><p className="text-sm text-muted-foreground">Gerencie as aprovações pendentes.</p></div></div>
+                    
+                    {/* Título */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
+                        <div className="space-y-1"><h1 className="text-2xl font-bold tracking-tight">Solicitações de Insumo</h1><p className="text-sm text-muted-foreground">Gerencie as aprovações pendentes.</p></div>
+                    </div>
 
+                    {/* FILTROS (Modularizado) */}
                     <PedidosFilters 
+                        search={search} 
+                        setSearch={setSearch} 
                         statusFilter={statusFilter} 
-                        setStatusFilter={setStatusFilter}
-                        onRefresh={handleRefresh} 
+                        setStatusFilter={setStatusFilter} 
                     />
 
+                    {/* TABELA (Modularizada) */}
                     <PedidosTable 
-                        loading={loading} pedidos={pedidos} pagination={pagination} 
-                        statusFilter={statusFilter}
-                        onRowClick={handleOpenDetails} 
-                        onOpenActionDialog={openActionDialog} 
+                        loading={loading} 
+                        pedidos={pedidos} 
+                        pagination={pagination}
+                        statusFilter={statusFilter} // Passar para mostrar texto "sem resultados" correto
+                        onRowClick={handleOpenDetails}
+                        onOpenActionDialog={openActionDialog}
                         onOpenBuyDialog={openBuyDialog}
-                        onPageChange={(p) => fetchPedidos(p, pagination.limit, null, statusFilter)}
-                        onLimitChange={(val) => fetchPedidos(1, parseInt(val), null, statusFilter)}
+                        onPageChange={(p) => fetchPedidos(p, pagination.limit, search, statusFilter)}
+                        onLimitChange={(val) => fetchPedidos(1, parseInt(val), search, statusFilter)}
                     />
                 </main>
             </div>
 
+            {/* MODAIS (Modularizado) */}
             <PedidoModals 
                 detailDialog={detailDialog} setDetailDialog={setDetailDialog}
-                actionDialog={actionDialog} setActionDialog={setActionDialog} onConfirmStatusUpdate={confirmStatusUpdate}
-                buyDialog={buyDialog} setBuyDialog={setBuyDialog} buyForm={buyForm} setBuyForm={setBuyForm} onSubmitCompra={handleSubmitCompra}
-                onOpenActionDialog={openActionDialog} onOpenBuyDialog={openBuyDialog} isSubmitting={isSubmitting}
+                actionDialog={actionDialog} setActionDialog={setActionDialog} 
+                buyDialog={buyDialog} setBuyDialog={setBuyDialog}
+                
+                onOpenActionDialog={openActionDialog}
+                onOpenBuyDialog={openBuyDialog}
+                
+                onConfirmStatusUpdate={confirmStatusUpdate}
+                onSubmitCompra={handleSubmitCompra}
+                
+                buyForm={buyForm} setBuyForm={setBuyForm}
+                isSubmitting={isSubmitting}
             />
         </div>
     );
