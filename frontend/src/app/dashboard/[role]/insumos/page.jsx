@@ -109,7 +109,7 @@ export default function GestaoMateriaisPage() {
         <div className="flex min-h-screen bg-muted/40 font-sans text-foreground">
             <Toaster position="top-right" richColors />
 
-            {/* Overlay para Mobile - Controla a visibilidade ao clicar fora */}
+            {/* Overlay para Mobile */}
             <div
                 className={clsx(
                     "fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] lg:hidden transition-opacity duration-300",
@@ -118,7 +118,7 @@ export default function GestaoMateriaisPage() {
                 onClick={() => setIsSidebarOpen(false)}
             />
 
-            {/* Sidebar Manager - Mantido intacto */}
+            {/* Sidebar Manager */}
             <SidebarManager isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
             {/* Main Content */}
@@ -155,9 +155,11 @@ export default function GestaoMateriaisPage() {
 
                     <Tabs defaultValue={TABS.INSUMOS} value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 overflow-hidden gap-4 sm:gap-6">
 
-                        {/* Header das Tabs e Botão Principal - Stack no mobile */}
+                        {/* Header das Tabs e Botão Principal */}
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 shrink-0">
                             <div className="space-y-4 w-full sm:w-auto">
+
+
                                 <div className="space-y-1">
                                     <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                                         {activeTab === TABS.INSUMOS ? "Catálogo de Insumos" : "Configuração de Setores"}
@@ -166,8 +168,10 @@ export default function GestaoMateriaisPage() {
                                         {activeTab === TABS.INSUMOS ? "Monitore o estoque." : "Organize as áreas físicas."}
                                     </p>
                                 </div>
+
+
                                 {/* TabsList com largura total no mobile para facilitar o toque */}
-                                <TabsList className="bg-background border border-border p-1 shadow-sm w-full sm:w-fit grid grid-cols-2 sm:flex">
+                                <TabsList className="bg-background border border-border p-0 shadow-sm w-full sm:w-fit grid grid-cols-2 sm:flex">
                                     <TabsTrigger value={TABS.INSUMOS} className="gap-2 w-full sm:w-32 justify-center">
                                         <Package size={14} /> Insumos
                                     </TabsTrigger>
@@ -175,6 +179,8 @@ export default function GestaoMateriaisPage() {
                                         <Layers size={14} /> Setores
                                     </TabsTrigger>
                                 </TabsList>
+
+                                
                             </div>
 
                             {/* Botão de Criação - Largura total no mobile */}
