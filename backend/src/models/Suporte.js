@@ -20,11 +20,6 @@ Suporte.init({
         allowNull: false,
     },
 
-    subject: {
-        type: DataTypes.STRING(80),
-        allowNull: false
-    },
-
     title: {
         type: DataTypes.STRING(25),
         allowNull: false
@@ -43,7 +38,7 @@ Suporte.init({
 }, {
     sequelize,
     modelName: 'Suporte',
-    tableName: 'Suporte',
+    tableName: 'suporte',
     timestamps: true,
     createdAt: 'timestamps',
     updatedAt: false

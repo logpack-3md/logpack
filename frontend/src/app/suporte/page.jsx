@@ -16,7 +16,7 @@ const SupportPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        subject: '',
+        title: '',
         phone: '',
         message: '',
     });
@@ -36,13 +36,13 @@ const SupportPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await api.post('suporte/novo-chamado', formData);
+            const response = await api.post('suporte/send', formData);
 
             if (response && response.error) {
                 toast.error(response.message || 'Ocorreu um erro ao abrir o chamado.');
             } else {
                 toast.success('Chamado aberto com sucesso! Nossa equipe técnica responderá em breve.');
-                setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+                setFormData({ name: '', email: '', phone: '', title: '', message: '' });
             }
         } catch (error) {
             toast.error('Falha ao conectar com a central de suporte. Tente novamente.');
@@ -101,8 +101,8 @@ const SupportPage = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="subject">Assunto</Label>
-                                <Input id="subject" placeholder="Ex: Erro ao fazer login, Dúvida sobre fatura..." type="text" value={formData.subject} onChange={handleChange} required className="border border-[#0101017c]" />
+                                <Label htmlFor="title">Titulo</Label>
+                                <Input id="title" placeholder="Ex: Erro ao fazer login, Dúvida sobre fatura..." type="text" value={formData.title} onChange={handleChange} required className="border border-[#0101017c]" />
                             </div>
 
                             <div className="space-y-2">
