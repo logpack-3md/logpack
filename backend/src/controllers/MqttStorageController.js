@@ -4,198 +4,192 @@ import z from 'zod';
 
 class MqttStorageController {
 
-    static updateStorageSchema = z.object({
-        setorName: z.string({ required_error: "O nome do setor é obrigatório." }),
-        current_storage: z.number({ required_error: "O valor do estoque é obrigatório." })
-            .int("O valor deve ser um número inteiro.")
+    static defaultPayloadSchema = z.object({
+        id_dispositivo: z.string({ required_error: "O ID do dispositivo é obrigatório." }),
+        valor: z.number({ required_error: "O valor numérico é obrigatório." })
             .nonnegative("O valor não pode ser negativo.")
     });
 
-    // GET: Buscar insumo pelo setorName
-    static async getBySetor(req, res) {
-        const { setorName } = req.params;
+    static calculateProportions(insumo) {
+        if (!insumo.max_cal_Value || insumo.max_cal_Value === 0) return;
 
-        try {
-            const insumo = await Insumos.findOne({
-                where: { setorName: setorName },
-                attributes: ['id', 'name', 'SKU', 'setorName', 'current_storage', 'max_storage', 'current_weight_carga', 'status']
-            });
+        const currentValue = insumo.calc_Value || 0;
+        let factor = currentValue / insumo.max_cal_Value;
 
-            if (!insumo) {
-                const now = new Date();
-                return res.status(404).json({
-                    message: "Erro: Insumo não encontrado para este setor.",
-                    details: {
-                        itemId: null,
-                        setor: setorName,
-                        data: now.toLocaleDateString('pt-BR'),
-                        hora: now.toLocaleTimeString('pt-BR')
-                    }
-                });
-            }
+        if (factor > 1) factor = 1; 
 
-            return res.status(200).json(insumo);
+        if (insumo.max_storage) {
+            insumo.current_storage = parseFloat((insumo.max_storage * factor).toFixed(2));
+        }
 
-        } catch (error) {
-            console.error("Erro ao buscar insumo por setor: ", error);
-            return res.status(500).json({ error: "Erro interno ao buscar insumo." });
+        if (insumo.max_weight_carga) {
+            insumo.current_weight_carga = parseFloat((insumo.max_weight_carga * factor).toFixed(2));
         }
     }
 
-    // PUT: Atualizar current_storage E CALCULAR current_weight_carga
-    static async updateStorage(req, res) {
-        const userId = req.user ? req.user.id : null;
-
+    // ============================================================
+    // ROTA 1: ATUALIZAR LEITURA ATUAL
+    // ============================================================
+    static async updateCurrentValue(req, res) {
         try {
-            const { setorName, current_storage } = MqttStorageController.updateStorageSchema.parse(req.body);
+            const { id_dispositivo, valor } = MqttStorageController.defaultPayloadSchema.parse(req.body);
 
-            const insumo = await Insumos.findOne({
-                where: { setorName: setorName }
-            });
+            const insumo = await Insumos.findOne({ where: { setorName: id_dispositivo } });
 
             if (!insumo) {
-                const now = new Date();
-                return res.status(404).json({
-                    message: "Insumo não localizado via setorName.",
-                    error_data: {
-                        itemId: null,
-                        setor: setorName,
-                        data: now.toLocaleDateString('pt-BR'),
-                        hora: now.toLocaleTimeString('pt-BR')
-                    }
-                });
+                return res.status(404).json({ message: `Dispositivo ${id_dispositivo} não encontrado.` });
             }
 
+            // 1. CAPTURA O ESTADO ANTES DA MUDANÇA (Igual ao ManagerController)
             const oldDataJson = insumo.toJSON();
 
-            const maxStorage = insumo.max_storage || 0; 
-            let calculatedPercentage = 0;
-
-            if (maxStorage > 0) {
-                calculatedPercentage = (current_storage / maxStorage) * 100;
-            }
-
-            insumo.current_storage = current_storage;
-            insumo.current_weight_carga = parseFloat(calculatedPercentage.toFixed(2)); 
-            await insumo.save(); 
-
-            const newDataJson = insumo.toJSON();
-
-            // if (userId) {
-                await InsumosLog.create({
-                    userId: null,
-                    insumoId: insumo.id,
-                    actionType: 'UPDATE',
-                    contextDetails: `Atualização de estoque via rota Storage (Setor: ${setorName}). Carga calculada: ${calculatedPercentage.toFixed(2)}%`,
-                    oldData: oldDataJson,
-                    newData: newDataJson
-                });
-            // }
-
-            return res.status(200).json({
-                message: "Estoque e carga atualizados com sucesso.",
-                data: {
-                    id: insumo.id,
-                    setor: insumo.setorName,
-                    new_storage: insumo.current_storage,
-                    max_storage_ref: maxStorage, 
-                    new_weight_carga: insumo.current_weight_carga, 
-                    updatedAt: insumo.updatedAt
-                }
-            });
-
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                
-                console.error("Erro de Validação (Zod):", JSON.stringify(error.issues, null, 2));
-
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos.",
-                    issues: error.issues
-                });
-            }
-
-            console.error("Erro ao atualizar estoque via MqttStorageController: ", error);
-            return res.status(500).json({ error: "Erro interno no servidor ao atualizar estoque." });
-        }
-    }
-
-    static updateMaxStorageSchema = z.object({
-        setorName: z.string({ required_error: "O nome do setor é obrigatório." }),
-        max_storage: z.number({ required_error: "O valor do estoque máximo é obrigatório." })
-            .int("O valor deve ser um número inteiro.")
-            .nonnegative("O valor não pode ser negativo.")
-    });
-
-    static async updateMaxStorage(req, res) {
-        const userId = req.user ? req.user.id : null;
-
-        try {
-            const { setorName, max_storage } = MqttStorageController.updateMaxStorageSchema.parse(req.body);
-
-            const insumo = await Insumos.findOne({
-                where: { setorName: setorName }
-            });
-
-            if (!insumo) {
-                const now = new Date();
-                return res.status(404).json({
-                    message: "Insumo não localizado via setorName para alteração de máximo.",
-                    error_data: {
-                        itemId: null,
-                        setor: setorName,
-                        data: now.toLocaleDateString('pt-BR'),
-                        hora: now.toLocaleTimeString('pt-BR')
-                    }
-                });
-            }
-
-            const oldDataJson = insumo.toJSON();
-
-            insumo.max_storage = max_storage;
-
-
-            
-            if (max_storage > 0) {
-                 const current = insumo.current_storage || 0;
-                 insumo.current_weight_carga = parseFloat(((current / max_storage) * 100).toFixed(2));
-            }
-            
-
+            // 2. REALIZA A MUDANÇA
+            insumo.calc_Value = valor;
+            MqttStorageController.calculateProportions(insumo);
             await insumo.save();
 
+            // 3. CAPTURA O ESTADO NOVO (O objeto insumo já está atualizado após o save)
             const newDataJson = insumo.toJSON();
 
-            // if (userId) {
-                await InsumosLog.create({
-                    userId: null,
-                    insumoId: insumo.id,
-                    actionType: 'UPDATE',
-                    contextDetails: `Atualização de estoque MÁXIMO via rota Storage (Setor: ${setorName}).`,
-                    oldData: oldDataJson,
-                    newData: newDataJson
-                });
-            // }
+            // 4. CRIA O LOG SEGUINDO O PADRÃO
+            await InsumosLog.create({
+                userId: null, // É null pois vem do Bridge (automático)
+                insumoId: insumo.id,
+                actionType: 'UPDATE', // Padronizado como UPDATE
+                contextDetails: `Atualização automática via Sensor (Nível). Leitura: ${valor}`,
+                oldData: oldDataJson,
+                newData: newDataJson
+            });
 
             return res.status(200).json({
-                message: "Estoque máximo atualizado com sucesso.",
+                message: "Leitura atualizada.",
                 data: {
-                    id: insumo.id,
                     setor: insumo.setorName,
-                    new_max_storage: insumo.max_storage,
-                    updatedAt: insumo.updatedAt
+                    leitura_sensor: insumo.calc_Value,
+                    novo_estoque: insumo.current_storage
                 }
             });
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos.",
-                    issues: error.issues
-                });
+            if (error instanceof z.ZodError) return res.status(400).json({ issues: error.issues });
+            console.error("Erro updateCurrentValue:", error);
+            return res.status(500).json({ error: "Erro interno." });
+        }
+    }
+
+    // ============================================================
+    // ROTA 2: ATUALIZAR MÁXIMO
+    // ============================================================
+    static async updateMaxValue(req, res) {
+        try {
+            const { id_dispositivo, valor } = MqttStorageController.defaultPayloadSchema.parse(req.body);
+
+            // Validação extra simples além do Zod
+            if (valor === null || valor === undefined) {
+                return res.status(400).json({ message: "Valor não pode ser nulo." });
             }
-            console.error("Erro ao atualizar estoque máximo via StorageController: ", error);
-            return res.status(500).json({ error: "Erro interno no servidor ao atualizar estoque máximo." });
+
+            const insumo = await Insumos.findOne({ where: { setorName: id_dispositivo } });
+
+            if (!insumo) {
+                return res.status(404).json({ message: `Dispositivo ${id_dispositivo} não encontrado.` });
+            }
+
+            // 1. CAPTURA O ESTADO ANTES
+            const oldDataJson = insumo.toJSON();
+
+            // 2. ATUALIZA
+            insumo.max_cal_Value = valor;
+            MqttStorageController.calculateProportions(insumo); // Recalcula pois a régua mudou
+            await insumo.save();
+
+            // 3. CAPTURA O ESTADO DEPOIS
+            const newDataJson = insumo.toJSON();
+
+            // 4. LOG
+            await InsumosLog.create({
+                userId: null,
+                insumoId: insumo.id,
+                actionType: 'UPDATE',
+                contextDetails: `Configuração de Máximo do Sensor alterada para: ${valor}`,
+                oldData: oldDataJson,
+                newData: newDataJson
+            });
+
+            return res.status(200).json({
+                message: "Configuração de Máximo atualizada.",
+                data: {
+                    setor: insumo.setorName,
+                    novo_max_sensor: insumo.max_cal_Value
+                }
+            });
+
+        } catch (error) {
+            if (error instanceof z.ZodError) return res.status(400).json({ issues: error.issues });
+            console.error("Erro updateMaxValue:", error);
+            return res.status(500).json({ error: "Erro interno." });
+        }
+    }
+
+    // ============================================================
+    // ROTA 3: ATUALIZAR BATERIA
+    // ============================================================
+    static async updateBattery(req, res) {
+        try {
+            const { id_dispositivo, valor } = MqttStorageController.defaultPayloadSchema.parse(req.body);
+
+            const insumo = await Insumos.findOne({ where: { setorName: id_dispositivo } });
+
+            if (!insumo) {
+                return res.status(404).json({ message: `Dispositivo ${id_dispositivo} não encontrado.` });
+            }
+
+            // 1. CAPTURA O ESTADO ANTES
+            const oldDataJson = insumo.toJSON();
+
+            // 2. ATUALIZA
+            insumo.batery = valor; // Nota: mantive 'batery' conforme seu DB
+            await insumo.save();
+
+            // 3. CAPTURA O ESTADO DEPOIS
+            const newDataJson = insumo.toJSON();
+
+            // 4. LOG
+            await InsumosLog.create({
+                userId: null,
+                insumoId: insumo.id,
+                actionType: 'UPDATE',
+                contextDetails: `Leitura de Tensão (Bateria): ${valor}V`,
+                oldData: oldDataJson,
+                newData: newDataJson
+            });
+
+            return res.status(200).json({
+                message: "Nível de bateria atualizado.",
+                data: {
+                    setor: insumo.setorName,
+                    nova_tensao: insumo.batery
+                }
+            });
+
+        } catch (error) {
+            if (error instanceof z.ZodError) return res.status(400).json({ issues: error.issues });
+            console.error("Erro updateBattery:", error);
+            return res.status(500).json({ error: "Erro interno." });
+        }
+    }
+
+    // ============================================================
+    // ROTA DE CONSULTA
+    // ============================================================
+    static async getBySetor(req, res) {
+        const { setorName } = req.params;
+        try {
+            const insumo = await Insumos.findOne({ where: { setorName } });
+            if (!insumo) return res.status(404).json({ message: "Não encontrado" });
+            return res.status(200).json(insumo);
+        } catch (error) {
+            return res.status(500).json({ error: "Erro interno." });
         }
     }
 }

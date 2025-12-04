@@ -90,10 +90,9 @@ class AuthMiddleware {
 
     async requestInsumo(req, res, next) {
         const { insumoSKU } = req.body
-
-
         try {
             const insumo = await Insumos.findOne({ where: { SKU: insumoSKU } })
+            
 
             if (!insumo) {
                 return res.status(404).json({ message: "Insumo não encontrado. " })
