@@ -140,8 +140,15 @@ export default function Header() {
                     {/* item 1 */}
                     <AccordionItem value="item-1">
 
-                      <a href="/" className="py-2 block text-sm hover:underline rounded-sm">
+                      <a href="/" className="py-2 block text-sm hover:underline rounded-sm font-semibold">
                         Home
+                      </a>
+
+                    </AccordionItem>
+                    <AccordionItem value="item-1">
+
+                      <a href="/sobre" className="py-2 block text-sm hover:underline rounded-sm font-semibold">
+                        Sobre
                       </a>
 
                     </AccordionItem>
@@ -150,8 +157,8 @@ export default function Header() {
                     <AccordionItem value="item-2">
                       <AccordionTrigger>Serviços</AccordionTrigger>
                       <AccordionContent>
-                        <a href="/servicos" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">serviço</a>
-                        <a href="/servicos" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Assistência</a>
+                        <a href="/monitoramento" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Monitoramento</a>
+                        <a href="/consultoria" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Consultoria</a>
                       </AccordionContent>
                     </AccordionItem>
 
@@ -161,6 +168,7 @@ export default function Header() {
                       <AccordionTrigger>Contato</AccordionTrigger>
                       <AccordionContent>
                         <a href="/contato" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Contate-nos</a>
+                        <a href="/suporte" className="px-4 py-2 block text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">Suporte</a>
                       </AccordionContent>
                     </AccordionItem>
 
