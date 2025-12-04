@@ -14,19 +14,19 @@ const DashboardRow = ({ item }) => {
     
     return (
         <TableRow className="hover:bg-muted/30 border-b border-border/60 transition-colors h-auto py-2 sm:h-12">
-            {/* Coluna REF (ID): Escondida no Mobile */}
+            {/* Coluna REF (ID) */}
             <TableCell className="hidden md:table-cell pl-6 font-mono text-xs text-muted-foreground w-[80px]">
                 #{item.id.slice(0,4)}
             </TableCell>
 
-            {/* Coluna SKU: Escondida no Mobile/Tablet pequeno */}
+            {/* Coluna SKU */}
             <TableCell className="hidden lg:table-cell w-[100px]">
                  <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-5 border-border/60">
                      {item.sku || '---'}
                  </Badge>
             </TableCell>
 
-            {/* Coluna DESCRIÇÃO: Expandida e com informações extras no Mobile */}
+            {/* Coluna DESCRIÇÃO */}
             <TableCell className="w-full sm:max-w-[280px]">
                  <div className="flex flex-col gap-1 py-1">
                      <div className="flex items-start gap-2">
@@ -40,8 +40,7 @@ const DashboardRow = ({ item }) => {
                                 {item.orcamento?.description || item.description}
                             </span>
                             
-                            {/* --- MOBILE INFO STACK --- */}
-                            {/* Aparece apenas em telas pequenas (md:hidden) para compensar colunas escondidas */}
+                            {/* MOBILE INFO */}
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 md:hidden">
                                 <span className="text-[10px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
                                     #{item.id.slice(0,4)}
@@ -60,14 +59,14 @@ const DashboardRow = ({ item }) => {
                  </div>
             </TableCell>
 
-            {/* Coluna DATA: Escondida no Mobile */}
+            {/* Coluna DATA */}
             <TableCell className="hidden md:table-cell text-muted-foreground text-xs whitespace-nowrap w-[140px]">
                  <div className="flex items-center gap-1.5">
                     <Calendar size={12}/> {formatDateSafe(item.createdAt)}
                  </div>
             </TableCell>
 
-            {/* Coluna VALOR: Escondida no Mobile (vai para baixo do status) */}
+            {/* Coluna VALOR */}
             <TableCell className="hidden sm:table-cell text-right w-[100px]">
                 {item.orcamento ? (
                     <span className="font-mono font-medium text-xs text-emerald-600 bg-emerald-50/50 px-1.5 py-0.5 rounded whitespace-nowrap">
@@ -76,7 +75,7 @@ const DashboardRow = ({ item }) => {
                 ) : <span className="text-muted-foreground/50 text-xs font-mono">-</span>}
             </TableCell>
 
-            {/* Coluna STATUS: Sempre visível + Valor no Mobile */}
+            {/* Coluna STATUS */}
             <TableCell className="text-right pr-4 sm:pr-6 w-[100px] sm:w-[120px] align-top sm:align-middle py-3 sm:py-0">
                 <div className="flex flex-col items-end gap-1">
                     <StatusBadge status={item.status} className="scale-90 origin-right sm:scale-100" />
@@ -102,7 +101,6 @@ export default function DashboardTable({ loading, compras, pagination, onPageCha
                 <Table>
                     <TableHeader className="bg-muted/40 sticky top-0 backdrop-blur-sm z-10">
                         <TableRow className="border-b border-border/60 hover:bg-transparent">
-                            {/* Classes hidden controlam a visibilidade dos headers */}
                             <TableHead className="hidden md:table-cell w-[80px] pl-6 h-10">Ref</TableHead>
                             <TableHead className="hidden lg:table-cell h-10 w-[100px]">SKU</TableHead>
                             <TableHead className="h-10 min-w-[150px] sm:min-w-[200px]">Item / Descrição</TableHead>
@@ -117,7 +115,6 @@ export default function DashboardTable({ loading, compras, pagination, onPageCha
                                 <TableRow key={i}>
                                     <TableCell colSpan={6} className="p-3 px-4 sm:px-6">
                                         <div className="flex items-center gap-3">
-                                            {/* Skeleton simplificado para mobile */}
                                             <Skeleton className="h-8 w-8 rounded-full shrink-0 md:hidden"/>
                                             <div className="w-full space-y-2">
                                                 <Skeleton className="h-4 w-[60%] rounded-md"/>
@@ -145,7 +142,6 @@ export default function DashboardTable({ loading, compras, pagination, onPageCha
                 </Table>
             </div>
             
-            {/* Paginação Responsiva */}
             <div className="border-t border-border p-3 bg-background flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 z-20">
                  
                  <div className="flex items-center justify-between w-full sm:w-auto gap-4 text-xs text-muted-foreground">
@@ -169,7 +165,6 @@ export default function DashboardTable({ loading, compras, pagination, onPageCha
                             <Button variant="outline" size="sm" disabled={!pagination.hasPrevious || loading} onClick={()=>onPageChange(pagination.page - 1)} className="h-8 px-3 text-xs w-24 sm:w-auto">
                                 <ChevronLeft className="h-3 w-3 mr-1" /> 
                                 <span className="sm:inline">Anterior</span>
-                                {/* Texto "Anterior" pode sumir em telas muito pequenas se quiser, mas o w-24 segura */}
                             </Button>
                         </PaginationItem>
                         
