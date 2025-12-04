@@ -8,8 +8,8 @@ import {
   User,
   LogOut,
   ChevronLeft,
-  Moon,
-  Sun,
+  ShieldAlert,
+  ClipboardClock,
   Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -20,8 +20,15 @@ import { api } from "@/lib/api";
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
+  { 
+    id: 'log', 
+    label: 'Audotoria', 
+    icon: ShieldAlert, 
+    subItems: [
+      { id: 'Histocrico', label: 'Historico', icon: ClipboardClock, href: '/dashboard/admin/logAdmin' },
+    ],
+  },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
-  { id: 'log', label: 'Histórico', icon: User, href: '/dashboard/admin/logAdmin' },
 ];
 
 export default function SidebarAdmin({ isOpen, onToggle }) {
@@ -34,10 +41,10 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
       try {
         const res = await api.get('users/profile');
         if (res) {
-            setUser({
-                name: res.name || res.user?.name || 'Administrador',
-                image: res.image || res.user?.image || null
-            });
+          setUser({
+            name: res.name || res.user?.name || 'Administrador',
+            image: res.image || res.user?.image || null
+          });
         }
       } catch (error) {
         console.error("Erro ao carregar usuário na sidebar:", error);
@@ -53,21 +60,21 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     e.preventDefault();
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     if (typeof window !== 'undefined') {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = '/'; 
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
     }
   };
 
   const isLinkActive = (href) => pathname === href;
 
   const getInitials = (name) => {
-      return name
-        ?.split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2) || "AD";
+    return name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "AD";
   };
 
   return (
@@ -83,7 +90,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
       <div className="flex items-center justify-between h-16 px-6 border-b border-border shrink-0">
         <Link href="/dashboard/admin" className="flex items-center gap-3 group outline-none">
           <div className="text-primary transition-transform duration-300 group-hover:scale-110">
-            {LogoSite ? <LogoSite className="h-8 w-8" /> : <LayoutDashboard className="h-8 w-8"/>}
+            {LogoSite ? <LogoSite className="h-8 w-8" /> : <LayoutDashboard className="h-8 w-8" />}
           </div>
           <span className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
             LogPack
@@ -108,7 +115,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
             className={clsx(
               'flex items-center px-3 py-2.5 text-md font-medium rounded-md transition-all outline-none mb-1',
               isLinkActive(item.href)
-                ? 'bg-primary/10 text-primary font-semibold' 
+                ? 'bg-primary/10 text-primary font-semibold'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
@@ -120,52 +127,52 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
 
       {/* --- FOOTER --- */}
       <div className="p-4 border-t border-border bg-muted/30">
-        
+
         <div className="flex items-center justify-between mb-4 px-1">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <span>Tema</span>
-                <SwitchTheme />
-            </div>
-            
-            <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 rounded-md transition-colors"
-                title="Sair do Sistema"
-            >
-                <LogOut size={14} />
-                <span>Sair</span>
-            </button>
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span>Tema</span>
+            <SwitchTheme />
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 rounded-md transition-colors"
+            title="Sair do Sistema"
+          >
+            <LogOut size={14} />
+            <span>Sair</span>
+          </button>
         </div>
 
         {/* CARD DO USUÁRIO */}
         <div className="flex items-center gap-3 p-2 rounded-lg bg-background border border-border shadow-sm">
-          
+
           {/* AVATAR COM FALLBACK */}
           <Avatar className="h-10 w-10 border border-border">
             {loadingUser ? (
-                 <AvatarFallback className="bg-muted"><Loader2 className="h-4 w-4 animate-spin" /></AvatarFallback>
+              <AvatarFallback className="bg-muted"><Loader2 className="h-4 w-4 animate-spin" /></AvatarFallback>
             ) : (
-                <>
-                    <AvatarImage src={user.image} alt={user.name} className="object-cover" />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
-                        {getInitials(user.name)}
-                    </AvatarFallback>
-                </>
+              <>
+                <AvatarImage src={user.image} alt={user.name} className="object-cover" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </>
             )}
           </Avatar>
 
           <div className="flex flex-col overflow-hidden">
             <span className="text-sm font-semibold text-foreground truncate" title={user.name}>
-                {user.name}
+              {user.name}
             </span>
             <span className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
-                Administrador
+              Administrador
             </span>
           </div>
         </div>
-        
+
         <div className="mt-2 text-[10px] text-center text-muted-foreground/60">
-            © 2025 LogPack Inc.
+          © 2025 LogPack Inc.
         </div>
       </div>
 
