@@ -11,7 +11,7 @@ export default function Home() {
 
         <Header />
 
-        <div className="py-10">
+        <div className="py-1">
 
           <About />
 
