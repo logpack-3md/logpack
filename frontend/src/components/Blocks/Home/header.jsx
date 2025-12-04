@@ -60,10 +60,6 @@ export default function Header() {
               <NavigationMenuItem>
                 <NavigationMenuLink href="/" className="px-4 block text-lg font-bold rounded-md">Home</NavigationMenuLink>
               </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink href="/sobre" className="px-4 block text-lg font-bold rounded-md">Sobre</NavigationMenuLink>
-              </NavigationMenuItem>
-
 
               {/* item 2 */}
               <NavigationMenuItem>
@@ -142,13 +138,6 @@ export default function Header() {
 
                       <a href="/" className="py-2 block text-sm hover:underline rounded-sm font-semibold">
                         Home
-                      </a>
-
-                    </AccordionItem>
-                    <AccordionItem value="item-1">
-
-                      <a href="/sobre" className="py-2 block text-sm hover:underline rounded-sm font-semibold">
-                        Sobre
                       </a>
 
                     </AccordionItem>

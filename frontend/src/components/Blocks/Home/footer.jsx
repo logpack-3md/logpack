@@ -5,20 +5,10 @@ import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
 const defaultSections = [
   {
-    title: "Home",
-    links: [
-      { name: "Sobre o LogPack", href: "/" },
-      { name: "Impacto Real em Números", href: "/" },
-      { name: "Planos de Negócios", href: "/" },
-      { name: "Logística inteligente", href: "/" },
-    ],
-  },
-  {
     title: "Serviços",
     links: [
-      { name: "Serviços", href: "/" },
-      { name: "Monitoramento IoT", href: "/" },
-      { name: "Consultoria", href: "/" },
+      { name: "Monitoramento", href: "/monitoramento" },
+      { name: "Consultoria", href: "/consultoria " },
     ],
   },
   {
@@ -82,7 +72,7 @@ const Footer = ({
               ))}
             </ul>
           </div>
-          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
+          <div className="grid w-full gap-6 md:grid-cols-2 py-5 lg:gap-20">
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>
                 <h3 className="mb-4 font-bold">{section.title}</h3>

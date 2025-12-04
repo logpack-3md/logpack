@@ -110,7 +110,7 @@ export default function UsersLogTable({
                                 onValueChange={onLimitChange} 
                                 disabled={loading}
                             >
-                                <SelectTrigger className="h-7 w-[60px] bg-background border-border text-xs shadow-sm focus:ring-1">
+                                <SelectTrigger className="h-7 w-[70px] bg-background border-border text-xs shadow-sm focus:ring-1">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

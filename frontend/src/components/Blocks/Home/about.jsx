@@ -62,9 +62,6 @@ const About = ({
                 <ArrowDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-1" />
               </Button>
 
-              <Button variant="outline" size="lg" className="h-12 px-8 text-base border-border hover:bg-muted">
-                Fale com vendas
-              </Button>
             </div>
           </div>
 

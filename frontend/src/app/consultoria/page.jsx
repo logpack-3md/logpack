@@ -1,137 +1,154 @@
 import { Footer } from "@/components/Blocks/Home/footer";
 import Header from "@/components/Blocks/Home/header";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BarChart, Bell, Cpu, Scan } from "lucide-react";
+import { 
+  ArrowRight, 
+  BarChart, 
+  TrendingUp, 
+  ClipboardCheck, 
+  Users, 
+  Lightbulb 
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-// Dados para os passos do serviço (facilita a manutenção)
-const servicosInformation = [
+// Dados reestruturados para uma abordagem de Consultoria e Estratégia
+const metodologiaConsultoria = [
   {
     etapa: "01",
-    icon: Scan,
-    titulo: "Instalação dos Sensores",
-    descricao: "Nossa equipe instala sensores IoT de alta precisão em suas prateleiras, paletes ou áreas de estoque, sem interromper sua operação.",
+    icon: ClipboardCheck,
+    titulo: "Diagnóstico Operacional",
+    descricao: "Mapeamos os gargalos do seu estoque atual e desenhamos um plano de implementação da infraestrutura IoT da Logpack sob medida para o seu layout.",
   },
   {
     etapa: "02",
-    icon: BarChart,
-    titulo: "Monitoramento em Tempo Real",
-    descricao: "Os sensores capturam dados de peso e volume 24/7 e os transmitem para nossa plataforma na nuvem de forma segura e contínua.",
+    icon: Users,
+    titulo: "Implementação Estratégica",
+    descricao: "Acompanhamos a instalação dos sensores e treinamos sua equipe para integrar a tecnologia aos processos diários, garantindo adoção sem atrito.",
   },
   {
     etapa: "03",
-    icon: Cpu,
-    titulo: "Análise com Inteligência Artificial",
-    descricao: "Nossos algoritmos de IA analisam os dados recebidos, identificando padrões, prevendo demandas e detectando anomalias instantaneamente.",
+    icon: BarChart,
+    titulo: "Gestão Baseada em Dados",
+    descricao: "Transformamos o fluxo de informações brutas da Logpack em KPIs acionáveis, estabelecendo uma cultura de controle absoluto sobre peso e volume.",
   },
   {
     etapa: "04",
-    icon: Bell,
-    titulo: "Alertas e Insights Visuais",
-    descricao: "Você recebe insights claros em um dashboard intuitivo e alertas automáticos sobre níveis de estoque críticos, movimentações e possíveis perdas.",
+    icon: TrendingUp,
+    titulo: "Melhoria Contínua e ROI",
+    descricao: "Nossos consultores utilizam os insights da IA para propor ajustes constantes, visando a maximização da margem de lucro e redução de capital parado.",
   },
 ];
 
-const monitoramento = () => {
+const LogpackConsultoria = () => {
   return (
     <>
       <Header />
 
-      <main className="container mx-auto px-4 py-8 lg:py-10 lg:px-10 flex flex-col gap-20 lg:gap-24">
+      <main className="container mx-auto px-4 py-8 lg:py-12 lg:px-10 flex flex-col gap-20 lg:gap-28 text-foreground">
 
-        {/* Cabeçalho Principal */}
-        <section className="text-center max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl lg:text-6xl">
-            Como a LogPack Transforma seu Estoque
+        {/* Hero Section - Abordagem Consultiva */}
+        <section className="text-center max-w-4xl mx-auto space-y-6">
+          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors">
+            Consultoria Especializada em Gestão de Estoque
+          </div>
+          
+          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl lg:text-6xl text-foreground">
+            Inteligência Logística Aliada à Tecnologia Logpack
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground lg:text-xl">
-            Nossa solução combina hardware e software oferece uma visão completa e em tempo real do seu estoque.
+          
+          <p className="mt-4 text-lg text-muted-foreground lg:text-xl max-w-2xl mx-auto leading-relaxed">
+            Não entregamos apenas sensores; entregamos uma nova metodologia de gestão. Unimos nossa expertise em supply chain com a precisão da Logpack para transformar dados em decisões executivas.
           </p>
         </section>
 
-        {/* Passo a Passo do Serviço */}
+        {/* Metodologia de Trabalho */}
         <section>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Nossa Metodologia de Atuação</h2>
+            <p className="text-muted-foreground mt-2">Como aplicamos a inteligência Logpack no seu negócio</p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {servicosInformation.map((item) => {
+            {metodologiaConsultoria.map((item) => {
               const IconComponent = item.icon;
               return (
-                <div key={item.etapa} className="bg-slate-50 dark:bg-card border rounded-2xl p-6 lg:p-8 flex flex-col gap-4 text-center md:text-left">
-                  <div className="flex justify-center md:justify-start items-center gap-4">
-                    <div className="p-3 bg-primary/30 rounded-lg text-primary">
-                      <IconComponent className="h-7 w-7" />
+                <div key={item.etapa} className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 flex flex-col gap-4 group">
+                  <div className="flex justify-between items-start">
+                    <div className="p-3 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <IconComponent className="h-6 w-6" />
                     </div>
-                    <span className="text-5xl font-bold text-primary/50">{item.etapa}</span>
+                    <span className="text-4xl font-bold text-muted/50 group-hover:text-primary/20 transition-colors">
+                      {item.etapa}
+                    </span>
                   </div>
-                  <h3 className="text-xl font-semibold mt-2">{item.titulo}</h3>
-                  <p className="text-muted-foreground text-sm">{item.descricao}</p>
+                  <div>
+                    <h3 className="text-xl font-bold mt-2 mb-2 text-card-foreground">{item.titulo}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item.descricao}</p>
+                  </div>
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* Vantagens e Benefícios */}
-        <section className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
-              Otimização que Gera Resultados Reais
+        {/* Impacto Estratégico */}
+        <section className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center bg-muted/30 border border-border rounded-3xl p-8 lg:p-12">
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold tracking-tight lg:text-4xl text-foreground">
+              Por que contratar nossa consultoria?
             </h2>
             <p className="text-muted-foreground lg:text-lg">
-              Além de saber exatamente o que você tem no estoque, nossa plataforma oferece vantagens competitivas que impactam diretamente o seu faturamento e eficiência.
-            </p>
+              Muitas empresas possuem dados, mas poucas geram valor real com eles. Nossa consultoria fecha a lacuna entre a tecnologia Logpack e o resultado financeiro da sua empresa.
+            </p>  
           </div>
-          <div className="space-y-8">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg text-primary shrink-0">
-                <ArrowRight className="h-6 w-6 transform -rotate-45" />
+          
+          <div className="space-y-6">
+            {/* Card 1 */}
+            <div className="flex gap-4 p-5 bg-card rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
+              <div className="mt-1 bg-accent p-2 rounded-full h-fit text-accent-foreground">
+                <Lightbulb className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-semibold text-lg">Redução de Perdas e Furtos</h4>
-                <p className="text-muted-foreground text-sm">Monitore cada grama do seu inventário e receba alertas sobre qualquer variação não autorizada, eliminando desvios.</p>
+                <h4 className="font-bold text-lg text-card-foreground">Visão Holística do Negócio</h4>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Analisamos não apenas onde está o estoque, mas <strong>por que</strong> ele está lá. Identificamos padrões de compra ineficientes e sugerimos correções no fluxo de caixa.
+                </p>
               </div>
             </div>
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg text-primary shrink-0">
-                <ArrowRight className="h-6 w-6 transform -rotate-45" />
+
+            {/* Card 2 */}
+            <div className="flex gap-4 p-5 bg-card rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
+              <div className="mt-1 bg-primary/10 p-2 rounded-full h-fit text-primary">
+                <TrendingUp className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-semibold text-lg">Compras Inteligentes</h4>
-                <p className="text-muted-foreground text-sm">Compre na hora certa e na quantidade exata. Nossas previsões de demanda evitam tanto a falta de produtos quanto o excesso de estoque.</p>
+                <h4 className="font-bold text-lg text-card-foreground">Auditoria em Tempo Real</h4>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Substituímos inventários anuais custosos por uma auditoria contínua. Detectamos desvios e perdas no momento em que ocorrem, blindando sua operação.
+                </p>
               </div>
             </div>
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/20 rounded-lg text-primary shrink-0">
-                <ArrowRight className="h-6 w-6 transform -rotate-45" />
+
+            {/* Card 3 */}
+            <div className="flex gap-4 p-5 bg-card rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
+              <div className="mt-1 bg-secondary p-2 rounded-full h-fit text-secondary-foreground">
+                <Users className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-semibold text-lg">Eficiência Operacional</h4>
-                <p className="text-muted-foreground text-sm">Automatize a contagem de inventário e libere sua equipe para focar em tarefas que realmente agregam valor ao seu negócio.</p>
+                <h4 className="font-bold text-lg text-card-foreground">Empoderamento da Equipe</h4>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Não apenas instalamos o sistema; capacitamos seus gestores para tomarem decisões baseadas nos alertas preditivos da Logpack.
+                </p>
               </div>
             </div>
           </div>
         </section>
-
-        {/* Call to Action */}
-        <section className="max-w-5xl mx-auto rounded-2xl bg-primary/5 dark:bg-card border px-6 py-12 lg:p-16 flex flex-col items-center text-center gap-6 w-full">
-          <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
-            Pronto para Otimizar seu Estoque?
-          </h2>
-          <p className="text-muted-foreground max-w-2xl">
-            Descubra na prática como nossa tecnologia pode reduzir seus custos e aumentar sua lucratividade. Agende uma demonstração gratuita e personalizada.
-          </p>
-          <Button className="w-fit gap-2 mt-4" asChild>
-            <a href="/contato">
-              Solicite uma Demonstração
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </Button>
-        </section>
-
       </main>
-<Separator />
+      
+      <Separator className="bg-border" />
       <Footer />
     </>
   );
 };
 
-export default monitoramento;
+export default LogpackConsultoria;
