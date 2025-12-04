@@ -11,16 +11,16 @@ const router = express.Router();
 //     StorageController.getBySetor
 // );
 
-// Enviar dados de estoque atual{ setorName, current_storage }
+// Enviar dados de estoque atual{ id_dispositivo, valor }
 router.put('/update',
     StorageController.updateCurrentValue
 );
 
-// Enviar dados Max Storage (media em distancia) {setorName, max_storage}
+// Enviar dados Max Storage (media em distancia) {id_dispositivo, valo}
 router.put('/max_storage',
     StorageController.updateMaxValue
 );
-
+// Enviar dados batery (medida em volts) {id_dispositivo, valor}
 router.put('/batery',
     StorageController.updateBattery
 );
