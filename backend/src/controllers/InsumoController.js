@@ -9,7 +9,10 @@ class InsumosController {
     static createSchema = z.object({
         name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
         SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }),
-        setorName: z.string().min(2, { error: "O nome do setor deve ser válido." }),
+        setorName: z.string()
+            .transform(val => (val === "" || val === "none" || val === "null" ? null : val))
+            .nullable()
+            .optional(),
         description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
         current_storage: z.coerce.number().int({ error: "O estoque atual deve ser um número inteiro." }).min(0).optional(),
@@ -20,7 +23,10 @@ class InsumosController {
     static updateSchema = z.object({
         name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }).optional(),
         SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }).optional(),
-        setorName: z.string().trim().min(3, { error: "O setor deve conter no mínimo três caracteres." }).optional(),
+        setorName: z.string()
+            .transform(val => (val === "" || val === "none" || val === "null" ? null : val))
+            .nullable()
+            .optional(),
         description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
         max_storage: z.coerce.number().min(0).optional(),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
@@ -162,50 +168,27 @@ class InsumosController {
         let imageUrl = null;
 
         try {
-            const validatedSchema = InsumosController.createSchema.parse(req.body)
-            const { SKU, setorName, ...insumoData } = validatedSchema;
+            const data = InsumosController.createSchema.parse(req.body)
+            
+            const { SKU, setorName, ...insumoData } = data;
+            if (setorName) {
+                const setor = await Setor.findOne({ where: { name: setorName } });
+                if (!setor) {
+                    return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
+                }
 
-            const setor = await Setor.findOne({
-                where: { name: setorName },
-                attributes: ['id']
-            })
-
-            const codigo = await Insumos.findOne({
-                where: { SKU: SKU },
-                attributes: ['id']
-            })
-
-            if (!setor) {
-                return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
+                const ocupado = await Insumos.findOne({ where: { setorName } });
+                if (ocupado) {
+                    return res.status(409).json({ message: "Setor ocupado." });
+                }
             }
 
-            const insumoExistenteNoSetor = await Insumos.findOne({
-                where: { setorName: setorName },
-                attributes: ['SKU']
-            });
-
-            if (insumoExistenteNoSetor) {
-                return res.status(409).json({
-                    message: `O Setor '${setorName}' já está sendo utilizado pelo Insumo SKU: ${insumoExistenteNoSetor.SKU}. Um setor só pode ser associado a um único item (Insumo).`
-                });
-            }
-
-            if (codigo) {
-                return res.status(409).json({ message: `Já existe um item com o SKU: '${SKU}'. Procure o item pelo SKU e adicione mais insumos.` })
-            }
+            const existeSKU = await Insumos.findOne({ where: { SKU } });
+            if (existeSKU) return res.status(409).json({ message: "SKU já existe." });
 
             if (file) {
                 const filename = `${Date.now()}_${file.originalname}`
-
-                const blob = await put(
-                    filename,
-                    file.buffer,
-                    {
-                        access: 'public',
-                        contentType: file.mimetype,
-                    }
-                )
-
+                const blob = await put(filename, file.buffer, { access: 'public', contentType: file.mimetype })
                 imageUrl = blob.url
             }
 
@@ -220,24 +203,20 @@ class InsumosController {
                 userId: userId,
                 insumoId: insumo.id,
                 actionType: 'INSERT',
-                contextDetails: "Criação inicial de Insumo.",
+                contextDetails: "Criação",
                 oldData: null,
                 newData: insumo.toJSON()
-
             })
 
             return res.status(201).json(insumo)
 
         } catch (error) {
             if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos.",
-                    issues: error.issues
-                })
+                console.log("Zod Error:", JSON.stringify(error.issues, null, 2)); 
+                return res.status(400).json({ message: "Dados inválidos", issues: error.issues });
             }
-
-            res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
-            console.error("Erro ao criar insumo", error);
+            console.error(error);
+            return res.status(500).json({ error: "Erro interno." });
         }
     }
 
@@ -271,6 +250,20 @@ class InsumosController {
             const oldImageUrl = existingInsumo.image;
 
             const validatedUpdate = InsumosController.updateSchema.parse(req.body)
+
+            if (validatedUpdate.setorName === "") {
+                validatedUpdate.setorName = null;
+            }
+
+            if (validatedUpdate.setorName && validatedUpdate.setorName !== existingInsumo.setorName) {
+                const setor = await Setor.findOne({ where: { name: validatedUpdate.setorName } });
+                if (!setor) return res.status(404).json({ message: `Setor '${validatedUpdate.setorName}' não encontrado.` });
+
+                const ocupado = await Insumos.findOne({ where: { setorName: validatedUpdate.setorName } });
+                if (ocupado && ocupado.id !== id) {
+                    return res.status(409).json({ message: `Setor '${validatedUpdate.setorName}' já ocupado.` });
+                }
+            }
 
             let updateData = { ...validatedUpdate }
 

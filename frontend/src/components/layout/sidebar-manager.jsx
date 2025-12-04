@@ -85,16 +85,10 @@ export default function SidebarManager({ isOpen, onToggle }) {
   return (
     <aside
       className={clsx(
-        // IMPORTANTE: w-full no mobile para ocupar toda a area do Sheet, w-64 no desktop
-        'fixed inset-y-0 left-0 z-50 w-full lg:w-64 h-full flex flex-col',
+       'fixed inset-y-0 left-0 z-50 w-full lg:w-64 h-full flex flex-col',
         'bg-background text-foreground border-r border-border shadow-xl lg:shadow-none',
-        'transition-transform duration-300 ease-in-out',
-        // Lógica de visualização desktop vs mobile
-        'lg:translate-x-0', 
-        // Se isOpen (mobile) for false, esconde (mas o Sheet já controla visibilidade, essa classe é backup)
-        // Mantemos apenas a classe base para o Sheet gerenciar, ou usamos translate.
-        // No contexto do Sheet do shadcn, o componente é montado/desmontado, então translate-x-0 é o ideal sempre que montado.
-        'translate-x-0' 
+        'transition-transform duration-300 lg:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full'
       )}
     >
       {/* HEADER */}

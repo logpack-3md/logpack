@@ -21,6 +21,7 @@ import { api } from "@/lib/api";
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
+  { id: 'log', label: 'Histórico', icon: User, href: '/dashboard/admin/logAdmin' },
 ];
 
 export default function SidebarAdmin({ isOpen, onToggle }) {
@@ -72,7 +73,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
   return (
     <aside
       className={clsx(
-        'fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col',
+        'fixed inset-y-0 left-0 z-50 w-full lg:w-64 h-full flex flex-col',
         'bg-background text-foreground border-r border-border shadow-xl lg:shadow-none',
         'transition-transform duration-300 lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'

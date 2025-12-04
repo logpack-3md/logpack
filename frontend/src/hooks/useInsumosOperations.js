@@ -14,31 +14,51 @@ export const useInsumosOperations = () => {
     const [limit, setLimit] = useState(10);
     const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1, currentPage: 1 });
     
-    // --- DEPENDÊNCIAS E VALIDAÇÃO DE OCUPAÇÃO ---
+    // --- CARREGAR DEPENDÊNCIAS (SETORES E OCUPAÇÃO) ---
     const fetchDependencies = useCallback(async () => {
+        let listaSetores = [];
+        let listaTodosInsumos = [];
+
         try {
-            const [resSetores, resAllInsumos] = await Promise.all([
-                api.get('setor?limit=1000'), 
-                api.get('insumos?limit=5000')
-            ]);
-            
-            const listaSetores = resSetores?.data || resSetores?.setores || [];
+            // Tenta buscar setores
+            try {
+                const resSetores = await api.get('setor?limit=1000');
+                if (resSetores && (resSetores.data || resSetores.setores)) {
+                    listaSetores = resSetores.data || resSetores.setores;
+                }
+            } catch (e) { 
+                console.warn("Aviso: Não foi possível carregar setores.", e); 
+            }
+
+            // Tenta buscar insumos para verificar ocupação
+            try {
+                const resAllInsumos = await api.get('insumos?limit=5000');
+                if (resAllInsumos && (resAllInsumos.data || resAllInsumos.insumos)) {
+                    listaTodosInsumos = resAllInsumos.data || resAllInsumos.insumos;
+                }
+            } catch (e) { 
+                console.warn("Aviso: Não foi possível mapear ocupação.", e); 
+            }
+
             setSetores(Array.isArray(listaSetores) ? listaSetores : []);
 
-            const listaTodosInsumos = resAllInsumos?.data || resAllInsumos?.insumos || [];
+            // Mapeia setores ocupados
             const occupied = new Set();
             if (Array.isArray(listaTodosInsumos)) {
                 listaTodosInsumos.forEach(item => {
-                    if (item.setorName && item.setorName !== 'N/A' && item.setorName !== 'null') {
+                    if (item.setorName && item.setorName !== 'N/A' && item.setorName.trim() !== '') {
                         occupied.add(item.setorName);
                     }
                 });
             }
             setOccupiedSectors(occupied);
-        } catch (err) { console.error("Erro deps", err); }
+
+        } catch (err) { 
+            console.error("Erro geral ao carregar dependências", err); 
+        }
     }, []);
 
-    // --- LISTAR (SEM SEARCH TEXTUAL) ---
+    // --- LISTAR INSUMOS PAGINADOS ---
     const fetchData = useCallback(async (pageIndex = 1, pageSize = 10, setorFilter = 'todos', statusFilter = 'todos') => {
         setLoading(true);
         try {
@@ -53,13 +73,8 @@ export const useInsumosOperations = () => {
             const res = await api.get(`insumos?${queryParams.toString()}`);
             
             if (res && res.success === false) {
-                 const isNotFound = res.status === 404 || (res.message && (res.message.includes('Nenhum') || res.message.includes('encontrado')));
-                 if (isNotFound) {
-                    setInsumos([]);
-                    setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
-                    return;
-                 }
                  setInsumos([]);
+                 setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
                  return; 
             }
 
@@ -85,43 +100,62 @@ export const useInsumosOperations = () => {
             setLimit(pageSize);
 
         } catch (err) { 
-            console.warn("Fetch error:", err); 
+            console.warn("Erro ao buscar insumos:", err); 
             setInsumos([]); 
         } finally { 
             setLoading(false); 
         }
     }, []);
 
+    // --- CRIAR INSUMO ---
     const createInsumo = async (formData) => {
         setIsSubmitting(true);
         try {
-            let payload;
             const cleanSku = String(formData.sku || "").toUpperCase().trim();
             
-            if (!formData.name || cleanSku.length < 3 || !formData.setor) {
-                toast.warning("Preencha os campos obrigatórios.");
-                return false;
-            }
-            
-            // Validação: O setor está ocupado por OUTRO insumo?
-            // Nota: Se occupiedSectors contem o nome, e estamos criando um NOVO, bloqueia.
-            if (occupiedSectors.has(formData.setor)) {
-                toast.error(`O setor ${formData.setor} já está ocupado.`);
+            // Validação Mínima
+            if (!formData.name || cleanSku.length < 2) {
+                toast.warning("Preencha o Nome e SKU.");
                 return false;
             }
 
+            // LÓGICA DO SETOR: Se for "none", vazio ou null, envia string vazia
+            let setorToSend = formData.setor;
+            if (!setorToSend || setorToSend === "none" || setorToSend.trim() === "") {
+                setorToSend = ""; 
+            }
+            
+            // Validação de ocupação: Só ocorre se realmente existir um setor selecionado
+            if (setorToSend !== "" && occupiedSectors.has(setorToSend)) {
+                toast.error(`O setor ${setorToSend} já está ocupado.`);
+                return false;
+            }
+
+            let payload;
+
+            // Se tiver arquivo, usa FormData
             if (formData.file) {
                 payload = new FormData();
                 payload.append('image', formData.file);
                 payload.append('name', formData.name);
                 payload.append('SKU', cleanSku);
-                payload.append('setorName', formData.setor);
+                payload.append('setorName', setorToSend); // Backend deve tratar "" como NULL
                 payload.append('description', formData.description || '');
                 payload.append('measure', formData.measure || 'UN');
                 payload.append('max_storage', formData.max_storage || '0');
                 payload.append('status', formData.status || 'ativo');
-            } else {
-                payload = { name: formData.name, SKU: cleanSku, setorName: formData.setor, description: formData.description, measure: formData.measure, max_storage: Number(formData.max_storage), status: formData.status };
+            } 
+            // Se não, usa JSON normal
+            else {
+                payload = { 
+                    name: formData.name, 
+                    SKU: cleanSku, 
+                    setorName: setorToSend, 
+                    description: formData.description || "", 
+                    measure: formData.measure || 'UN', 
+                    max_storage: Number(formData.max_storage || 0), 
+                    status: formData.status || 'ativo'
+                };
             }
 
             const res = await api.post('manager/insumos', payload);
@@ -132,8 +166,8 @@ export const useInsumosOperations = () => {
                 return false;
             }
 
-            toast.success("Criado com sucesso!");
-            fetchDependencies(); // Atualiza lista de ocupação
+            toast.success("Insumo criado com sucesso!");
+            fetchDependencies(); // Atualiza dependencias para bloquear setor usado
             return true;
 
         } catch (err) {
@@ -145,24 +179,29 @@ export const useInsumosOperations = () => {
         }
     };
     
+    // --- ATUALIZAR INSUMO ---
     const updateInsumo = async (id, formData) => {
         setIsSubmitting(true);
         try {
+            // Lógica de Setor idêntica à criação
+            let setorToSend = formData.setor;
+            if (!setorToSend || setorToSend === "none" || setorToSend.trim() === "") {
+                setorToSend = "";
+            }
+
             let payload;
             if (formData.file) {
                 payload = new FormData();
                 payload.append('image', formData.file);
                 payload.append('name', formData.name);
-                // Não envia SKU se não for necessário alterar
-                payload.append('setorName', formData.setor);
+                payload.append('setorName', setorToSend);
                 payload.append('description', formData.description);
                 payload.append('measure', formData.measure);
                 payload.append('max_storage', formData.max_storage);
             } else {
                 payload = { 
                     name: formData.name, 
-                    // SKU: formData.sku, // Comentado para segurança, geralmente SKU não muda
-                    setorName: formData.setor, 
+                    setorName: setorToSend, 
                     description: formData.description, 
                     measure: formData.measure, 
                     max_storage: Number(formData.max_storage) 
@@ -173,8 +212,9 @@ export const useInsumosOperations = () => {
             
             if (res && res.success === false) { 
                 const msg = res.error || res.message;
-                if(msg?.includes('utilizado') || msg?.includes('ocupado')) {
-                    toast.error("Setor indisponível.", { description: "Escolha um setor vazio." });
+                // Exibe erro de ocupação se o backend reclamar
+                if(msg?.includes('ocupado') || msg?.includes('indisponível')) {
+                    toast.error("Setor ocupado. Escolha outro ou deixe vazio.");
                 } else {
                     toast.error(msg || "Erro ao atualizar.");
                 }
@@ -192,12 +232,14 @@ export const useInsumosOperations = () => {
         }
     };
 
+    // --- OUTROS MÉTODOS ---
+    
     const toggleStatus = async (id, currentStatus) => { 
         try {
             const newStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
             await api.put(`manager/insumos/status/${id}`, { status: newStatus });
             setInsumos(current => current.map(i => i.id === id ? { ...i, status: newStatus } : i));
-            toast.success("Status alterado.");
+            toast.success(`Insumo ${newStatus}.`);
             return true;
         } catch { 
             toast.error("Erro ao alterar status."); 
@@ -208,20 +250,29 @@ export const useInsumosOperations = () => {
     const verifyInsumo = async (id) => {
         try {
             const res = await api.post(`manager/insumos/verify/${id}`);
-            if (res && res.success === false) throw new Error(res.error);
+            if(res && res.success === false) throw new Error(res.error);
             const newDate = res.lastCheck || new Date().toISOString();
             setInsumos(current => current.map(i => i.id === id ? { ...i, last_check: newDate } : i));
-            toast.success("Verificado!");
+            toast.success("Verificado com sucesso!"); 
             return newDate;
-        } catch {
-            toast.error("Erro ao verificar.");
-            return null;
+        } catch { 
+            toast.error("Erro ao verificar."); 
+            return null; 
         }
     };
 
     return {
-        insumos, setores, occupiedSectors, loading, isSubmitting, 
+        insumos, 
+        setores, 
+        occupiedSectors, 
+        loading, 
+        isSubmitting, 
         pagination: { page, limit, meta },
-        fetchData, fetchDependencies, createInsumo, updateInsumo, toggleStatus, verifyInsumo
+        fetchData, 
+        fetchDependencies, 
+        createInsumo, 
+        updateInsumo, 
+        toggleStatus, 
+        verifyInsumo
     };
 };

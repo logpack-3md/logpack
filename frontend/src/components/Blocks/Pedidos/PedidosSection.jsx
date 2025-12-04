@@ -101,7 +101,7 @@ export default function PedidosSection() {
     <>
       <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         {/* HEADER ORIGINAL */}
-        <div className="p-8 border-b border-gray-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/30">
+        <div className="p-8 border-b border-gray-100 bg-linear-to-r from-blue-50/50 to-indigo-50/30">
           <h3 className="text-2xl font-bold text-gray-900">Gestão de Solicitações</h3>
           <p className="text-gray-600 mt-1">Aprove, negue ou visualize pedidos de insumos</p>
         </div>
@@ -174,7 +174,7 @@ export default function PedidosSection() {
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
                                   {p.insumoSKU.slice(-3)}
                                 </div>
                                 <div>

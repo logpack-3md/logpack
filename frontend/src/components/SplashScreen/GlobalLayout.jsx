@@ -1,32 +1,32 @@
 "use client";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import SplashScreen from "./SplashScreen";
 import { AnimatePresence } from "framer-motion";
 
 export default function GlobalLayout({ children }) {
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {    
-    const handleStart = () => setIsLoading(true);
-    const handleComplete = () => setIsLoading(false);
-
-    handleStart();
+    // Removemos a dependência do [pathname] e a lógica de resetar o state.
+    // Agora, isso roda apenas UMA vez quando a aplicação é montada no navegador.
     
-    // Tempo mínimo de exibição (ajuste conforme necessário)
     const timer = setTimeout(() => {
-      handleComplete();
-    }, 600);
+      setIsLoading(false);
+    }, 800); // Aumentei levemente para 800ms para garantir que a animação seja vista suavemente no primeiro load
 
     return () => clearTimeout(timer);
-  }, [pathname]);
+  }, []); 
 
   return (
     <>
+      {/* AnimatePresence garante a animação de saída (exit) suave */}
       <AnimatePresence mode="wait">
-        {isLoading ? <SplashScreen /> : children}
+        {isLoading && <SplashScreen />}
       </AnimatePresence>
+      
+      {/* O conteúdo infantil é renderizado, mas fica escondido/por baixo até o splash sair, 
+          ou pode ser renderizado condicionalmente se preferir economizar DOM */}
+      {!isLoading && children}
     </>
   );
 }
