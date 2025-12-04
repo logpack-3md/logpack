@@ -8,7 +8,7 @@ import { Mail, Phone, MapPin, ArrowRight, Loader2, LifeBuoy, FileQuestion } from
 import { Footer } from "@/components/Blocks/Home/footer";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { api } from '@/lib/api';
 
 const SupportPage = () => {
@@ -58,7 +58,7 @@ const SupportPage = () => {
         <>
             <Header />
 
-            <main className="container mx-auto px-4 py-8 lg:py-5 lg:px-10">
+            <main className="container mx-auto px-4 py-8 lg:py-10 lg:px-10">
 
                 <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
                     <div className="flex justify-center mb-4">
@@ -187,7 +187,7 @@ const SupportPage = () => {
                         <div className="bg-muted/50 p-6 rounded-xl mt-4">
                             <h4 className="font-semibold mb-2">Dica Útil:</h4>
                             <p className="text-sm text-muted-foreground">
-                                Antes de abrir um chamado, verifique se sua conexão com a internet está estável e se o navegador está atualizado. Isso resolve 80% dos problemas de acesso.
+                                Ao abrir um chamado, descreva o problema passo a passo e caso tenha imagens do problema entre em contato pelo email LogPack@gmail.com e envie prints da tela. Quanto mais detalhes você fornecer, mais rápido conseguimos resolver seu atendimento.
                             </p>
                         </div>
                     </div>
@@ -196,6 +196,7 @@ const SupportPage = () => {
             </main>
             <Separator />
             <Footer />
+            <Toaster richColors position="top-center" />
         </>
     );
 };

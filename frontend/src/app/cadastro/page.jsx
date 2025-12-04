@@ -1,11 +1,4 @@
-import { GalleryVerticalEnd } from "lucide-react"
 import { SignupForm } from "@/components/ui/signup-form"
-import { imageOptimizer } from "next/dist/server/image-optimizer";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage
-} from "@/components/ui/avatar";
 
 export default function SignupPage() {
   return (

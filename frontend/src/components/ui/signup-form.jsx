@@ -22,13 +22,6 @@ import { LogoSite } from "@/components/ui/icons-geral";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
-// static createSchema = z.object({
-//     name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
-//     cpf: z.string().refine(validarCpf, { message: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
-//     email: z.email({ message: "Digite um email válido." }),
-//     password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }),
-//     role: z.enum(['employee', 'admin', 'buyer', 'manager'], { message: "A função é obrigatória." })
-// });
 
 export function SignupForm({ className, ...props }) {
 const router = useRouter()
@@ -55,30 +48,26 @@ const router = useRouter()
 
       const data = await response.json()
 
-      // VERIFICAÇÃO DE SUCESSO
-      if (response.ok && !data.message) { // Ajuste conforme o retorno real da sua API (status 200/201)
-        
-        // 1. Primeiro Toast: Cadastro realizado
+
+      if (response.ok && !data.message) { 
         toast.success("Cadastro realizado com sucesso!", {
             description: "Seus dados foram enviados para o sistema.",
             duration: 2000,
         });
 
-        // 2. Aguarda 2 segundos e solta o segundo Toast
         setTimeout(() => {
             toast.warning("Conta aguardando ativação.", {
                 description: "Somente o administrador pode ativar sua conta para acesso.",
-                duration: 5000, // Fica mais tempo na tela
+                duration: 5000,
             });
 
-            // 3. Aguarda o usuário ler o aviso (3 segundos) e redireciona
             setTimeout(() => {
                 router.push('/login');
             }, 3000);
 
         }, 2000);
       } 
-      // VERIFICAÇÃO DE ERRO VINDO DA API
+
       else if (data.message) {
         toast.error("Erro no cadastro", {
             description: data.message

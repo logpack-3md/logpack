@@ -8,7 +8,7 @@ import { Mail, Phone, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Blocks/Home/footer";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { api } from '@/lib/api';
 
 const Contact = () => {
@@ -168,6 +168,7 @@ const Contact = () => {
             </main>
             <Separator />
             <Footer />
+            <Toaster richColors position="top-center" />
         </>
     );
 };
