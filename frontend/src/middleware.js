@@ -1,20 +1,14 @@
 import { NextResponse } from 'next/server';
 
 // ----------------------------------------------------------------------
-// ACL (Lista de Controle de Acesso)
+// ACL (Lista de Controle de Acesso por Cargo)
+// Define quais sub-rotas cada cargo ATIVO pode acessar.
 // ----------------------------------------------------------------------
 const ROLE_PERMISSIONS = {
-  // Admin: Acesso restrito apenas ao perfil (Dashboard raiz é liberada abaixo)
-  admin: ['profile'], 
-  
-  // Manager: Acesso operacional
-  manager: ['insumos', 'setores', 'pedidos', 'renegociacoes', 'profile'],
-  
-  // Buyer: Acesso de compras
-  buyer: ['compras', 'estimar', 'profile'], 
-  
-  // Employee: Operacional básico
-  employee: ['profile'], 
+  admin: ['profile'],
+  manager: ['insumos', 'setores', 'pedidos', 'renegociacoes', 'profile', 'compras'],
+  buyer: ['compras', 'orcamentos', 'pedidos', 'estimar', 'profile'],
+  employee: ['insumos', 'pedidos', 'profile'],
 };
 
 function decodeJwt(token) {
@@ -37,71 +31,80 @@ function decodeJwt(token) {
   }
 }
 
-function getRoleFromToken(req) {
+// Helper aprimorado para retornar objeto completo
+function getUserFromToken(req) {
   const token = req.cookies.get('token')?.value;
   if (!token) return null;
 
   const decoded = decodeJwt(token);
+  if (!decoded) return null;
 
-  if (decoded?.status === 'pendente' || decoded?.status === 'inativo') {
-    return decoded.status;
-  }
-
-  if (decoded && decoded.role) {
-    return decoded.role.toLowerCase();
-  }
-
-  return null;
+  return {
+    role: decoded.role?.toLowerCase(),
+    status: decoded.status // ativo, inativo, pendente
+  };
 }
 
 export function middleware(req) {
   const { pathname } = req.nextUrl;
   const targetBase = '/dashboard';
 
-  // 1. Só atua dentro do /dashboard
+  // 1. Atua apenas dentro de /dashboard
   if (pathname.startsWith(targetBase)) {
     
-    // --- VERIFICAÇÃO DE LOGIN ---
-    const userRole = getRoleFromToken(req);
+    // --- A. VERIFICAÇÃO DE TOKEN ---
+    const user = getUserFromToken(req);
 
-    if (!userRole) {
+    // Se não houver token/usuário, login
+    if (!user || !user.role) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    if (userRole === 'pendente' || userRole === 'inativo') {
-      if (pathname !== '/dashboard') {
-         return NextResponse.redirect(new URL('/dashboard', req.url));
+    // Extrai partes da URL: /dashboard / [role] / [subRoute]
+    const segments = pathname.split('/').filter((s) => s);
+    const urlRole = segments[1]; 
+    const subRoute = segments[2];
+
+    // --- B. TRATAMENTO DE USUÁRIO INATIVO / PENDENTE ---
+    // Se não estiver ativo, ele é bloqueado de navegar em sub-rotas profundas.
+    if (user.status !== 'ativo') {
+      const safeUrl = `${targetBase}/${user.role}`;
+
+      // Se ele tentar acessar qualquer coisa que não seja a "home" do dashboard dele...
+      // Ex: /dashboard/manager/insumos -> REDIRECIONA para /dashboard/manager
+      // Lá, o componente da página (que você já tem) vai mostrar o Card de Bloqueio.
+      if (pathname !== safeUrl) {
+         return NextResponse.redirect(new URL(safeUrl, req.url));
       }
+      
+      // Se ele já está na safeUrl, deixa renderizar (vai aparecer o Card de Bloqueio)
       return NextResponse.next();
     }
 
-    // --- ANÁLISE DA URL ---
-    const segments = pathname.split('/').filter((s) => s);
-    const urlRole = segments[1]; // ex: admin, manager
-    const subRoute = segments[2]; // ex: pedidos, insumos
-
-    // --- BLOQUEIO: SPOOFING DE ROLE NA URL ---
-    // Se o usuário 'manager' tentar entrar em '/dashboard/admin/...'
-    if (urlRole && urlRole !== userRole) {
-      // REWRITE para 404 em vez de redirecionar para a correta.
-      // Isso simula que a página não existe para ele.
+    // --- C. SEGURANÇA DE URL (ANTI-SPOOFING DE CARGO) ---
+    // (Apenas para usuários ativos daqui para baixo)
+    if (urlRole && urlRole !== user.role) {
+      // Se um 'manager' tentar entrar em '/dashboard/admin/...'
+      // Rewrite para 404 para parecer que a página não existe
       return NextResponse.rewrite(new URL('/404', req.url));
     } 
     
-    // Redireciona /dashboard para /dashboard/[role] (User experience)
+    // Se acessar a raiz /dashboard sem cargo, redireciona para /dashboard/[role]
     else if (!urlRole && pathname === targetBase) {
-      return NextResponse.redirect(new URL(`${targetBase}/${userRole}`, req.url));
+      return NextResponse.redirect(new URL(`${targetBase}/${user.role}`, req.url));
     }
 
-    // --- BLOQUEIO: PERMISSÃO DE ROTA (ACL) ---
-    // Se tentar acessar uma sub-rota não permitida (ex: admin acessando /pedidos)
+    // --- D. ACL (PERMISSÃO DE ROTA) ---
+    // Verifica se o cargo ATIVO tem permissão para a sub-rota (ex: /insumos)
     if (subRoute) {
-      const allowedRoutes = ROLE_PERMISSIONS[userRole] || [];
-      const hasPermission = allowedRoutes.includes(subRoute);
+      const allowedRoutes = ROLE_PERMISSIONS[user.role] || [];
+      
+      // Permite se estiver na lista ou se for acesso irrestrito '*'
+      const hasPermission = allowedRoutes.includes(subRoute) || allowedRoutes.includes('*');
 
       if (!hasPermission) {
-        console.warn(`404 Simulado: ${userRole} tentou acessar ${subRoute}`);
-        // REWRITE para 404: O usuário vê a tela de erro, a URL não muda.
+        console.warn(`ACL Block: ${user.role} tentou acessar ${subRoute}`);
+        // Mostra 404 para proteger a existência da rota
         return NextResponse.rewrite(new URL('/404', req.url));
       }
     }

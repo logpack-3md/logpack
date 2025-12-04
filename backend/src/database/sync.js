@@ -222,6 +222,29 @@ OrcamentoLog.belongsTo(Orcamento, {
 
 // -- //
 
+Insumos.hasMany(Compra, {
+    foreignKey: 'insumoSKU',
+    sourceKey: 'SKU',
+    as: 'comprasDoInsumo'
+});
+Compra.belongsTo(Insumos, {
+    foreignKey: 'insumoSKU',
+    targetKey: 'SKU',
+    as: 'insumoDetalhes'
+});
+
+// -- //
+Insumos.hasMany(Orcamento, {
+    foreignKey: 'insumoSKU',
+    sourceKey: 'SKU',
+    as: 'orcamentosDoInsumo'
+});
+Orcamento.belongsTo(Insumos, {
+    foreignKey: 'insumoSKU',
+    targetKey: 'SKU',
+    as: 'insumoDetalhes'
+});
+
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');
     

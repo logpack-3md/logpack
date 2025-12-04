@@ -2,92 +2,124 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { FileText, Package, DollarSign, RefreshCcw, Ban, Edit3 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge"; 
+import { FileText, Package, DollarSign, RefreshCcw, Ban, Clock, Tag, AlertCircle } from 'lucide-react';
 import { formatDateSafe, formatMoney, StatusBadge } from "./BuyerHelpers";
 
 export default function BuyerRow({ item, onAction }) {
     const currentStatus = item.status;
     const hasOrcamento = !!item.orcamento;
-    const isPending = currentStatus === 'pendente';
     
-    // Verifica se está em estado de renegociação (qualquer variante)
+    // Status
+    const isPending = currentStatus === 'pendente';
     const isRenegotiation = String(currentStatus).includes('renegociacao');
     
+    // Display Data
+    const skuDisplay = (item.sku && item.sku !== '---') ? item.sku : "S/ Ref";
+    const rawDescription = item.orcamento?.description || item.description;
+    const descriptionDisplay = rawDescription ? (
+        <span className="truncate font-medium text-foreground/90">{rawDescription}</span>
+    ) : (
+        <span className="italic text-muted-foreground/60 text-xs flex items-center">
+            <AlertCircle className="w-3 h-3 mr-1" /> Sem descrição
+        </span>
+    );
+
     return (
-        <TableRow className="hover:bg-muted/40 transition-colors group border-b border-border/60">
-            <TableCell className="pl-6 py-4 font-mono text-xs text-muted-foreground">
+        <TableRow className="hover:bg-muted/40 transition-colors group border-b border-border/60 h-16">
+            
+            {/* ID */}
+            <TableCell className="pl-6 py-4 font-mono text-xs text-muted-foreground align-middle">
                 #{item.id.slice(0,6)}
             </TableCell>
             
-            <TableCell>
-                <div className="flex flex-col gap-1 max-w-[300px]">
-                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        {hasOrcamento ? <FileText size={14} className="text-indigo-500"/> : <Package size={14} className="text-muted-foreground"/>}
-                        <span className="truncate">{item.orcamento?.description || item.description}</span>
+            {/* SKU */}
+            <TableCell className="align-middle">
+                <div className="flex flex-col gap-1.5">
+                    <Badge variant="outline" className="font-mono w-fit text-[10px] px-2 py-0.5 bg-background/80 text-foreground border-border/80">
+                        <Tag className="w-3 h-3 mr-1 text-muted-foreground"/>
+                        {skuDisplay}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground pl-0.5">
+                        <Clock size={10} />
+                        {formatDateSafe(item.displayDate || item.createdAt)}
                     </div>
-                    <span className="text-[10px] text-muted-foreground">
-                        {formatDateSafe(item.createdAt || item.updatedAt)}
+                </div>
+            </TableCell>
+            
+            {/* Descrição */}
+            <TableCell className="align-middle">
+                <div className="flex flex-col gap-1 max-w-[300px]">
+                    <div className="flex items-center gap-2 text-sm">
+                        {hasOrcamento ? <FileText size={14} className="text-indigo-500 shrink-0"/> : <Package size={14} className="text-muted-foreground shrink-0"/>}
+                        {descriptionDisplay}
+                    </div>
+                    <span className="text-[11px] text-muted-foreground/80 pl-6 truncate">
+                        {isPending ? "Aguardando proposta inicial" : isRenegotiation ? "Revisão de valores solicitada" : "Processo em andamento"}
                     </span>
                 </div>
             </TableCell>
             
-            <TableCell className="text-center">
+            {/* Status */}
+            <TableCell className="text-center align-middle">
                 <StatusBadge status={currentStatus} />
             </TableCell>
             
-            <TableCell className="text-right">
-                <div className="flex flex-col items-end">
+            {/* Valor */}
+            <TableCell className="text-right align-middle">
+                <div className="flex flex-col items-end justify-center">
                     {item.orcamento ? (
-                        <span className="font-mono font-semibold text-emerald-600 text-sm">
-                             {formatMoney(item.orcamento.valor_total)}
-                        </span>
+                        <div className="bg-emerald-50/50 dark:bg-emerald-950/20 px-2 py-1 rounded-md border border-emerald-100 dark:border-emerald-900/50">
+                            <span className="font-mono font-semibold text-emerald-600 text-sm">
+                                {formatMoney(item.orcamento.valor_total)}
+                            </span>
+                        </div>
                     ) : (
-                        <span className="font-mono text-sm text-foreground">{item.amount} un.</span>
+                        <Badge variant="secondary" className="font-mono text-xs text-muted-foreground bg-muted/50 border-0">
+                            Qtd: {item.amount}
+                        </Badge>
                     )}
                 </div>
             </TableCell>
             
-            <TableCell className="text-right pr-6">
+            {/* Ações */}
+            <TableCell className="text-right pr-6 align-middle">
                 <div className="flex justify-end gap-2 items-center">
                     
-                    {/* ESTADO 1: Novo Pedido (Sem orçamento ainda) */}
+                    {/* NOVO PEDIDO: Apenas enviar orçamento */}
                     {isPending && (
-                         <Button size="sm" onClick={()=>onAction('create', item)} className="bg-primary text-primary-foreground shadow-sm text-xs h-8 px-3">
-                             <DollarSign className="w-3 h-3 mr-1"/> Enviar Orçamento
+                         <Button 
+                            size="sm" 
+                            onClick={()=>onAction('create', item)} 
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm text-xs h-8 px-3 border border-indigo-700"
+                         >
+                             <DollarSign className="w-3 h-3 mr-1.5"/> Enviar Proposta
                          </Button>
                     )}
                     
-                    {/* ESTADO 2: Renegociação (Novo valor + Cancelar) */}
+                    {/* RENEGOCIAÇÃO: Corrigir ou Cancelar (Botão Cancelar agora está bonito e visível aqui) */}
                     {isRenegotiation && (
                          <>
-                             {/* Botão Cancelar adicionado aqui */}
                              <Button 
                                 size="icon" 
                                 variant="ghost" 
                                 onClick={()=>onAction('cancel', item)} 
-                                className="h-8 w-8 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors" 
+                                className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border border-transparent hover:border-red-200 rounded-full transition-all" 
                                 title="Cancelar Negociação"
                              >
-                                <Ban size={14}/>
+                                <Ban size={16}/>
                              </Button>
 
                              <Button 
                                 size="sm" 
                                 onClick={()=>onAction('renegotiate', item)} 
-                                className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm text-xs h-8 px-3"
+                                className="bg-amber-500 hover:bg-amber-600 text-white shadow-sm text-xs h-8 px-3"
                              >
-                                 <RefreshCcw className="w-3 h-3 mr-1"/> Novo Valor
+                                 <RefreshCcw className="w-3 h-3 mr-1.5"/> Corrigir Valor
                              </Button>
                          </>
                     )}
                     
-                    {/* ESTADO 3: Aguardando Aprovação (Editar/Cancelar) */}
-                    {hasOrcamento && !['concluido', 'negado', 'cancelado'].includes(currentStatus) && !isRenegotiation && (
-                        <>
-                             <Button size="icon" variant="ghost" onClick={()=>onAction('edit_desc', item)} className="h-8 w-8 text-muted-foreground hover:bg-muted" title="Editar"><Edit3 size={14}/></Button>
-                             <Button size="icon" variant="ghost" onClick={()=>onAction('cancel', item)} className="h-8 w-8 text-red-400 hover:bg-red-50 hover:text-red-600" title="Cancelar"><Ban size={14}/></Button>
-                        </>
-                    )}
                 </div>
             </TableCell>
         </TableRow>

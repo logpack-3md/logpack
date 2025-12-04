@@ -23,9 +23,14 @@ Orcamento.init({
         allowNull: false
     },
 
+    insumoSKU: {
+        type: DataTypes.STRING(50),
+        allowNull: true // Pode ser null inicialmente se migrar dados antigos, mas idealmente preenchido
+    },
+
     description: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
 
     amount: {
@@ -56,7 +61,7 @@ Orcamento.init({
     hooks: {
         beforeCreate: async (orcamento, options) => {
             const compraId = orcamento.compraId;
-            const description = orcamento.description
+            // const description = orcamento.description
 
             if (compraId) {
                 const compra = await Compra.findByPk(compraId, {
@@ -70,19 +75,6 @@ Orcamento.init({
                     throw new Error(`A compra com ID ${compraId} não foi encontrada para determinar a quantidade.`)
                 }
             };
-
-            if (description) {
-                const desc = await Compra.findOne(description, {
-                    attributes: ['description']
-                })
-
-                if (desc) {
-                    orcamento.description = desc.description;
-
-                } else {
-                    throw new Error(`A compra descrição não foi encontrada.`)
-                }
-            }
         }
     }
 });
