@@ -1,175 +1,175 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
-  Package, FileText, Settings, ChevronDown, ChevronUp, User, LogOut, LayoutDashboard
+  LayoutDashboard,
+  User,
+  LogOut,
+  ChevronLeft,
+  Moon,
+  Sun,
+  Loader2,
+  ScanBarcode
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogoSite } from "@/components/ui/icons-geral"; // Certifique-se que existe ou remova
+import { SwitchTheme } from "@/components/SwitchThemes"; // Certifique-se que existe
+import { api } from "@/lib/api";
 
-// Menu Definition
 const menuItems = [
-  { id: 'pedidos', label: 'Painel', icon: LayoutDashboard, href: '/dashboard/buyer' },
-  // { id: 'compras', label: 'Meus Pedidos', icon: Package, href: '/dashboard/buyer/pedidos' },
-  { id: 'orcamentos', label: 'Orçamentos', icon: FileText, href: '/dashboard/buyer/estimar' },
-  {
-    id: 'conta',
-    label: 'Minha Conta',
-    icon: User,
-    subItems: [
-      { id: 'profile', label: 'Meu Perfil', icon: User, href: '/dashboard/buyer/profile' },
-      // { id: 'config', label: 'Configurações', icon: Settings, href: '/dashboard/buyer/configuracoes' },
-      // O ID 'sair' será interceptado na renderização
-      { id: 'sair', label: 'Sair', icon: LogOut, href: '/' },
-    ],
-  },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/buyer' },
+  { id: 'orcamentos', label: 'Pedidos de Compra', icon: ScanBarcode, href: '/dashboard/buyer/estimar' },
+  { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/buyer/profile' },
 ];
 
-export function SidebarContent() {
+export default function SidebarAdmin({ isOpen, onToggle }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [openSubmenus, setOpenSubmenus] = useState({});
+  const [user, setUser] = useState({ name: 'Gerente de Compras', image: null });
+  const [loadingUser, setLoadingUser] = useState(true);
 
-  const handleSubmenuToggle = (id) => {
-    setOpenSubmenus(prev => ({ ...prev, [id]: !prev[id] }));
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get('users/profile');
+        if (res) {
+            setUser({
+                name: res.name || res.user?.name || 'Gerente de Compras',
+                image: res.image || res.user?.image || null
+            });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar usuário na sidebar:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/'; 
+    }
   };
 
-  const isActive = (href) => pathname === href || pathname.startsWith(href);
+  const isLinkActive = (href) => pathname === href;
 
-  // --- LÓGICA DE LOGOUT ---
-  const handleLogout = (e) => {
-    // Previne a navegação padrão do Link (se houver)
-    if (e) e.preventDefault();
-
-    // 1. Mata o cookie do token definindo validade no passado
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    
-    // 2. Limpa dados de sessão do navegador
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // 3. Redireciona forçando refresh para garantir limpeza de estado
-    window.location.href = '/';
+  const getInitials = (name) => {
+      return name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "AD";
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Header Logo */}
-      <div className="flex h-14 items-center border-b px-6 lg:h-[60px]">
-        <Link href="/dashboard/buyer" className="flex items-center gap-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Package className="h-4 w-4" />
+    <aside
+      className={clsx(
+        'fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col',
+        'bg-background text-foreground border-r border-border shadow-xl lg:shadow-none',
+        'transition-transform duration-300 lg:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
+      {/* --- HEADER --- */}
+      <div className="flex items-center justify-between h-16 px-6 border-b border-border shrink-0">
+        <Link href="/dashboard/admin" className="flex items-center gap-3 group outline-none">
+          <div className="text-primary transition-transform duration-300 group-hover:scale-110">
+            {LogoSite ? <LogoSite className="h-8 w-8" /> : <LayoutDashboard className="h-8 w-8"/>}
           </div>
-          <span className="text-lg font-bold">LogPack</span>
+          <span className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+            LogPack
+          </span>
         </Link>
+
+        <button
+          onClick={onToggle}
+          className="lg:hidden p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          aria-label="Fechar menu"
+        >
+          <ChevronLeft size={20} />
+        </button>
       </div>
 
-      {/* Navegação */}
-      <div className="flex-1 overflow-auto py-4">
-        <nav className="grid items-start px-4 text-sm font-medium">
-          {menuItems.map((item) => (
-            <div key={item.id} className="mb-1">
-              {item.subItems ? (
-                <>
-                  <button
-                    onClick={() => handleSubmenuToggle(item.id)}
-                    className={clsx(
-                      "flex w-full items-center justify-between rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted",
-                      openSubmenus[item.id] && "bg-muted text-primary"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
-                    </div>
-                    {openSubmenus[item.id] ? <ChevronUp className="h-4 w-4"/> : <ChevronDown className="h-4 w-4"/>}
-                  </button>
-                  
-                  {openSubmenus[item.id] && (
-                    <div className="ml-4 mt-1 border-l pl-2 space-y-1">
-                      {item.subItems.map((sub) => {
-                        // VERIFICA SE É O BOTÃO DE SAIR
-                        if (sub.id === 'sair') {
-                          return (
-                            <button
-                              key={sub.id}
-                              onClick={handleLogout}
-                              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <sub.icon className="h-4 w-4" />
-                              {sub.label}
-                            </button>
-                          );
-                        }
-
-                        // Renderização padrão para outros links
-                        return (
-                          <Link
-                            key={sub.id}
-                            href={sub.href}
-                            className={clsx(
-                              "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-                              isActive(sub.href) ? "bg-muted text-primary font-semibold" : "text-muted-foreground"
-                            )}
-                          >
-                            <sub.icon className="h-4 w-4" />
-                            {sub.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Link
-                  href={item.href}
-                  className={clsx(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary hover:bg-muted",
-                    isActive(item.href) ? "bg-muted text-primary font-semibold" : "text-muted-foreground"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              )}
-            </div>
-          ))}
-        </nav>
-      </div>
-
-      {/* Footer Usuário */}
-      <div className="mt-auto p-4 border-t">
-        <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src="/placeholder-user.jpg" />
-            <AvatarFallback>CP</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-medium truncate">Comprador</span>
-            <span className="text-xs text-muted-foreground truncate">LogPack Inc.</span>
-          </div>
-          
-          {/* Botão de Sair do Footer */}
-          <button 
-            onClick={handleLogout}
-            className="ml-auto text-muted-foreground hover:text-destructive transition-colors p-1 rounded-md hover:bg-background"
-            title="Sair do sistema"
+      {/* --- NAVEGAÇÃO --- */}
+      <nav className="flex-1 px-3 py-6 overflow-y-auto custom-scrollbar space-y-1">
+        {menuItems.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className={clsx(
+              'flex items-center px-3 py-2.5 text-md font-medium rounded-md transition-all outline-none mb-1',
+              isLinkActive(item.href)
+                ? 'bg-primary/10 text-primary font-semibold' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
           >
-            <LogOut className="h-4 w-4" />
-          </button>
+            <item.icon size={18} className={clsx("mr-3 shrink-0", isLinkActive(item.href) ? "text-primary" : "")} />
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </nav>
+
+      {/* --- FOOTER --- */}
+      <div className="p-4 border-t border-border bg-muted/30">
+        
+        <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <span>Tema</span>
+                <SwitchTheme />
+            </div>
+            
+            <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 rounded-md transition-colors"
+                title="Sair do Sistema"
+            >
+                <LogOut size={14} />
+                <span>Sair</span>
+            </button>
+        </div>
+
+        {/* CARD DO USUÁRIO */}
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-background border border-border shadow-sm">
+          
+          {/* AVATAR COM FALLBACK */}
+          <Avatar className="h-10 w-10 border border-border">
+            {loadingUser ? (
+                 <AvatarFallback className="bg-muted"><Loader2 className="h-4 w-4 animate-spin" /></AvatarFallback>
+            ) : (
+                <>
+                    <AvatarImage src={user.image} alt={user.name} className="object-cover" />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                        {getInitials(user.name)}
+                    </AvatarFallback>
+                </>
+            )}
+          </Avatar>
+
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-semibold text-foreground truncate" title={user.name}>
+                {user.name}
+            </span>
+            <span className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
+                Gerente de Compras
+            </span>
+          </div>
+        </div>
+        
+        <div className="mt-2 text-[10px] text-center text-muted-foreground/60">
+            © 2025 LogPack Inc.
         </div>
       </div>
-    </div>
-  );
-}
 
-// Wrapper Desktop
-export default function SidebarBuyer() {
-  return (
-    <div className="hidden border-r bg-background md:block fixed inset-y-0 left-0 w-[240px] lg:w-[260px] z-30">
-      <SidebarContent />
-    </div>
+    </aside>
   );
 }

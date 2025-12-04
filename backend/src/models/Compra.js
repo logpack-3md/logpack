@@ -20,6 +20,11 @@ Compra.init({
         allowNull: false
     },
 
+    insumoSKU: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+
     status: {
         type: DataTypes.ENUM,
         values: ['pendente', 'fase_de_orcamento', 'renegociacao_solicitada', 'concluido', 'cancelado', 'negado'],

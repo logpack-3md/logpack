@@ -22,6 +22,7 @@ class InsumosController {
         SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }).optional(),
         setorName: z.string().trim().min(3, { error: "O setor deve conter no mínimo três caracteres." }).optional(),
         description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
+        max_storage: z.number().min(0).optional(),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
     });
 
@@ -331,6 +332,8 @@ class InsumosController {
 
         } catch (error) {
             if (error instanceof z.ZodError) {
+                console.log("error-----------", error)
+
                 return res.status(400).json({
                     message: "Dados de atualização inválidos",
                     issues: error.issues

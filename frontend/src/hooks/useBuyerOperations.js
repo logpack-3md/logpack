@@ -2,6 +2,16 @@ import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
+const STATUS_PRIORITY = {
+    'pendente': 1, // Novo (Action)
+    'renegociacao_solicitada': 2, // Reneg (Action)
+    'fase_de_orcamento': 3, // Esperando Gerente (View)
+    'concluido': 4,
+    'compra_efetuada': 4,
+    'negado': 5,
+    'cancelado': 6
+};
+
 export const useBuyerOperations = () => {
     const [compras, setCompras] = useState([]); 
     const [loading, setLoading] = useState(true);
@@ -17,8 +27,7 @@ export const useBuyerOperations = () => {
             const resCompras = await api.get(`buyer/compras?${queryParams.toString()}`);
             
             if (resCompras && resCompras.success === false) {
-                const msg = (resCompras.error || "").toLowerCase();
-                if (msg.includes('nenhum') || resCompras.status === 404) {
+                if (resCompras.status === 404) {
                      setCompras([]); 
                      setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
                      return;
@@ -28,40 +37,52 @@ export const useBuyerOperations = () => {
 
             const listaCompras = Array.isArray(resCompras?.data) ? resCompras.data : [];
             
-            // JOIN DE DADOS (IMPORTANTE: Recuperar ID/Data dos orçamentos)
+            // --- BUSCA DADOS AUXILIARES ---
             let listaOrcamentos = [];
-            try {
-                // Busca todos (ou limitados aos recentes) para cruzar dados
-                const resOrcamentos = await api.get(`buyer/orcamentos?limit=200`); 
-                listaOrcamentos = Array.isArray(resOrcamentos?.data) ? resOrcamentos.data : [];
-            } catch (err) { console.warn("Join falhou"); }
+            try { const res = await api.get(`buyer/orcamentos?limit=1000`); listaOrcamentos = res.data || []; } catch {}
 
+            let listaPedidos = [];
+            try { const res = await api.get(`manager/pedido?limit=1000`); listaPedidos = res.data || []; } catch {}
+
+            // --- PROCESSAMENTO ---
             const comprasProcessadas = listaCompras.map(compra => {
-                // Procura o orçamento específico
+                // Acha orçamento vinculado
                 const orcamentoEncontrado = listaOrcamentos.find(orc => orc.compraId === compra.id);
-                // Prioriza dados do orcamento encontrado, senão usa o que veio na compra
-                const orcamentoFinal = orcamentoEncontrado || compra.orcamento || null;
                 
+                // Acha pedido (para SKU)
+                const pedidoFound = listaPedidos.find(p => p.id === compra.pedidoId);
+                const finalSku = compra.insumoSKU || pedidoFound?.insumoSKU || '---';
+
+                // --- CORREÇÃO DE STATUS ---
+                let displayStatus = compra.status; // Começa com status da compra
+
+                if (orcamentoEncontrado) {
+                    // Se o orçamento existe, o status dele é quem manda na visualização de detalhe
+                    if (orcamentoEncontrado.status === 'pendente') {
+                        // Orçamento Pendente = Aguardando Gerente = 'fase_de_orcamento' para o Buyer
+                        displayStatus = 'fase_de_orcamento';
+                    } else if (orcamentoEncontrado.status === 'renegociacao') {
+                        displayStatus = 'renegociacao_solicitada';
+                    } else {
+                        displayStatus = orcamentoEncontrado.status;
+                    }
+                }
+
                 return {
                     ...compra,
-                    orcamento: orcamentoFinal,
-                    // Data prioritária: Criação do orçamento (interação mais recente) > Criação do Pedido
-                    createdAt: orcamentoFinal?.createdAt || compra.createdAt || compra.updatedAt || new Date().toISOString(),
-                    status: (orcamentoFinal?.status === 'renegociacao') ? 'renegociacao_solicitada' : compra.status
+                    orcamento: orcamentoEncontrado, // Garante que o objeto vá junto
+                    sku: finalSku,
+                    displayDate: orcamentoEncontrado?.updatedAt || compra.createdAt,
+                    status: displayStatus
                 };
             });
             
-            // Ordenação: Prioriza ações pendentes (Pendente e Renegociação)
+            // --- ORDENAÇÃO ---
             comprasProcessadas.sort((a, b) => {
-                const getWeight = (s) => {
-                   if(s === 'renegociacao_solicitada') return 1;
-                   if(s === 'pendente') return 2;
-                   return 10;
-                }
-                const wA = getWeight(a.status);
-                const wB = getWeight(b.status);
+                const wA = STATUS_PRIORITY[a.status] || 99;
+                const wB = STATUS_PRIORITY[b.status] || 99;
                 if(wA !== wB) return wA - wB;
-                return new Date(b.createdAt) - new Date(a.createdAt);
+                return new Date(b.displayDate) - new Date(a.displayDate);
             });
 
             setCompras(comprasProcessadas);
@@ -75,26 +96,43 @@ export const useBuyerOperations = () => {
         }
     }, []);
 
-    // ... Funções handleOperation, createOrcamento etc. iguais ao anterior ...
-    // Certifique-se que create/renegociar etc atualizem o estado
     const handleOperation = async (fn, msg) => {
         setIsSubmitting(true);
         try {
             const res = await fn();
-            if(res && res.success === false) throw new Error(res.error || res.message);
+            if(res && res.success === false) {
+                // Erro de duplicidade (409)
+                if(res.status === 409 || res.status === 'conflict') {
+                    throw new Error("Pedido já orçado! Atualize a página.");
+                }
+                const errTxt = res.issues ? res.issues.map(i=>i.message).join('. ') : (res.error || res.message);
+                throw new Error(errTxt);
+            }
             toast.success(msg);
-            return true;
+            return res;
         } catch(err) {
-            toast.error("Erro na operação");
+            toast.error(err.message || "Erro na operação");
             return false;
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    const createOrcamento = (id, payload) => handleOperation(() => api.post(`buyer/orcamento/${id}`, payload), "Orçado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
-    const renegociarOrcamento = (id, payload) => handleOperation(() => api.put(`buyer/orcamento/renegociar/${id}`, payload), "Valor atualizado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
-    // Apenas para constar no return, updateDescricao removida do frontend para não confundir usuário
+    const createOrcamento = async (id, payload) => {
+        const res = await handleOperation(() => api.post(`buyer/orcamento/${id}`, payload), "Enviado!");
+        if(res) {
+            // Atualiza estado local imediatamente
+            setCompras(prev => prev.map(item => item.id === id ? {
+                ...item,
+                status: 'fase_de_orcamento', // MUDA VISUAL IMEDIATO
+                orcamento: res.orcamento // Anexa o novo orcamento
+            } : item));
+            return true;
+        }
+        return false;
+    };
+    
+    const renegociarOrcamento = (id, payload) => handleOperation(() => api.put(`buyer/orcamento/renegociar/${id}`, payload), "Renegociação enviada!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
     const cancelarOrcamento = (id) => handleOperation(() => api.put(`buyer/orcamento/cancelar/${id}`), "Cancelado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
 
     return { 

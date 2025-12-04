@@ -64,6 +64,24 @@ Insumos.init({
         defaultValue: 0
     },
 
+    batery: { // esse vem do MQTT
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+        defaultValue: null
+    },
+
+    calc_Value: { // esse vem do MQTT
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+        defaultValue: null
+    },
+
+    max_cal_Value: { // esse vem do MQTT
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+        defaultValue: null
+    },
+
     max_weight_carga: {
         type: DataTypes.DECIMAL(5,2),
         defaultValue: 100.00
