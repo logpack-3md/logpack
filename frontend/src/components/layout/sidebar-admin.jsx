@@ -21,6 +21,7 @@ import { api } from "@/lib/api";
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/admin/profile' },
+  { id: 'log', label: 'Histórico', icon: User, href: '/dashboard/admin/logAdmin' },
 ];
 
 export default function SidebarAdmin({ isOpen, onToggle }) {
