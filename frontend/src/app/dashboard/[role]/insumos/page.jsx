@@ -45,7 +45,7 @@ export default function GestaoMateriaisPage() {
     const [formDialog, setFormDialog] = useState({ open: false, mode: 'create', editId: null });
     const [detailDialog, setDetailDialog] = useState({ open: false, data: null });
     const [statusDialog, setStatusDialog] = useState({ open: false, item: null });
-    const [insumoForm, setInsumoForm] = useState({ name: '', sku: '', setor: '', description: '', measure: 'UN', max_storage: '', status: 'ativo', file: null });
+    const [insumoForm, setInsumoForm] = useState({ name: '', sku: '', setor: '', description: '', measure: '', max_storage: '', status: 'ativo', file: null });
 
     const [setorFormDialog, setSetorFormDialog] = useState({ open: false, mode: 'create', id: null });
     const [setorStatusDialog, setSetorStatusDialog] = useState({ open: false, item: null });
