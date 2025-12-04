@@ -15,8 +15,8 @@ class InsumosController {
             .optional(),
         description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
-        current_storage: z.number().int({ error: "O estoque atual deve ser um número inteiro." }).min(0).optional(),
-        max_weight_carga: z.number().int({ error: "O nível máximo deve ser um número inteiro." }).min(0).optional(),
+        current_storage: z.coerce.number().int({ error: "O estoque atual deve ser um número inteiro." }).min(0).optional(),
+        max_weight_carga: z.coerce.number().int({ error: "O nível máximo deve ser um número inteiro." }).min(0).optional(),
         status: z.enum(['ativo', 'inativo'], { error: "O status deve ser 'ativo' ou 'inativo'." }).optional(),
     });
 
@@ -28,7 +28,7 @@ class InsumosController {
             .nullable()
             .optional(),
         description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
-        max_storage: z.number().min(0).optional(),
+        max_storage: z.coerce.number().min(0).optional(),
         measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
     });
 
