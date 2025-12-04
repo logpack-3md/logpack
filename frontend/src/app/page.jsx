@@ -17,7 +17,7 @@ export default function Home() {
 
         </div>
         
-        <div className="py-10">
+        <div className="py-15">
 
         <AboutSobre />
 

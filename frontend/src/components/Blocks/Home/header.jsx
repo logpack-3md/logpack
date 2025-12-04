@@ -60,14 +60,17 @@ export default function Header() {
               <NavigationMenuItem>
                 <NavigationMenuLink href="/" className="px-4 block text-lg font-bold rounded-md">Home</NavigationMenuLink>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink href="/sobre" className="px-4 block text-lg font-bold rounded-md">Sobre</NavigationMenuLink>
+              </NavigationMenuItem>
 
 
               {/* item 2 */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger className={"font-bold"}>Serviços</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <NavigationMenuLink href="/servicos" className="px-4 py-2 block">Serviço</NavigationMenuLink>
-                  <NavigationMenuLink href="/servicos" className="px-4 py-2 block">Assistência</NavigationMenuLink>
+                  <NavigationMenuLink href="/monitoramento" className="px-4 py-2 block">Monitoramento</NavigationMenuLink>
+                  <NavigationMenuLink href="/consultoria" className="px-4 py-2 block">Consultoria</NavigationMenuLink>
                 </NavigationMenuContent>
               </NavigationMenuItem>
 

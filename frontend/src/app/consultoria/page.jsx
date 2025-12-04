@@ -32,7 +32,7 @@ const servicosInformation = [
   },
 ];
 
-const servico = () => {
+const monitoramento = () => {
   return (
     <>
       <Header />
@@ -134,4 +134,4 @@ const servico = () => {
   );
 };
 
-export default servico;
+export default monitoramento;

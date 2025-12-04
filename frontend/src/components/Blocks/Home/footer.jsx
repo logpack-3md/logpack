@@ -16,16 +16,16 @@ const defaultSections = [
   {
     title: "Serviços",
     links: [
-      { name: "Sobre o Serviço", href: "/" },
-      { name: "Otimizações", href: "/" },
-      { name: "Demonstração", href: "/" },
+      { name: "Serviços", href: "/" },
+      { name: "Monitoramento IoT", href: "/" },
+      { name: "Consultoria", href: "/" },
     ],
   },
   {
     title: "Contato",
     links: [
-      { name: "Ajuda", href: "/" },
-      { name: "Contato", href: "/" },
+      { name: "Suporte", href: "/suporte" },
+      { name: "Contato", href: "/contato" },
     ],
   },
 ];
