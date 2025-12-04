@@ -172,7 +172,8 @@ class UserController {
             }
 
             const [rowsAffected] = await User.update(updateData, {
-                where: { id: userId }
+                where: { id: userId },
+                individualHooks: true
             })
 
             if (rowsAffected === 0) {

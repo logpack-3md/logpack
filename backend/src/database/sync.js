@@ -253,10 +253,10 @@ async function runSync() {
         console.log('Conexão com o DB estabelecida com sucesso.');
 
         // Aplica alterações sem perder dados
-        await sequelize.sync({ alter: true }); 
+        // await sequelize.sync({ alter: true }); 
         
         // Reset Total - Cuidado: Apaga e recria todas as tabelas
-        // await sequelize.sync({ force: true }); 
+        await sequelize.sync({ force: true }); 
         
         console.log('✅ Modelos sincronizados com o banco de dados. DB está pronto.');
         

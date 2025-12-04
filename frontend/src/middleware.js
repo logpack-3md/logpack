@@ -5,10 +5,10 @@ import { NextResponse } from 'next/server';
 // Define quais sub-rotas cada cargo ATIVO pode acessar.
 // ----------------------------------------------------------------------
 const ROLE_PERMISSIONS = {
-  admin: ['profile'],
-  manager: ['insumos', 'setores', 'pedidos', 'renegociacoes', 'profile', 'compras'],
-  buyer: ['compras', 'orcamentos', 'pedidos', 'estimar', 'profile'],
-  employee: ['insumos', 'pedidos', 'profile'],
+  admin: ['profile', 'logAdmin'],
+  manager: ['insumos', 'setores', 'pedidos', 'renegociacoes', 'profile', 'compras', 'logManager'],
+  buyer: ['compras', 'orcamentos', 'pedidos', 'estimar', 'profile', 'logBuyer'],
+  employee: ['insumos', 'pedidos', 'profile', 'logEmployee'],
 };
 
 function decodeJwt(token) {
