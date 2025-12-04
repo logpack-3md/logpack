@@ -67,6 +67,11 @@ class AuthMiddleware {
 
     async isActiveSector(req, res, next) {
         const { setorName } = req.body
+
+        if (!setorName || setorName === "" || setorName === "null" || setorName === "undefined" || setorName.trim() === "") {
+            return next();
+        }
+
         try {
             const setor = await Setor.findOne({
                 where: { name: setorName },
@@ -92,7 +97,7 @@ class AuthMiddleware {
         const { insumoSKU } = req.body
         try {
             const insumo = await Insumos.findOne({ where: { SKU: insumoSKU } })
-            
+
 
             if (!insumo) {
                 return res.status(404).json({ message: "Insumo não encontrado. " })
@@ -305,7 +310,7 @@ class AuthMiddleware {
             }
 
             if (orcamento.status !== "renegociacao") {
-                return res.status(403).json({ 
+                return res.status(403).json({
                     message: "Ação indevida: você só pode alterar o valor do orçamento se for aberto um pedido de renegociação.",
                     currentStatus: orcamento.status
                 })

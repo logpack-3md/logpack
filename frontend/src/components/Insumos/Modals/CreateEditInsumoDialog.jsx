@@ -19,21 +19,23 @@ export default function CreateEditInsumoDialog({
     occupiedSectors,
     isSubmitting
 }) {
+    const availableSectors = setores.filter(s => {
+        const isOccupied = occupiedSectors.has(s.name);
+        const isCurrentItemSector = (mode === 'edit' && s.name === formData.setor);
+        return !isOccupied || isCurrentItemSector;
+    });
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            {/* Ajuste: w-[95%] ou w-full com max-w garante que não vase a tela no mobile */}
             <DialogContent className="w-[95%] sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-6 rounded-lg">
                 <DialogHeader>
                     <DialogTitle>{mode === 'create' ? 'Cadastrar Novo Insumo' : 'Editar Insumo'}</DialogTitle>
                     <DialogDescription>
-                        {mode === 'create' ? 'Preencha os dados para adicionar ao catálogo.' : 'Altere as informações necessárias.'}
+                        Dados básicos. Setor é opcional.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={onSubmit} className="space-y-4 py-4">
-
-                    {/* GRUPO 1: Nome e SKU */}
-                    {/* Responsividade: 1 coluna no mobile, 2 no desktop (sm) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Nome *</Label>
@@ -41,7 +43,7 @@ export default function CreateEditInsumoDialog({
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 required
-                                placeholder="Ex: Cimento CP II"
+                                placeholder="Nome do item"
                             />
                         </div>
                         <div className="space-y-2">
@@ -52,28 +54,28 @@ export default function CreateEditInsumoDialog({
                                 required
                                 className="uppercase font-mono"
                                 disabled={mode === 'edit'}
-                                placeholder="Ex: MAT-001"
+                                placeholder="COD-001"
                             />
                         </div>
                     </div>
 
-                    {/* GRUPO 2: Setor e Unidade */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Setor *</Label>
-                            <Select value={formData.setor} onValueChange={v => setFormData({ ...formData, setor: v })} required>
+                            <Label>Setor (Opcional)</Label>
+                            <Select 
+                                value={formData.setor || "none"} 
+                                onValueChange={v => setFormData({ ...formData, setor: v })}
+                            >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecione" />
+                                    <SelectValue placeholder="Selecione..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {setores.map(s => {
-                                        const isOccupied = occupiedSectors.has(s.name);
-                                        const isCurrentItemSector = (mode === 'edit' && s.name === formData.setor);
-                                        if (!isOccupied || isCurrentItemSector) {
-                                            return <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>;
-                                        }
-                                        return null;
-                                    })}
+                                    {/* O hook vai transformar 'none' em '' para o backend */}
+                                    <SelectItem value={null}>Sem Setor</SelectItem>
+                                    
+                                    {availableSectors.map(s => (
+                                        <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -82,15 +84,15 @@ export default function CreateEditInsumoDialog({
                             <Select value={formData.measure} onValueChange={v => setFormData({ ...formData, measure: v })} required>
                                 <SelectTrigger className="w-full"><SelectValue placeholder="Un" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="UN">Unidade</SelectItem>
                                     <SelectItem value="KG">Quilo</SelectItem>
                                     <SelectItem value="L">Litro</SelectItem>
+                                    <SelectItem value="ML">Mililitro</SelectItem>
+                                    <SelectItem value="G">Grama</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
 
-                    {/* Descrição ocupa largura total */}
                     <div className="space-y-2">
                         <Label>Descrição</Label>
                         <Textarea
@@ -98,10 +100,10 @@ export default function CreateEditInsumoDialog({
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                             className="resize-none"
                             rows={3}
+                            placeholder="Detalhes..."
                         />
                     </div>
 
-                    {/* GRUPO 3: Estoque e Imagem */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                         <div className="space-y-2">
                             <Label>Estoque Máx</Label>
@@ -109,29 +111,17 @@ export default function CreateEditInsumoDialog({
                                 type="number"
                                 value={formData.max_storage}
                                 onChange={e => setFormData({ ...formData, max_storage: e.target.value })}
-                                placeholder="0"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Imagem (Opcional)</Label>
-                            {/* Ajuste no input file para não quebrar layout */}
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="text-xs file:mr-2 file:py-1 file:px-2 cursor-pointer pt-[0.4rem]"
-                            />
+                            <Label>Imagem</Label>
+                            <Input type="file" accept="image/*" onChange={handleFileChange} className="text-xs pt-1.5"/>
                         </div>
                     </div>
 
-                    {/* Footer com botões flexíveis (coluna no mobile, linha no desktop) */}
-                    <DialogFooter className="gap-2 sm:gap-0 mt-6 flex-col-reverse sm:flex-row">
-                        <Button variant="outline" type="button" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                            Salvar
-                        </Button>
+                    <DialogFooter className="mt-4 gap-2 sm:gap-0 flex-col-reverse sm:flex-row">
+                        <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                        <Button type="submit" disabled={isSubmitting}>Salvar</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
