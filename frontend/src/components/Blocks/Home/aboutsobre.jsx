@@ -4,16 +4,19 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X, Zap, BarChart3, CheckCircle2, Layers, ChevronRight } from "lucide-react";
 
+const iotSensor = "/images/iot-sensor.jpeg";
+const mobile = "/images/Mobile3.png";
+
 const services = [
   {
     title: "Sensores IoT",
-    image: "https://img.freepik.com/fotos-gratis/trabalhador-de-armazem-que-opera-uma-empilhadeira-em-uma-instalacao-de-armazenamento_23-2151962537.jpg?semt=ais_hybrid&w=740&q=80",
+    image: iotSensor,
     category: "Monitoramento",
     description: "Nossos sensores IoT monitoram a condição e a localização dos seus produtos em tempo real, garantindo a integridade da sua carga e fornecendo dados cruciais para a tomada de decisões.",
   },
   {
     title: "App Mobile",
-    image: "https://static.vecteezy.com/ti/fotos-gratis/p2/6024482-a-empilhadeira-esta-trabalhando-no-armazem-gratis-foto.jpg",
+    image: mobile,
     category: "Desenvolvimento",
     description: "Desenvolvemos aplicativos móveis intuitivos para que sua equipe possa gerenciar o estoque, acompanhar entregas e se comunicar de forma eficiente, tudo na palma da mão.",
   },

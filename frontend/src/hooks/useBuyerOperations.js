@@ -13,7 +13,7 @@ const STATUS_PRIORITY = {
 };
 
 export const useBuyerOperations = () => {
-    const [compras, setCompras] = useState([]); 
+    const [compras, setCompras] = useState([]);
     const [loading, setLoading] = useState(true);
     const [meta, setMeta] = useState({ totalItems: 0, totalPages: 1, currentPage: 1 });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,32 +23,37 @@ export const useBuyerOperations = () => {
         try {
             const queryParams = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
             if (status && status !== 'todos') queryParams.append('status', status);
-            
+
             const resCompras = await api.get(`buyer/compras?${queryParams.toString()}`);
-            
+
             if (resCompras && resCompras.success === false) {
                 if (resCompras.status === 404) {
-                     setCompras([]); 
-                     setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
-                     return;
+                    setCompras([]);
+                    setMeta({ totalItems: 0, totalPages: 1, currentPage: 1 });
+                    return;
                 }
-                throw new Error(resCompras.error);
+                toast.warning("Nenhuma operação encontrada.", {
+                    description: "Não há pedidos pendentes ou em negociação no momento.",
+                    duration: 3000,
+                });
+                setCompras([]);
+                return;
             }
 
             const listaCompras = Array.isArray(resCompras?.data) ? resCompras.data : [];
-            
+
             // --- BUSCA DADOS AUXILIARES ---
             let listaOrcamentos = [];
-            try { const res = await api.get(`buyer/orcamentos?limit=1000`); listaOrcamentos = res.data || []; } catch {}
+            try { const res = await api.get(`buyer/orcamentos?limit=1000`); listaOrcamentos = res.data || []; } catch { }
 
             let listaPedidos = [];
-            try { const res = await api.get(`manager/pedido?limit=1000`); listaPedidos = res.data || []; } catch {}
+            try { const res = await api.get(`manager/pedido?limit=1000`); listaPedidos = res.data || []; } catch { }
 
             // --- PROCESSAMENTO ---
             const comprasProcessadas = listaCompras.map(compra => {
                 // Acha orçamento vinculado
                 const orcamentoEncontrado = listaOrcamentos.find(orc => orc.compraId === compra.id);
-                
+
                 // Acha pedido (para SKU)
                 const pedidoFound = listaPedidos.find(p => p.id === compra.pedidoId);
                 const finalSku = compra.insumoSKU || pedidoFound?.insumoSKU || '---';
@@ -76,12 +81,12 @@ export const useBuyerOperations = () => {
                     status: displayStatus
                 };
             });
-            
+
             // --- ORDENAÇÃO ---
             comprasProcessadas.sort((a, b) => {
                 const wA = STATUS_PRIORITY[a.status] || 99;
                 const wB = STATUS_PRIORITY[b.status] || 99;
-                if(wA !== wB) return wA - wB;
+                if (wA !== wB) return wA - wB;
                 return new Date(b.displayDate) - new Date(a.displayDate);
             });
 
@@ -100,17 +105,17 @@ export const useBuyerOperations = () => {
         setIsSubmitting(true);
         try {
             const res = await fn();
-            if(res && res.success === false) {
+            if (res && res.success === false) {
                 // Erro de duplicidade (409)
-                if(res.status === 409 || res.status === 'conflict') {
+                if (res.status === 409 || res.status === 'conflict') {
                     throw new Error("Pedido já orçado! Atualize a página.");
                 }
-                const errTxt = res.issues ? res.issues.map(i=>i.message).join('. ') : (res.error || res.message);
+                const errTxt = res.issues ? res.issues.map(i => i.message).join('. ') : (res.error || res.message);
                 throw new Error(errTxt);
             }
             toast.success(msg);
             return res;
-        } catch(err) {
+        } catch (err) {
             toast.error(err.message || "Erro na operação");
             return false;
         } finally {
@@ -120,7 +125,7 @@ export const useBuyerOperations = () => {
 
     const createOrcamento = async (id, payload) => {
         const res = await handleOperation(() => api.post(`buyer/orcamento/${id}`, payload), "Enviado!");
-        if(res) {
+        if (res) {
             // Atualiza estado local imediatamente
             setCompras(prev => prev.map(item => item.id === id ? {
                 ...item,
@@ -131,12 +136,12 @@ export const useBuyerOperations = () => {
         }
         return false;
     };
-    
-    const renegociarOrcamento = (id, payload) => handleOperation(() => api.put(`buyer/orcamento/renegociar/${id}`, payload), "Renegociação enviada!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
-    const cancelarOrcamento = (id) => handleOperation(() => api.put(`buyer/orcamento/cancelar/${id}`), "Cancelado!").then(r=>{if(r) fetchCompras(meta.currentPage); return r});
 
-    return { 
+    const renegociarOrcamento = (id, payload) => handleOperation(() => api.put(`buyer/orcamento/renegociar/${id}`, payload), "Renegociação enviada!").then(r => { if (r) fetchCompras(meta.currentPage); return r });
+    const cancelarOrcamento = (id) => handleOperation(() => api.put(`buyer/orcamento/cancelar/${id}`), "Cancelado!").then(r => { if (r) fetchCompras(meta.currentPage); return r });
+
+    return {
         compras, loading, meta, isSubmitting,
-        fetchCompras, createOrcamento, renegociarOrcamento, cancelarOrcamento 
+        fetchCompras, createOrcamento, renegociarOrcamento, cancelarOrcamento
     };
 };
