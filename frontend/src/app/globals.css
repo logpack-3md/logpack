@@ -1,5 +1,3 @@
-
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -41,7 +39,8 @@
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
-  --color-popover-header: var(--popover-header);  /* my color */
+  --color-popover-header: var(--popover-header);
+  /* my color */
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
@@ -81,12 +80,14 @@
   --radius: 0.625rem;
   --background: oklch(1.0000 0 0);
   --background2: #dfdfdf;
-  --background-button: oklch(#e6c4ad);  /* my color */
+  --background-button: oklch(#e6c4ad);
+  /* my color */
   --foreground: oklch(0.2686 0 0);
   --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.2686 0 0);
   --popover: oklch(1.0000 0 0);
-  --popover-header: #dbdbdb;  /* my color */
+  --popover-header: #dbdbdb;
+  /* my color */
   --popover-foreground: oklch(0.2686 0 0);
   --primary: oklch(0.7686 0.1647 70.0804);
   --primary-foreground: oklch(0 0 0);
@@ -97,8 +98,10 @@
   --accent: oklch(0.9869 0.0214 95.2774);
   --accent-foreground: oklch(0.4732 0.1247 46.2007);
   --destructive: oklch(0.6368 0.2078 25.3313);
-  --border: oklch(0.9276 0.0058 264.5313); /* my color */
-  --border2: oklch(0.9232 0.0026 48.7171); /* Color antiga */
+  --border: #7a7a7a71;  
+  /* my color */
+  --border2: oklch(0.9232 0.0026 48.7171);
+  /* Color antiga */
   --border-header: #b49580;
   --input: oklch(0.9276 0.0058 264.5313);
   --ring: oklch(0.7686 0.1647 70.0804);

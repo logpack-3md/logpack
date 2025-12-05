@@ -67,7 +67,7 @@ const Monitoramento = () => {
               return (
                 <Card 
                   key={item.etapa} 
-                  className="relative overflow-hidden group hover:shadow-lg hover:border-primary/50 transition-all duration-300 border-muted bg-card/50"
+                  className="relative overflow-hidden group hover:shadow-lg hover:border-primary/50 transition-all duration-300 dark:border-border border-[#7a7a7a71] bg-card/50"
                 >
                   <div className="absolute -right-4 -top-4 text-9xl font-bold text-foreground/10 opacity-80 select-none group-hover:scale-110 transition-transform duration-500">
                     {item.etapa}
@@ -115,7 +115,7 @@ const Monitoramento = () => {
               </div>
               
               <div className="grid gap-6">
-                <div className="bg-background rounded-2xl p-6 shadow-sm border flex gap-4 transition-all hover:-translate-y-1">
+                <div className="bg-background rounded-2xl p-6 shadow-sm border dark:border-border border-[#7a7a7a71] flex gap-4 transition-all hover:-translate-y-1">
                   <div className="p-3 h-fit bg-red-100 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 shrink-0">
                     <ArrowRight className="h-6 w-6 transform -rotate-45" />
                   </div>
@@ -125,7 +125,7 @@ const Monitoramento = () => {
                   </div>
                 </div>
 
-                <div className="bg-background rounded-2xl p-6 shadow-sm border flex gap-4 transition-all hover:-translate-y-1">
+                <div className="bg-background rounded-2xl p-6 shadow-sm border dark:border-border border-[#7a7a7a71] flex gap-4 transition-all hover:-translate-y-1">
                   <div className="p-3 h-fit bg-blue-100 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 shrink-0">
                     <ArrowRight className="h-6 w-6 transform -rotate-45" />
                   </div>
@@ -135,7 +135,7 @@ const Monitoramento = () => {
                   </div>
                 </div>
 
-                <div className="bg-background rounded-2xl p-6 shadow-sm border flex gap-4 transition-all hover:-translate-y-1">
+                <div className="bg-background rounded-2xl p-6 shadow-sm border dark:border-border border-[#7a7a7a71] flex gap-4 transition-all hover:-translate-y-1">
                   <div className="p-3 h-fit bg-green-100 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400 shrink-0">
                     <ArrowRight className="h-6 w-6 transform -rotate-45" />
                   </div>
@@ -176,6 +176,8 @@ const Monitoramento = () => {
         </section>
 
       </main>
+
+      <Separator />
       <Footer />
     </div>
   );
