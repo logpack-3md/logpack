@@ -4,9 +4,12 @@ import SetorLog from "../models/SetorLog.js";
 
 class SetorController {
     static createUpdateSchema = z.object({
-        name: z.string().max(6, { error: "O nome do setor deve conter no máximo 6 caracteres." }),
-        status: z.enum(['ativo', 'inativo'], { error: 'O setor só pode estar ativo ou inativo.' }).optional()
-    });
+        name: z.string({ required_error: "O nome do setor é obrigatório." })
+            .trim()
+            .min(2, { message: "Nome muito curto." })
+            .max(6, { message: "O nome do setor deve ter no máximo 6 caracteres." }),
+        status: z.enum(['ativo', 'inativo']).optional()
+    })
 
     static async createSetor(req, res) {
         const gerenteId = req.user.id;
@@ -27,10 +30,8 @@ class SetorController {
             return res.status(200).json(setor)
         } catch (error) {
             if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos",
-                    issues: error.issues
-                })
+                const messages = error.issues.map(i => i.message).join(". ");
+                return res.status(400).json({ message: messages })
             }
             res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
             console.error("Erro ao criar usuário", error);
@@ -74,10 +75,8 @@ class SetorController {
             return res.status(200).json({ message: `Nome de setor alterado para: ${name}` })
         } catch (error) {
             if (error instanceof z.ZodError) {
-                res.status(400).json({
-                    message: "Dados de entrada inválidos",
-                    issues: error.issues
-                })
+                const messages = error.issues.map(i => i.message).join(". ");
+                return res.status(400).json({ message: messages })
             }
             console.error("Erro interno no servidor ao atualizar setor: ", error)
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao atualizar setor." })

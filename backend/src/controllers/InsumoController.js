@@ -7,16 +7,18 @@ import { Op } from 'sequelize';
 
 class InsumosController {
     static createSchema = z.object({
-        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
-        SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }),
-        setorName: z.string()
-            .transform(val => (val === "" || val === "none" || val === "null" ? null : val))
-            .nullable()
-            .optional(),
-        description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }),
-        measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }),
-        max_weight_carga: z.coerce.number().int({ error: "O nível máximo deve ser um número inteiro." }).min(0).optional(),
-        max_storage: z.any().transform(v => Number(v) || 0), 
+        name: z.string({ required_error: "O nome do insumo é obrigatório." })
+            .trim()
+            .min(2, { message: "Nome do insumo muito curto." }),
+        SKU: z.string({ required_error: "O SKU é obrigatório." })
+            .trim()
+            .min(3, { message: "SKU inválido (mín. 3 caracteres)." }),
+        setorName: z.string().nullable().optional().or(z.literal('')),
+        description: z.string().optional(),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], {
+            errorMap: () => ({ message: "Unidade inválida. Use: KG, G, L, ML" })
+        }),
+        max_storage: z.any().transform(v => Number(v) || 0),
         current_storage: z.any().transform(v => Number(v) || 0),
         status: z.enum(['ativo', 'inativo']).optional().default('ativo'),
     });
@@ -170,7 +172,7 @@ class InsumosController {
 
         try {
             const data = InsumosController.createSchema.parse(req.body)
-            
+
             const { SKU, setorName, ...insumoData } = data;
             if (setorName) {
                 const setor = await Setor.findOne({ where: { name: setorName } });
@@ -212,9 +214,9 @@ class InsumosController {
             return res.status(201).json(insumo)
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                console.log("Zod Error:", JSON.stringify(error.issues, null, 2)); 
-                return res.status(400).json({ message: "Dados inválidos", issues: error.issues });
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
             console.error(error);
             return res.status(500).json({ error: "Erro interno." });
@@ -325,13 +327,9 @@ class InsumosController {
             });
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                console.log("error-----------", error)
-
-                return res.status(400).json({
-                    message: "Dados de atualização inválidos",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
             res.status(500).json({ error: "Ocorreu um erro interno no servidor" })
             console.error("Erro ao atualizar insumo:", error)

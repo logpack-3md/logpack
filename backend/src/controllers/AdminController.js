@@ -4,8 +4,12 @@ import z from "zod"
 
 class AdminController {
     static updateSchema = z.object({
-        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
-        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { error: "Escolha entre 'employee', 'admin', 'buyer' ou 'manager'." })
+        name: z.string({ required_error: "O nome é obrigatório." })
+            .trim()
+            .min(2, { message: "O nome deve conter no mínimo dois caracteres." }),
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { 
+            errorMap: () => ({ message: "Função inválida. Escolha: Funcionário, Administrador, Gerente de Compras ou Gerente de Produção." }) 
+        })
     }).partial();
 
     static async setStatusUser(req, res) {
@@ -14,7 +18,7 @@ class AdminController {
 
         const statusSchema = z.object({
             status: z.enum(['ativo', 'inativo'], {
-                error: "Status deve ser 'ativo' ou 'inativo'."
+                errorMap: () => ({ message: "O status deve ser 'ativo' ou 'inativo'." })
             })
         })
 
@@ -46,11 +50,9 @@ class AdminController {
 
             return res.status(200).json({ message: `Status alterado para ${status}` })
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "O status deve ser 'ativo' ou 'inativo'.",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
 
             console.error("Erro ao atualizar status", error);
@@ -184,11 +186,9 @@ class AdminController {
 
             return res.status(200).json({ message: "Usuário atualizado com sucesso." })
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de atualização inválidos",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
             console.error("Erro ao atualizar usuário", error);
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor." })

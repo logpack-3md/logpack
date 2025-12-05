@@ -9,22 +9,22 @@ import { Op } from "sequelize";
 
 class BuyerController {
     static createOrcamentoSchema = z.object({
-        valor_total: z.number({
-            required_error: "Informe o valor.",
-            invalid_type_error: "Valor deve ser número."
-        }).min(0.01, "O valor deve ser positivo."),
+        valor_total: z.coerce.number({
+            required_error: "Informe o valor total.",
+            invalid_type_error: "O valor deve ser um número válido."
+        }).min(0.01, { message: "O valor deve ser positivo." }),
         description: z.string({ required_error: "A descrição é obrigatória." })
-            .min(5, "A descrição deve ter no mínimo 5 caracteres.")
+            .min(5, { message: "A descrição deve ter no mínimo 5 caracteres." })
     });
 
     static updateOrcamentoSchema = z.object({
-        description: z.string().min(10, "Mínimo 10 caracteres.").nullable()
+        description: z.string().min(10, { message: "A descrição deve ter no mínimo 10 caracteres." })
     });
 
     static renegociarSchema = z.object({
-        valor_total: z.number().min(0.01).optional(),
+        valor_total: z.coerce.number({ invalid_type_error: "Valor inválido." }).min(0.01, "O valor deve ser positivo.").optional(),
         description: z.string({ required_error: "Justificativa é obrigatória." })
-            .min(5, "Justifique com pelo menos 5 caracteres.")
+            .min(5, { message: "Justifique com pelo menos 5 caracteres." })
     });
 
     static async getCompras(req, res) {
@@ -125,29 +125,29 @@ class BuyerController {
 
         try {
             const existingBudget = await Orcamento.findOne({
-                where: { 
+                where: {
                     compraId: compraId,
-                    status: { [Op.not]: 'cancelado' } 
+                    status: { [Op.not]: 'cancelado' }
                 }
             });
 
             if (existingBudget) {
-                return res.status(409).json({ 
+                return res.status(409).json({
                     message: "Já existe um orçamento ativo para este pedido.",
-                    status: 'conflict' 
+                    status: 'conflict'
                 });
             }
 
             const validatedSchema = BuyerController.createOrcamentoSchema.parse(req.body)
             const oldDataJson = await Compra.findByPk(compraId)
-            if(!oldDataJson) return res.status(404).json({ message: "Compra não encontrada." })
+            if (!oldDataJson) return res.status(404).json({ message: "Compra não encontrada." })
 
             const newOrcamento = {
                 ...validatedSchema,
                 buyerId: buyerId,
                 compraId: compraId,
                 amount: oldDataJson.amount,
-                insumoSKU: oldDataJson.insumoSKU 
+                insumoSKU: oldDataJson.insumoSKU
             }
 
             const orcamento = await Orcamento.create(newOrcamento)
@@ -233,10 +233,8 @@ class BuyerController {
 
         } catch (error) {
             if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos.",
-                    issues: error.issues
-                })
+                const messages = error.issues.map(i => i.message).join(". ");
+                return res.status(400).json({ message: messages })
             }
             console.error("Erro ao atualizar a descrição do orçamento", error)
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor ao atualizar orçamento" })
@@ -250,7 +248,7 @@ class BuyerController {
             const validatedSchema = BuyerController.renegociarSchema.parse(req.body);
 
             const orcamento = await Orcamento.findByPk(id)
-            
+
             if (!orcamento) {
                 return res.status(404).json({ message: "Orçamento não encontrado." })
             }
