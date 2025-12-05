@@ -14,7 +14,7 @@ export const InsumoImage = ({ src }) => {
 export const InsumoImageDetail = ({ src, alt }) => {
     const [err, setErr] = useState(false);
     if(!src || err) return <ImageIcon className="w-16 h-16 text-muted-foreground/20"/>;
-    return <img src={src} alt={alt} className="w-full h-full object-contain p-2 mix-blend-multiply" onError={()=>setErr(true)}/>;
+    return <img src={src} alt={alt} className="w-full h-full object-contain p-2" onError={()=>setErr(true)}/>;
 };
 
 export const StatusBadge = ({ status }) => {

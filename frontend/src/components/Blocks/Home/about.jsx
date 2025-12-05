@@ -68,7 +68,7 @@ const About = ({
           <div className="relative w-full max-w-lg lg:max-w-none mx-auto lg:ml-auto perspective-1000">
             <div className="absolute -inset-4 rounded-4xl bg-linear-to-tr from-primary/20 via-transparent to-primary/5 blur-2xl -z-10" />
 
-            <div className="relative bg-card rounded-4xl border border-border p-2 shadow-2xl">
+            <div className="relative bg-card rounded-4xl border dark:border-border border-[#7a7a7a71] p-2 shadow-2xl">
               <div className="bg-muted/30 rounded-3xl overflow-hidden aspect-4/3 flex items-center justify-center relative">
                 <div className="absolute inset-0 opacity-10"
                   style={{ backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
@@ -85,7 +85,7 @@ const About = ({
 
 
       {/* --- SEÇÃO DE CONQUISTAS / NÚMEROS --- */}
-      <section className="py-16 bg-muted/30 border-y border-border">
+      <section className="py-16 bg-muted/30 border-y dark:border-border border-[#7a7a7a71]">
         <div className="container mx-auto px-6 lg:px-8">
 
           <div className="flex flex-col lg:flex-row gap-12 lg:items-start lg:justify-between mb-12">
@@ -105,7 +105,7 @@ const About = ({
               return (
                 <div
                   key={idx}
-                  className="group relative flex flex-col justify-between p-6 bg-card rounded-xl border border-border shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:-translate-y-1"
+                  className="group relative flex flex-col justify-between p-6 bg-card rounded-xl border dark:border-border border-[#7a7a7a71] shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:-translate-y-1"
                 >
                   <div className="mb-4">
                     <div className="inline-flex p-3 rounded-lg bg-primary/10 text-primary mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
@@ -127,7 +127,7 @@ const About = ({
 
       {/* --- SEÇÃO CTA / PLANOS --- */}
       <section className="py-20 lg:py-32 container mx-auto px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-card border border-border shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl bg-card border dark:border-border border-[#7a7a7a71] shadow-2xl">
 
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 rounded-full bg-(--background-button)/20 blur-3xl pointer-events-none"></div>
