@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, User, LogOut, ChevronLeft, 
   ChevronDown, ChevronUp, Box, Package, FileText, 
-  Briefcase, Loader2
+  Briefcase, Loader2, ShieldAlert, ClipboardClock
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -24,7 +24,15 @@ const menuItems = [
     subItems: [
       { id: 'insumos', label: 'Insumos', icon: Box, href: '/dashboard/manager/insumos' },
       { id: 'pedidos', label: 'Pedidos', icon: Package, href: '/dashboard/manager/pedidos' },
-      { id: 'renegociacoes', label: 'Renegociações', icon: FileText, href: '/dashboard/manager/renegociacoes' },
+      { id: 'renegociacoes', label: 'Negociações', icon: FileText, href: '/dashboard/manager/renegociacoes' },
+    ],
+  },
+  { 
+    id: 'log', 
+    label: 'Auditoria', 
+    icon: ShieldAlert, 
+    subItems: [
+      { id: 'historico', label: 'Histórico', icon: ClipboardClock, href: '/dashboard/manager/logManager' },
     ],
   },
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/manager/profile' },
