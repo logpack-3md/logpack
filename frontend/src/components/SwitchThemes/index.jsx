@@ -3,11 +3,12 @@
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
-
 import { useEffect, useState } from "react";
 
 export function SwitchTheme() {
-    const {theme, setTheme } = useTheme();
+    // Adicionamos 'resolvedTheme', que retorna 'light' ou 'dark' 
+    // mesmo quando o 'theme' está configurado como 'system'
+    const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -15,16 +16,20 @@ export function SwitchTheme() {
     }, []);
 
     const toggleTheme = () => {
-        setTheme(theme === "dark" ? "light" : "dark");
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
     };
 
+    if (!mounted) {
+        return <Button variant="ghost" size="icon" disabled />;
+    }
+
     return (
-        <Button variant="ghost" className size="icon" onClick={toggleTheme}>
-            {mounted && theme === "dark" ? (
+        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            {resolvedTheme === "dark" ? (
                 <Sun className="h-[1.2rem] w-[1.2rem]" />
-            ) : mounted ? (
+            ) : (
                 <Moon className="h-[1.2rem] w-[1.2rem]" />
-            ) : null}
+            )}
             <span className="sr-only">Toggle theme</span>
         </Button>
     );

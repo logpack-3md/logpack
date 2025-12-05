@@ -74,12 +74,16 @@ export default function SidebarBuyer({ isOpen, onToggle }) {
     fetchUser();
   }, []);
 
-  const handleLogout = (e) => {
+    const handleLogout = (e) => {
     e.preventDefault();
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     if (typeof window !== 'undefined') {
+      const currentTheme = localStorage.getItem("theme");
       localStorage.clear();
       sessionStorage.clear();
+      if (currentTheme) {
+        localStorage.setItem("theme", currentTheme);
+      }
       window.location.href = '/';
     }
   };

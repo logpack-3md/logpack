@@ -16,16 +16,16 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogoSite } from "@/components/ui/icons-geral"; 
-import { SwitchTheme } from "@/components/SwitchThemes"; 
+import { LogoSite } from "@/components/ui/icons-geral";
+import { SwitchTheme } from "@/components/SwitchThemes";
 import { api } from "@/lib/api";
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/admin' },
-  { 
-    id: 'log', 
-    label: 'Auditoria', 
-    icon: ShieldAlert, 
+  {
+    id: 'log',
+    label: 'Auditoria',
+    icon: ShieldAlert,
     subItems: [
       { id: 'historico', label: 'Histórico', icon: ClipboardClock, href: '/dashboard/admin/logAdmin' },
     ],
@@ -75,8 +75,12 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
     e.preventDefault();
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     if (typeof window !== 'undefined') {
+      const currentTheme = localStorage.getItem("theme");
       localStorage.clear();
       sessionStorage.clear();
+      if (currentTheme) {
+        localStorage.setItem("theme", currentTheme);
+      }
       window.location.href = '/';
     }
   };
