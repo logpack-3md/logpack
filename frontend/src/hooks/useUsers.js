@@ -28,7 +28,6 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
                 const result = await api.get(`${USER_ENDPOINT}?page=${apiPage}&limit=${size}`);
 
                 if (result && result.success === false) {
-                    // Mostra toast apenas se for erro crítico, não se for lista vazia
                     if (result.status !== 404) {
                         toast.error("Erro ao carregar", { description: result.error });
                     }
@@ -62,6 +61,11 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
         }
     }, [hasInitialDataBeenProcessed, currentPage, pageSize, loadUsers]);
 
+    // NOVA FUNÇÃO DE REFRESH
+    const refresh = useCallback(() => {
+        loadUsers(currentPage, pageSize);
+    }, [currentPage, pageSize, loadUsers]);
+
     const setPage = useCallback((pageIndex) => {
         if (pageIndex !== currentPage) loadUsers(pageIndex, pageSize);
     }, [currentPage, pageSize, loadUsers]);
@@ -70,57 +74,34 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
         if (newSize !== pageSize) loadUsers(0, newSize);
     }, [pageSize, loadUsers]);
 
-    // --- FUNÇÃO PARA ATIVAR/INATIVAR (Status) ---
     const setStatus = useCallback(async (id, newStatus) => {
         setIsUpdating(true);
         let success = false;
-        
-        // Feedback Imediato de Loading
         const toastId = toast.loading(`Alterando status para ${newStatus}...`);
 
         try {
             const result = await api.put(`${USER_ENDPOINT}/status/${id}`, { status: newStatus });
-
             if (result && result.success !== false) {
                 success = true;
-                
-                // Atualização Otimista da Lista
                 setUsers((currentUsers) => 
                     currentUsers.map((user) => {
                         const currentUserId = user.id || user._id;
-                        if (currentUserId === id) {
-                            return { ...user, status: newStatus };
-                        }
+                        if (currentUserId === id) return { ...user, status: newStatus };
                         return user;
                     })
                 );
-                
-                // Feedback Rico de Sucesso
-                toast.success(`Status atualizado!`, {
-                    id: toastId, // Substitui o loading
-                    description: `O usuário agora está ${newStatus.toUpperCase()}.`
-                });
-
+                toast.success(`Status atualizado!`, { id: toastId, description: `O usuário agora está ${newStatus.toUpperCase()}.` });
             } else {
-                toast.error("Não foi possível alterar", {
-                    id: toastId,
-                    description: result?.error || "Erro desconhecido do servidor."
-                });
+                toast.error("Não foi possível alterar", { id: toastId, description: result?.error || "Erro desconhecido." });
             }
-
         } catch (error) {
-            console.error("Erro status:", error);
-            toast.error("Erro de conexão", {
-                id: toastId,
-                description: "Verifique sua internet e tente novamente."
-            });
+            toast.error("Erro de conexão", { id: toastId });
         } finally {
             setIsUpdating(false);
         }
         return success;
     }, []);
 
-    // --- FUNÇÃO PARA EDITAR (Nome/Cargo) ---
     const editUser = useCallback(async (id, data) => {
         setIsUpdating(true);
         let success = false;
@@ -128,37 +109,21 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
         
         try {
             const result = await api.put(`${USER_ENDPOINT}/manage/${id}`, data); 
-
             if (result && result.success !== false) {
                 success = true;
-                
                 setUsers((currentUsers) => 
                     currentUsers.map((user) => {
                         const currentUserId = user.id || user._id;
-                        if (currentUserId === id) {
-                            return { ...user, ...data }; 
-                        }
+                        if (currentUserId === id) return { ...user, ...data }; 
                         return user;
                     })
                 );
-
-                toast.success("Usuário atualizado!", {
-                    id: toastId,
-                    description: `Os dados de ${data.name || 'usuário'} foram salvos.`
-                });
-
+                toast.success("Usuário atualizado!", { id: toastId });
             } else {
-                toast.error("Falha ao salvar", {
-                    id: toastId,
-                    description: result?.error || "Verifique os dados e tente novamente."
-                });
+                toast.error("Falha ao salvar", { id: toastId, description: result?.error });
             }
-
         } catch (error) {
-            console.error("Erro edit:", error);
-            toast.error("Erro de conexão", {
-                id: toastId
-            });
+            toast.error("Erro de conexão", { id: toastId });
         } finally {
             setIsUpdating(false);
         }
@@ -176,6 +141,7 @@ export function useUsers(initialData = [], initialPage = 0, initialPageSize = 10
         setPage,
         setLimit,
         setStatus,
-        editUser
+        editUser,
+        refresh // EXPORTADA AGORA
     };
 }
