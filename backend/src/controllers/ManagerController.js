@@ -12,9 +12,12 @@ import OrcamentoLog from '../models/OrcamentoLog.js'
 
 class ManagerController {
     static createCompraSchema = z.object({
-        description: z.string().min(10, { error: "Digite no mínimo 10 caracteres." }),
-        amount: z.int().min(200, { error: "Insira um valor acima e múltiplo de 200." }).refine(value => value % 200 === 0, { error: "O valor deve ser MÚLTIPLO de 200. (ex.: 200, 400, 600, etc.)." }),
-        insumoSKU: z.string().min(1)
+        description: z.string({ required_error: "Descrição obrigatória." })
+            .min(10, { message: "Descrição muito curta (mín. 10)." }),
+        amount: z.coerce.number({ invalid_type_error: "Quantidade inválida." })
+            .min(200, { message: "A quantidade mínima é 200." })
+            .refine(value => value % 200 === 0, { message: "A quantidade deve ser múltiplo de 200." }),
+        insumoSKU: z.string({ required_error: "SKU não identificado." }).min(1)
     })
 
     static async getPedidos(req, res) {
@@ -203,9 +206,7 @@ class ManagerController {
         const userId = req.user.id
 
         const statusSchema = z.object({
-            status: z.enum(['inativo', 'ativo'], {
-                error: "O status deve ser 'ativo' ou 'inativo'."
-            })
+            status: z.enum(['inativo', 'ativo'], { errorMap: () => ({ message: "Status deve ser 'ativo' ou 'inativo'." }) })
         })
 
         try {
@@ -250,11 +251,9 @@ class ManagerController {
             return res.status(200).json({ message: `Status de insumo alterado para ${status}.` })
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de atualização inválidos",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
             console.error("Erro ao alterar status: ", error)
             return res.status(500).json({ error: "Erro ao alterar status." })
@@ -522,11 +521,9 @@ class ManagerController {
             })
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
 
             res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
@@ -540,7 +537,7 @@ class ManagerController {
 
         const approveSchema = z.object({
             status: z.enum(['negado', 'aprovado', 'renegociacao'], {
-                error: "Status inválido."
+                errorMap: () => ({ message: "Status de contestação inválido." })
             }),
             description: z.string().optional()
         })
@@ -669,11 +666,9 @@ class ManagerController {
             });
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: 'Dados de entrada inválidos',
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
             console.error("Erro interno no servidor ao contestar orçamento", error)
             res.status(500).json({ error: "Ocorreu um erro interno no servidor ao contestar o orçamento." })

@@ -6,36 +6,32 @@ import { put } from "@vercel/blob";
 
 class UserController {
     static createSchema = z.object({
-        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }),
-        cpf: z.string().refine(validarCpf, { error: "CPF inválido. Verifique o formato ou os dígitos verificadores." }),
-        email: z.email({ error: "Digite um email válido." }),
-        password: z.string().min(6, { error: "A senha deve conter no mínimo 6 caracteres." }),
-        confirmPassword: z.string(),
-        role: z.enum(['employee', 'admin', 'buyer', 'manager'], { error: "A função é obrigatória." })
+        name: z.string({ required_error: "O nome é obrigatório.\n" })
+            .trim()
+            .min(2, { message: "O nome deve conter no mínimo dois caracteres.\n" }),
+        cpf: z.string({ required_error: "O CPF é obrigatório.\n" })
+            .refine((val) => validarCpf(val), { message: "CPF inválido. Verifique os dígitos.\n" }),
+        email: z.string({ required_error: "O email é obrigatório.\n" })
+            .email({ message: "Por favor, insira um email válido.\n" }),
+        password: z.string({ required_error: "A senha é obrigatória.\n" })
+            .min(6, { message: "A senha deve conter no mínimo 6 caracteres.\n" }),
+        confirmPassword: z.string({ required_error: "A confirmação de senha é obrigatória.\n" }),
+        role: z.enum(['employee', 'admin', 'buyer', 'manager'], {
+            errorMap: () => ({ message: "Selecione uma função válida. (Funcionário, Gerente de Compras, Administrador ou Gerente de Produção\n" })
+        })
     }).superRefine((data, ctx) => {
-        if (data.password) {
-            if (!data.confirmPassword) {
-                ctx.addIssue({
-                    code: "custom",
-                    message: "A confirmação de senha é obrigatória ao alterar a senha.",
-                    path: ['confirmPassword'],
-                });
-                return;
-            }
-
-            if (data.password !== data.confirmPassword) {
-                ctx.addIssue({
-                    code: "custom",
-                    message: "As senhas não coincidem.",
-                    path: ['confirmPassword'],
-                });
-            }
+        if (data.password !== data.confirmPassword) {
+            ctx.addIssue({
+                code: "custom",
+                message: "As senhas não coincidem.",
+                path: ['confirmPassword'],
+            });
         }
     });
 
     static updateSchema = z.object({
         name: z.string().trim().min(2, { message: "O nome deve conter no mínimo dois caracteres." }).optional(),
-        email: z.string().email({ message: "Digite um email válido." }).optional(),
+        email: z.string().email({ message: "Email inválido." }).optional(),
         password: z.string().min(6, { message: "A senha deve conter no mínimo 6 caracteres." }).optional(),
         confirmPassword: z.string().optional(),
     }).partial().superRefine((data, ctx) => {
@@ -98,27 +94,19 @@ class UserController {
             return res.status(201).json(user);
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de entrada inválidos.",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
 
             if (error.name === "SequelizeUniqueConstraintError") {
-                const fields = Object.keys(error.fields)
+                const fields = error.fields ? Object.keys(error.fields) : [];
+                let message = "Dados duplicados: ";
 
-                let message = "O registro já existe. "
+                if (fields.includes('email')) message += "Este E-mail já está em uso. ";
+                if (fields.includes('cpf')) message += "Este CPF já está cadastrado. ";
 
-                if (fields.includes('email')) {
-                    message += "O Email já está cadastrado. "
-                }
-
-                if (fields.includes('cpf')) {
-                    message += "O CPF já está cadastrado. "
-                }
-
-                return res.status(409).json({ message: message.trim(), fields: fields })
+                return res.status(409).json({ message: message.trim() });
             }
 
             console.error("Erro ao criar usuário", error);
@@ -196,11 +184,9 @@ class UserController {
             })
 
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                return res.status(400).json({
-                    message: "Dados de atualização inválidos.",
-                    issues: error.issues
-                })
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
             }
             console.error("Erro ao atualizar usuário", error);
             return res.status(500).json({ error: "Ocorreu um erro interno no servidor." })
