@@ -116,7 +116,6 @@ export default function LogManagerPage() {
                         {/* TABS (Estilo scrollavel horizontalmente se não couber) */}
                         <Tabs defaultValue="todos" value={currentTab} onValueChange={handleTabChange} className="w-full">
                             <TabsList className="w-full sm:w-auto justify-start overflow-x-auto scrollbar-hide bg-muted/60 p-1">
-                                <TabsTrigger value="todos" className="text-xs h-7 px-3">Todos</TabsTrigger>
                                 <TabsTrigger value="insumos" className="text-xs h-7 px-3">Insumos</TabsTrigger>
                                 <TabsTrigger value="setores" className="text-xs h-7 px-3">Setores</TabsTrigger>
                                 <TabsTrigger value="pedidos" className="text-xs h-7 px-3">Pedidos</TabsTrigger>
