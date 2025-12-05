@@ -4,46 +4,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Truck, Menu, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { Toaster } from 'sonner';
-
-// UI Components
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
-// Layout
 import SidebarManager from "@/components/layout/sidebar-manager";
-
-// Hook de Lógica
 import { useManagerOrders } from "@/hooks/useManagerOrders";
-
-// *** COMPONENTES MODULARIZADOS ***
 import PedidosFilters from "@/components/Pedidos/PedidosFilters";
 import PedidosTable from "@/components/Pedidos/PedidosTable";
 import PedidoModals from "@/components/Pedidos/PedidoModals";
 
 export default function PedidosManagerPage() {
     const isFirstRun = useRef(true);
-
     const {
         pedidos, loading, isSubmitting, pagination,
         fetchPedidos, updateStatus, createCompra, getPedidoDetails
     } = useManagerOrders();
-
-    // Filtros
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('todos');
-
-    // Estados de Modais
     const [actionDialog, setActionDialog] = useState({ open: false, type: null, item: null });
     const [buyDialog, setBuyDialog] = useState({ open: false, item: null });
     const [buyForm, setBuyForm] = useState({ amount: '', description: '' });
     const [detailDialog, setDetailDialog] = useState({ open: false, isLoading: false, data: null });
-
-
-    
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-
-    // --- INIT & LOAD ---
     useEffect(() => {
         if (isFirstRun.current) {
             isFirstRun.current = false;
@@ -54,17 +35,12 @@ export default function PedidosManagerPage() {
             fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
         }, 500);
         return () => clearTimeout(timer);
-    }, [search, statusFilter, pagination.page, pagination.limit]); // Removido fetchPedidos da dependência para evitar loop se o hook recriar
+    }, [search, statusFilter, pagination.page, pagination.limit]);
 
-    // --- HANDLERS DE ESTADO (Wrapper functions) ---
     const handleRefresh = () => fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
-
     const handleOpenDetails = async (pedidoSimples) => {
         setDetailDialog({ open: true, isLoading: true, data: pedidoSimples });
-
         const completeData = await getPedidoDetails(pedidoSimples.id);
-
-        // Mesclagem Segura para não perder o ID que já está na lista
         const mergedData = {
             ...pedidoSimples,
             ...completeData,
@@ -80,7 +56,6 @@ export default function PedidosManagerPage() {
 
     const openActionDialog = (e, type, item) => {
         if (e) e.stopPropagation();
-        // Fecha detalhes se estiver aberto para focar na ação
         setDetailDialog(prev => ({ ...prev, open: false }));
         setActionDialog({ open: true, type, item });
     };
@@ -106,11 +81,8 @@ export default function PedidosManagerPage() {
 
     const handleSubmitCompra = async () => {
         if (!buyDialog.item) return;
-        // Pega SKU do item selecionado
         const sku = buyDialog.item.sku || buyDialog.item.insumoSKU;
-
         const success = await createCompra(buyDialog.item.id, buyForm, sku);
-
         if (success) {
             setBuyDialog({ open: false, item: null });
             fetchPedidos(pagination.page, pagination.limit, search, statusFilter);
