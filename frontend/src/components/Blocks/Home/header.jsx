@@ -31,7 +31,7 @@ import { LogoSite } from "@/components/ui/icons-geral";
 
 export default function Header() {
   return (
-    <header className="w-full border-b bg-card sticky top-0 z-50 shadow-2xl">
+    <header className="w-full border-[#0000003b] border bg-card sticky top-0 z-50 shadow-2xl">
 
       <div className="flex items-center justify-between w-full max-w-8xl mx-auto p-2">
 
