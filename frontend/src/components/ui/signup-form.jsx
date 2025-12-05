@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 
 export function SignupForm({ className, ...props }) {
-const router = useRouter()
+  const router = useRouter()
   const [name, setName] = useState('')
   const [cpf, setCpf] = useState('')
   const [email, setEmail] = useState('')
@@ -49,28 +49,28 @@ const router = useRouter()
       const data = await response.json()
 
 
-      if (response.ok && !data.message) { 
+      if (response.ok && !data.message) {
         toast.success("Cadastro realizado com sucesso!", {
-            description: "Seus dados foram enviados para o sistema.",
-            duration: 2000,
+          description: "Seus dados foram enviados para o sistema.",
+          duration: 2000,
         });
 
         setTimeout(() => {
-            toast.warning("Conta aguardando ativação.", {
-                description: "Somente o administrador pode ativar sua conta para acesso.",
-                duration: 5000,
-            });
+          toast.warning("Conta aguardando ativação.", {
+            description: "Somente o administrador pode ativar sua conta para acesso.",
+            duration: 5000,
+          });
 
-            setTimeout(() => {
-                router.push('/login');
-            }, 3000);
+          setTimeout(() => {
+            router.push('/login');
+          }, 3000);
 
         }, 2000);
-      } 
+      }
 
       else if (data.message) {
         toast.error("Erro no cadastro", {
-            description: data.message
+          description: data.message
         });
         setIsLoading(false);
       }
@@ -116,6 +116,7 @@ const router = useRouter()
                   <Label htmlFor="full-name">Nome Completo</Label>
                   <Input id="full-name" placeholder="Seu nome completo" required
                     value={name}
+                    className={"border-border dark:border-[#7a7a7a71]"}
                     onChange={(e) => { setName(e.target.value) }} />
                 </div>
 
@@ -128,6 +129,7 @@ const router = useRouter()
                     placeholder="000.000.000-00"
                     required
                     value={cpf}
+                    className={"border-border dark:border-[#7a7a7a71]"}
                     onChange={(e) => { setCpf(e.target.value) }}
                   />
                 </div>
@@ -143,6 +145,7 @@ const router = useRouter()
                     placeholder="seuemail@empresa.com"
                     required
                     value={email}
+                    className={"border-border dark:border-[#7a7a7a71]"}
                     onChange={(e) => { setEmail(e.target.value) }}
                   />
                 </div>
@@ -151,7 +154,7 @@ const router = useRouter()
                 <div className="grid gap-2 ">
                   <Label htmlFor="role">Cargo</Label>
                   <Select onValueChange={(value) => { setRole(value) }} >
-                    <SelectTrigger id="role" className="w-full">
+                    <SelectTrigger id="role" className="w-full border-border dark:border-[#7a7a7a71]">
                       <SelectValue placeholder="Selecione um cargo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -169,11 +172,12 @@ const router = useRouter()
                   <Label htmlFor="password">Senha</Label>
                   <Input id="password" type="password" placeholder="••••••••" required
                     value={password}
+                    className={"border-border dark:border-[#7a7a7a71]"}
                     onChange={(e) => { setPassword(e.target.value) }} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                  <Input id="confirm-password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value) }} type="password" placeholder="••••••••" required />
+                  <Input id="confirm-password" value={confirmPassword} className={"border-border dark:border-[#7a7a7a71]"} onChange={(e) => { setConfirmPassword(e.target.value) }} type="password" placeholder="••••••••" required />
                 </div>
               </div>
 
@@ -202,9 +206,9 @@ const router = useRouter()
           </p>
         </CardFooter>
       </Card>
-      
+
       {/* Componente Toaster necessário para renderizar os avisos */}
-      <Toaster richColors position="top-center" /> 
+      <Toaster richColors position="top-center" />
     </>
   );
 }
