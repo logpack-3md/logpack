@@ -69,7 +69,7 @@ const DashboardRow = ({ item }) => {
             {/* Coluna VALOR */}
             <TableCell className="hidden sm:table-cell text-right w-[100px]">
                 {item.orcamento ? (
-                    <span className="font-mono font-medium text-xs text-emerald-600 bg-emerald-50/50 px-1.5 py-0.5 rounded whitespace-nowrap">
+                    <span className="font-mono font-medium text-xs text-emerald-600 bg-[#a8a8a850] px-1.5 py-0.5 rounded whitespace-nowrap">
                          {formatMoney(item.orcamento.valor_total)}
                     </span>
                 ) : <span className="text-muted-foreground/50 text-xs font-mono">-</span>}

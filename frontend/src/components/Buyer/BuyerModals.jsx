@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertTriangle, DollarSign, FileText, Info } from 'lucide-react';
+import { Loader2, AlertTriangle, DollarSign, Info } from 'lucide-react';
 import { getModalTitle } from "./BuyerHelpers";
 import clsx from 'clsx';
 

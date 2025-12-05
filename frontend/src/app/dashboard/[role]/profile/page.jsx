@@ -17,6 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SidebarAdmin from "@/components/layout/sidebar-admin";
 import SidebarEmployee from "@/components/layout/sidebar-employee";
 import SidebarManager from "@/components/layout/sidebar-manager";
+import SidebarBuyer from "@/components/layout/sidebar-buyer";
 import { useProfile } from "@/hooks/useProfile";
 import { useParams } from "next/navigation";
 
@@ -38,6 +39,7 @@ export default function ProfilePage() {
   const Sidebar = ({ role, isOpen, onToggle }) => {
     if (role === 'employee') return <SidebarEmployee isOpen={isOpen} onToggle={onToggle} />;
     if (role === 'manager') return <SidebarManager isOpen={isOpen} onToggle={onToggle} />;
+    if (role === 'buyer') return <SidebarBuyer isOpen={isOpen} onToggle={onToggle} />;
     return <SidebarAdmin isOpen={isOpen} onToggle={onToggle} />;
   };
 
