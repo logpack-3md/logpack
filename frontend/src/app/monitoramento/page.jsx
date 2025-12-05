@@ -151,20 +151,20 @@ const Monitoramento = () => {
 
         {/* CTA Section - Fundo Escuro/Primário para destaque */}
         <section className="container mx-auto px-4 py-20">
-          <div className="relative rounded-3xl bg-primary px-6 py-16 md:px-12 md:py-20 overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl">
+          <div className="relative rounded-3xl bg-primary2 px-6 py-16 md:px-12 md:py-20 overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl">
             {/* Elemento decorativo de fundo */}
             <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             
             <div className="relative z-10 max-w-2xl space-y-4">
-              <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-secondary2-foreground sm:text-4xl">
                 Pronto para Otimizar seu Estoque?
               </h2>
-              <p className="text-primary-foreground/80 text-lg">
+              <p className="text-secondary2-foreground/80 text-lg">
                 Descubra na prática como a LogPack reduz custos e aumenta sua lucratividade. Agende uma demonstração gratuita hoje mesmo.
               </p>
             </div>
             
-            <div className="relative z-10 shrink-0">
+            <div className="relative z-10 shrink-0">''
               <Button size="lg" variant="secondary" className="h-14 px-8 text-base font-semibold shadow-lg transition-transform hover:scale-105" asChild>
                 <a href="/contato" className="flex items-center gap-2">
                   Solicite uma Demonstração
