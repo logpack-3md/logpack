@@ -13,7 +13,10 @@ class InsumosController {
         SKU: z.string({ required_error: "O SKU é obrigatório." })
             .trim()
             .min(3, { message: "SKU inválido (mín. 3 caracteres)." }),
-        setorName: z.string().nullable().optional().or(z.literal('')),
+        setorName: z.string()
+            .transform(val => (val === "" || val === "none" || val === "null" ? null : val))
+            .nullable()
+            .optional(),
         description: z.string().optional(),
         measure: z.enum(['KG', 'G', 'ML', 'L'], {
             errorMap: () => ({ message: "Unidade inválida. Use: KG, G, L, ML" })
