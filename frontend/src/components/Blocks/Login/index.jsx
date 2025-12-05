@@ -159,12 +159,6 @@ const Login = () => {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Senha</FormLabel>
-                        <Link
-                          href="#"
-                          className="text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors"
-                        >
-                          Esqueceu senha?
-                        </Link>
                       </div>
                       <FormControl>
                         <Input

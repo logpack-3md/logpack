@@ -31,7 +31,7 @@ import { LogoSite } from "@/components/ui/icons-geral";
 
 export default function Header() {
   return (
-    <header className="w-full border-b bg-card sticky top-0 z-50 shadow-2xl">
+    <header className="w-full border-[#0000003b] border bg-card sticky top-0 z-50 shadow-2xl">
 
       <div className="flex items-center justify-between w-full max-w-8xl mx-auto p-2">
 
@@ -94,8 +94,8 @@ export default function Header() {
 
 
           {/* Botão de Login */}
-          <a href="/login" className="hidden px-5  lg:block">
-            <Button variant="outline" className={"bg-background"}>
+          <a href="/login" className="hidden px-5 lg:block">
+            <Button variant="outline" className={"bg-background dark:border-border border-[#7a7a7a71]"}>
               <LogIn className="mr-2 h-4 w-4" /> {/* Ícone de login */}
               Login
             </Button>
@@ -165,7 +165,7 @@ export default function Header() {
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
-                    <Button variant="outline" className={"font-bold text-md"}>Fechar</Button>
+                    <Button variant="outline" className={"font-bold text-md dark:border-border border-[#7a7a7a71]"}>Fechar</Button>
                   </DrawerClose>
                 </DrawerFooter>
               </DrawerContent>

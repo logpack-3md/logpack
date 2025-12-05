@@ -72,7 +72,7 @@ const LogpackConsultoria = () => {
             {metodologiaConsultoria.map((item) => {
               const IconComponent = item.icon;
               return (
-                <div key={item.etapa} className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 flex flex-col gap-4 group">
+                <div key={item.etapa} className="bg-card border dark:border-border border-[#7a7a7a71] rounded-xl p-6 hover:shadow-lg transition-all duration-300 flex flex-col gap-4 group">
                   <div className="flex justify-between items-start">
                     <div className="p-3 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <IconComponent className="h-6 w-6" />
@@ -92,7 +92,7 @@ const LogpackConsultoria = () => {
         </section>
 
         {/* Impacto Estratégico */}
-        <section className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center bg-muted/30 border border-border rounded-3xl p-8 lg:p-12">
+        <section className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center bg-muted/30 border rounded-3xl p-8 lg:p-12">
           <div className="space-y-6">
             <h2 className="text-3xl font-bold tracking-tight lg:text-4xl text-foreground">
               Por que contratar nossa consultoria?
@@ -104,7 +104,7 @@ const LogpackConsultoria = () => {
           
           <div className="space-y-6">
             {/* Card 1 */}
-            <div className="flex gap-4 p-5 bg-card rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
+            <div className="flex gap-4 p-5 bg-card rounded-xl border dark:border-border border-[#7a7a7a71] shadow-sm hover:border-primary/50 transition-colors">
               <div className="mt-1 bg-accent p-2 rounded-full h-fit text-accent-foreground">
                 <Lightbulb className="h-5 w-5" />
               </div>
@@ -117,7 +117,7 @@ const LogpackConsultoria = () => {
             </div>
 
             {/* Card 2 */}
-            <div className="flex gap-4 p-5 bg-card rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
+            <div className="flex gap-4 p-5 bg-card rounded-xl border dark:border-border border-[#7a7a7a71] shadow-sm hover:border-primary/50 transition-colors">
               <div className="mt-1 bg-primary/10 p-2 rounded-full h-fit text-primary">
                 <TrendingUp className="h-5 w-5" />
               </div>
@@ -130,7 +130,7 @@ const LogpackConsultoria = () => {
             </div>
 
             {/* Card 3 */}
-            <div className="flex gap-4 p-5 bg-card rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
+            <div className="flex gap-4 p-5 bg-card rounded-xl border dark:border-border border-[#7a7a7a71] shadow-sm hover:border-primary/50 transition-colors">
               <div className="mt-1 bg-secondary p-2 rounded-full h-fit text-secondary-foreground">
                 <Users className="h-5 w-5" />
               </div>

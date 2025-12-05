@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   User,
   LogOut,
+  ClipboardClock,
   ChevronLeft,
   Loader2
 } from 'lucide-react';
@@ -18,6 +19,7 @@ import { api } from "@/lib/api";
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard/employee' },
+  { id: 'logs', label: 'Histórico', icon: ClipboardClock, href: '/dashboard/employee/logEmployee' }, 
   { id: 'meu-perfil', label: 'Meu Perfil', icon: User, href: '/dashboard/employee/profile' },
 ];
 

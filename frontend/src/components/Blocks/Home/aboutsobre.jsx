@@ -54,7 +54,7 @@ const AboutSobre = () => {
             <div className="flex flex-col lg:col-span-1">
               <div className="lg:sticky space-y-8">
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-primary shadow-sm w-fit">
+                  <div className="inline-flex items-center gap-2 rounded-full border dark:border-border border-[#7a7a7a71] bg-card px-3 py-1 text-sm font-medium text-primary shadow-sm w-fit">
                     <Layers className="h-3.5 w-3.5" />
                     Soluções Integradas
                   </div>
@@ -70,7 +70,7 @@ const AboutSobre = () => {
                   </p>
                 </div>
 
-                <div className="hidden lg:block p-6 rounded-2xl bg-muted/30 border border-border">
+                <div className="hidden lg:block p-6 rounded-2xl bg-muted/30 border dark:border-border border-[#7a7a7a71]">
                   <h4 className="font-semibold text-foreground mb-2">Por que nos escolher?</h4>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
@@ -86,12 +86,12 @@ const AboutSobre = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col gap-1">
+                  <div className="p-4 rounded-xl bg-card border dark:border-border border-[#7a7a7a71] shadow-sm flex flex-col gap-1">
                     <Zap className="h-5 w-5 text-primary mb-2" />
                     <span className="text-2xl font-bold text-foreground">99.8%</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wide">Precisão</span>
                   </div>
-                  <div className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col gap-1">
+                  <div className="p-4 rounded-xl bg-card border dark:border-border border-[#7a7a7a71] shadow-sm flex flex-col gap-1">
                     <BarChart3 className="h-5 w-5 text-primary mb-2" />
                     <span className="text-2xl font-bold text-foreground">-30%</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wide">Custo Operacional</span>

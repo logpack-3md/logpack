@@ -184,9 +184,9 @@ const SupportPage = () => {
                         </div>
 
 
-                        <div className="bg-muted/50 p-6 rounded-xl mt-4">
+                        <div className="bg-muted/50 p-6 rounded-xl mt-4 border border-[#7a7a7a71]">
                             <h4 className="font-semibold mb-2">Dica Útil:</h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground ">
                                 Ao abrir um chamado, descreva o problema passo a passo e caso tenha imagens do problema entre em contato pelo email LogPack@gmail.com e envie prints da tela. Quanto mais detalhes você fornecer, mais rápido conseguimos resolver seu atendimento.
                             </p>
                         </div>

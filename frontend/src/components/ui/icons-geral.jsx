@@ -8,8 +8,8 @@ function LogoSite() {
     return (
         <Avatar className={"w-16 h-16 rounded-full p-1"}>
 
-            <AvatarImage src="/Logo/Logo_Light.svg" className={'dark:hidden'} alt={"LogPack"} />
-            <AvatarImage src="/Logo/Logo_Dark.svg" className={"hidden dark:block"} alt={"LogPack"} />
+            <AvatarImage src="/Logo/LogPack.svg" className={'dark:hidden'} alt={"LogPack"} />
+            <AvatarImage src="/Logo/LogPack.svg" className={"hidden dark:block"} alt={"LogPack"} />
 
             <AvatarFallback>LP</AvatarFallback>
         </Avatar>
