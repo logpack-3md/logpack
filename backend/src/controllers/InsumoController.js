@@ -1,0 +1,343 @@
+import Insumos from '../models/Insumos.js'
+import InsumosLog from '../models/InsumosLog.js';
+import z from 'zod'
+import { put, del } from '@vercel/blob'
+import Setor from '../models/Setor.js';
+import { Op } from 'sequelize';
+
+class InsumosController {
+    static createSchema = z.object({
+        name: z.string({ required_error: "O nome do insumo é obrigatório." })
+            .trim()
+            .min(2, { message: "Nome do insumo muito curto." }),
+        SKU: z.string({ required_error: "O SKU é obrigatório." })
+            .trim()
+            .min(3, { message: "SKU inválido (mín. 3 caracteres)." }),
+        setorName: z.string()
+            .transform(val => (val === "" || val === "none" || val === "null" ? null : val))
+            .nullable()
+            .optional(),
+        description: z.string().optional(),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], {
+            errorMap: () => ({ message: "Unidade inválida. Use: KG, G, L, ML" })
+        }),
+        max_storage: z.any().transform(v => Number(v) || 0),
+        current_storage: z.any().transform(v => Number(v) || 0),
+        status: z.enum(['ativo', 'inativo']).optional().default('ativo'),
+    });
+
+    static updateSchema = z.object({
+        name: z.string().trim().min(2, { error: "O nome deve conter no mínimo dois caracteres." }).optional(),
+        SKU: z.string().trim().min(3, { error: "O SKU deve conter no mínimo três caracteres." }).optional(),
+        setorName: z.string()
+            .transform(val => (val === "" || val === "none" || val === "null" ? null : val))
+            .nullable()
+            .optional(),
+        description: z.string().trim().min(10, { error: "Escreva uma breve explicação com pelo menos 10 caracteres." }).optional(),
+        max_storage: z.any().transform(v => Number(v)).optional(),
+        measure: z.enum(['KG', 'G', 'ML', 'L'], { error: "Escolha uma unidade de medida válida. ('KG', 'G', 'ML', 'L')" }).optional(),
+    });
+
+    static async getItems(req, res) {
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+
+        const {
+            status: statusFilter,
+            setorName: setorNameFilter,
+            sku: skuFilter,
+            name: nameFilter
+        } = req.query;
+
+        const offset = (page - 1) * limit
+
+        let whereClause = {}
+
+        if (statusFilter) {
+            whereClause.status = statusFilter
+        }
+        if (setorNameFilter) {
+            whereClause.setorName = setorNameFilter
+        }
+        if (skuFilter) {
+            whereClause.SKU = skuFilter
+        }
+        if (nameFilter) {
+            whereClause.name = {
+                [Op.like]: `%${nameFilter}%`
+            }
+        }
+
+        try {
+            const result = await Insumos.findAndCountAll({
+                where: whereClause,
+                limit: limit,
+                offset: offset,
+                order: [['name', 'ASC']],
+
+                attributes: [
+                    'id',
+                    'name',
+                    'sku',
+                    'setorName',
+                    'measure',
+                    'image',
+                    'description',
+                    'current_storage',
+                    'max_storage',
+                    'current_weight_carga',
+                    'max_weight_carga',
+                    'status_solicitacao',
+                    'status',
+                    'last_check'
+                ]
+            })
+
+            const insumos = result.rows
+            const totalItems = result.count
+            const totalPages = Math.ceil(totalItems / limit)
+
+
+            if (insumos.length === 0 && page > 1) {
+                return res.status(404).json({ message: "Página não encontrada ou vazia" })
+            }
+
+            if (totalItems === 0) {
+
+                const hasFilters = statusFilter || setorNameFilter || skuFilter || nameFilter;
+                const msg = statusFilter
+                    ? `Nenhum Insumo com encontrado com o status: "${statusFilter}"`
+                    : "Nenhum Insumo disponível."
+                return res.status(404).json({ message: msg })
+            }
+
+            res.status(200).json({
+                data: insumos,
+                meta: {
+                    totalItems: totalItems,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    itemsPerPage: limit,
+                    filterApplied: {
+                        status: statusFilter || null,
+                        setorName: setorNameFilter || null,
+                        sku: skuFilter || null,
+                        name: nameFilter || null
+                    }
+                }
+            });
+
+        } catch (error) {
+            res.status(500).json({ error: "Erro ao listar insumos." })
+            console.error("Erro ao listar insumos: ", error)
+        }
+    }
+
+    static async getInsumo(req, res) {
+        try {
+            const { sku } = req.params;
+
+            const insumo = await Insumos.findOne(
+                { where: { sku: sku } }, {
+                attributes: [
+                    'id',
+                    'name',
+                    'sku',
+                    'setorName',
+                    'measure',
+                    'image',
+                    'description',
+                    'current_storage',
+                    'max_storage',
+                    'current_weight_carga',
+                    'max_weight_carga',
+                    'status_solicitacao',
+                    'status',
+                    'last_check'
+                ]
+            })
+
+            if (!insumo) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            };
+
+            res.status(200).json(insumo)
+        } catch (error) {
+            console.error("Erro ao encontrar insumo: ", error)
+            return res.status(500).json({ error: "Erro ao encontrar insumo." })
+        }
+    }
+
+    static async createItem(req, res) {
+        const file = req.file;
+        const userId = req.user.id;
+        let imageUrl = null;
+
+        try {
+            const data = InsumosController.createSchema.parse(req.body)
+
+            const { SKU, setorName, ...insumoData } = data;
+            if (setorName) {
+                const setor = await Setor.findOne({ where: { name: setorName } });
+                if (!setor) {
+                    return res.status(404).json({ message: `Setor '${setorName}' não encontrado.` })
+                }
+
+                const ocupado = await Insumos.findOne({ where: { setorName } });
+                if (ocupado) {
+                    return res.status(409).json({ message: "Setor ocupado." });
+                }
+            }
+
+            const existeSKU = await Insumos.findOne({ where: { SKU } });
+            if (existeSKU) return res.status(409).json({ message: "SKU já existe." });
+
+            if (file) {
+                const filename = `${Date.now()}_${file.originalname}`
+                const blob = await put(filename, file.buffer, { access: 'public', contentType: file.mimetype })
+                imageUrl = blob.url
+            }
+
+            const insumo = await Insumos.create({
+                ...insumoData,
+                image: imageUrl,
+                setorName: setorName,
+                SKU: SKU
+            })
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: insumo.id,
+                actionType: 'INSERT',
+                contextDetails: "Criação",
+                oldData: null,
+                newData: insumo.toJSON()
+            })
+
+            return res.status(201).json(insumo)
+
+        } catch (error) {
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
+            }
+            console.error(error);
+            return res.status(500).json({ error: "Erro interno." });
+        }
+    }
+
+    static async updateItem(req, res) {
+        const file = req.file;
+        const userId = req.user.id
+        let imageUrl = null;
+        const { id } = req.params
+
+        try {
+            const existingInsumo = await Insumos.findByPk(id);
+
+            if (!existingInsumo) {
+                return res.status(404).json({ message: "Insumo não encontrado." });
+            }
+
+            const insumoStatus = await Insumos.findOne({
+                where: {
+                    id: id,
+                    status: 'ativo'
+                },
+                attributes: ['id']
+            })
+
+            const isActive = !!insumoStatus
+
+            if (!isActive) {
+                return res.status(403).json({ message: "Acesso negado: O insumo deve estar 'ativo' para poder atualizá-lo." })
+            }
+
+            const oldImageUrl = existingInsumo.image;
+
+            const validatedUpdate = InsumosController.updateSchema.parse(req.body)
+
+            if (validatedUpdate.setorName === "") {
+                validatedUpdate.setorName = null;
+            }
+
+            if (validatedUpdate.setorName && validatedUpdate.setorName !== existingInsumo.setorName) {
+                const setor = await Setor.findOne({ where: { name: validatedUpdate.setorName } });
+                if (!setor) return res.status(404).json({ message: `Setor '${validatedUpdate.setorName}' não encontrado.` });
+
+                const ocupado = await Insumos.findOne({ where: { setorName: validatedUpdate.setorName } });
+                if (ocupado && ocupado.id !== id) {
+                    return res.status(409).json({ message: `Setor '${validatedUpdate.setorName}' já ocupado.` });
+                }
+            }
+
+            let updateData = { ...validatedUpdate }
+
+            if (file) {
+                const filename = `${Date.now()}_${file.originalname}`
+
+                const blob = await put(
+                    filename,
+                    file.buffer,
+                    {
+                        access: 'public',
+                        contentType: file.mimetype,
+                    }
+                )
+
+                imageUrl = blob.url
+                updateData.image = imageUrl
+
+                if (oldImageUrl) {
+                    try {
+                        await del(oldImageUrl);
+                        console.log(`Imagem antiga excluída do Blob: ${oldImageUrl}`);
+                    } catch (error) {
+                        console.error(`Falha ao excluir imagem antiga do Blob (${oldImageUrl}):`, error);
+                    }
+                }
+            }
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(200).json({ message: "Nenhum dado válido fornecido para atualização." })
+            }
+
+            const [rowsAffected] = await Insumos.update(updateData, {
+                where: { id: id }
+            })
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Insumo não encontrado." })
+            }
+
+            const updatedInsumo = await Insumos.findByPk(id);
+
+            const oldDataJson = existingInsumo.toJSON()
+            const newDataJson = updatedInsumo.toJSON()
+
+            await InsumosLog.create({
+                userId: userId,
+                insumoId: updatedInsumo.id,
+                actionType: 'UPDATE',
+                contextDetails: "Atualização de dados de Insumo.",
+                oldData: oldDataJson,
+                newData: newDataJson
+            });
+
+            res.status(200).json({
+                message: "Insumo atualizado com sucesso.",
+                insumo: updatedInsumo
+            });
+
+        } catch (error) {
+             if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                return res.status(400).json({ message: firstError.message });
+            }
+            res.status(500).json({ error: "Ocorreu um erro interno no servidor" })
+            console.error("Erro ao atualizar insumo:", error)
+        }
+    }
+}
+
+export default InsumosController;
