@@ -150,7 +150,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                         className={clsx(
                           'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all outline-none',
                           isLinkActive(subItem.href)
-                            ? 'bg-primary/10 text-primary font-semibold'
+                            ? 'bg-primary/15 dark:bg-primary/10 text-primary font-semibold'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                       >
@@ -168,7 +168,7 @@ export default function SidebarAdmin({ isOpen, onToggle }) {
                 className={clsx(
                   'flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all outline-none mb-1',
                   isLinkActive(item.href)
-                    ? 'bg-primary/10 text-primary font-semibold'
+                    ? 'bg-primary/15 dark:bg-primary/10 text-primary font-semibold'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >

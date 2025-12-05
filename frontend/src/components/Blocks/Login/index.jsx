@@ -111,7 +111,7 @@ const Login = () => {
       <div className="w-full grid h-screen place-items-center">
         <div className="flex flex-col items-center justify-center w-full p-4 sm:p-8">
           
-          <div className="mx-auto w-full max-w-sm flex flex-col justify-center space-y-6 border border-border rounded-xl bg-card text-card-foreground shadow-sm p-8">
+          <div className="mx-auto w-full max-w-sm flex flex-col justify-center space-y-6 border border-border dark:border-[#7a7a7a71] rounded-xl bg-card text-card-foreground shadow-sm p-8">
            
             <div className="flex flex-col space-y-2 text-center">
               <div className="flex justify-center mb-2"> 
@@ -143,7 +143,7 @@ const Login = () => {
                         <Input
                           type="email"
                           placeholder="nome@example.com"
-                          className="bg-background placeholder:text-muted-foreground"
+                          className="bg-background placeholder:text-muted-foreground border-border dark:border-[#7a7a7a71]"
                           {...field}
                         />
                       </FormControl>
@@ -164,7 +164,7 @@ const Login = () => {
                         <Input
                           type="password"
                           placeholder="••••••••"
-                          className="bg-background placeholder:text-muted-foreground"
+                          className="bg-background placeholder:text-muted-foreground border-border dark:border-[#7a7a7a71]"
                           {...field}
                         />
                       </FormControl>
