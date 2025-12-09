@@ -245,6 +245,29 @@ Orcamento.belongsTo(Insumos, {
     targetKey: 'SKU',
     as: 'insumoDetalhes'
 });
+// Um usuário pode enviar vários contatos
+User.hasMany(Contato, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    as: 'contatosEnviados'
+});
+Contato.belongsTo(User, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: 'usuarioContato'
+});
+
+User.hasMany(Suporte, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    as: 'suportesAbertos'
+});
+Suporte.belongsTo(User, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: 'usuarioSuporte'
+});
+
 
 async function runSync() {
     console.log('Iniciando sincronização do banco de dados...');

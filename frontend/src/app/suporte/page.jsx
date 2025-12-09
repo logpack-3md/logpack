@@ -147,8 +147,8 @@ const SupportPage = () => {
                                     <p className="text-muted-foreground">
                                         Envie logs ou prints de erros diretamente.
                                     </p>
-                                    <a href="mailto:suporte@seusistema.com" className="text-primary hover:underline">
-                                        suporte@seusistema.com
+                                    <a href="mailto:logpack.suporte@gmail.com" className="text-primary hover:underline">
+                                        logpack.suporte@gmail.com
                                     </a>
                                 </div>
                             </div>
@@ -174,10 +174,10 @@ const SupportPage = () => {
                                     <MapPin className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-lg">Endereço Administrativo</h4>
+                                    <h4 className="font-semibold text-lg">Nosso Escritório</h4>
                                     <p className="text-muted-foreground">
-                                        Rua Exemplo, 123, Sala de TI <br />
-                                        São Paulo, SP - 00000-000
+                                        Avenida Horizonte Azul, 450, Sala 12 <br />
+                                        São Paulo, SP – 04520-300
                                     </p>
                                 </div>
                             </div>

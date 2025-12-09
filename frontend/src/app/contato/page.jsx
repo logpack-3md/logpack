@@ -126,8 +126,8 @@ const Contact = () => {
                                     <p className="text-muted-foreground">
                                         Entre em contato para suporte.
                                     </p>
-                                    <a href="mailto:sajuan1020@gmail.com" className="text-primary hover:underline">
-                                        sajuan1020@gmail.com
+                                    <a href="mailto:logpack.senai.ltda@gmail.com" className="text-primary hover:underline">
+                                        Logpack.senai.ltda@gmail.com
                                     </a>
                                 </div>
                             </div>
@@ -156,8 +156,8 @@ const Contact = () => {
                                 <div>
                                     <h4 className="font-semibold text-lg">Nosso Escritório</h4>
                                     <p className="text-muted-foreground">
-                                        Não sei, 123, Sala 1 <br />
-                                        São Paulo, SP - 00000-000
+                                        Avenida Horizonte Azul, 450, Sala 12 <br />
+                                        São Paulo, SP – 04520-300
                                     </p>
                                 </div>
                             </div>
