@@ -1,0 +1,11 @@
+para a utilização é necessario que voce abra o arquivo .js tensao+deepsleep
+e nele altere o nome de id para o um setor já criado alem de alterar dados de rede 
+como rede wifi e senha (somente 2.4G), e o endereço do broker na rede
+após isso lançe ele para o espruino com a extensão do vsCode com bauldRate de 11500
+e durante o primeiro ciclo é necessario digitar "save()" no console para que ele fique 
+Em um loop infinito... com isso já esta pronto para uso ( se houver uma falha critica e voce 
+quiser apagar o programa da memoria do seu esp digite "reset(true)" no console enquanto
+conecetado
+
+não esquecer de ligar o micro serviço em paralelo para se comunicar devidamente com o servidor
+(necessario alterar o ip do broer nele tambem e verificar a rota da API se esta correta)
